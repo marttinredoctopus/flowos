@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 interface User {
   id: string;
@@ -18,11 +19,43 @@ interface AuthState {
   logout: () => void;
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
-  user: null,
-  accessToken: null,
-  isAuthenticated: false,
-  setAuth: (user, accessToken) => set({ user, accessToken, isAuthenticated: true }),
-  setToken: (accessToken) => set({ accessToken }),
-  logout: () => set({ user: null, accessToken: null, isAuthenticated: false }),
-}));
+export const useAuthStore = create<AuthState>()(
+  persist(
+    (set) => ({
+      user: null,
+      accessToken: null,
+      isAuthenticated: false,
+      setAuth: (user, accessToken) => {
+        if (typeof window !== 'undefined') {
+          (window as any).__FLOWOS_AUTH_TOKEN__ = accessToken;
+        }
+        set({ user, accessToken, isAuthenticated: true });
+      },
+      setToken: (accessToken) => {
+        if (typeof window !== 'undefined') {
+          (window as any).__FLOWOS_AUTH_TOKEN__ = accessToken;
+        }
+        set({ accessToken });
+      },
+      logout: () => {
+        if (typeof window !== 'undefined') {
+          (window as any).__FLOWOS_AUTH_TOKEN__ = null;
+        }
+        set({ user: null, accessToken: null, isAuthenticated: false });
+      },
+    }),
+    {
+      name: 'flowos-auth',
+      partialize: (state) => ({
+        user: state.user,
+        isAuthenticated: state.isAuthenticated,
+        accessToken: state.accessToken,
+      }),
+      onRehydrateStorage: () => (state) => {
+        if (state?.accessToken && typeof window !== 'undefined') {
+          (window as any).__FLOWOS_AUTH_TOKEN__ = state.accessToken;
+        }
+      },
+    }
+  )
+);

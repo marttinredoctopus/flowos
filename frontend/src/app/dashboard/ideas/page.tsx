@@ -32,9 +32,9 @@ export default function IdeasPage() {
     if (!input.trim()) return;
     setSaving(true);
     try {
-      const r = await apiClient.post('/ideas', { title: input.trim(), category });
-      setIdeas(prev => [r.data, ...prev]);
+      await apiClient.post('/ideas', { title: input.trim(), category });
       setInput('');
+      await load();
     } catch {} finally { setSaving(false); }
   }
 

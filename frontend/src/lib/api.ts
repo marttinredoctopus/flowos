@@ -9,7 +9,7 @@ const api = axios.create({
 // Attach token from localStorage if present
 api.interceptors.request.use((config) => {
   if (typeof window !== 'undefined') {
-    const token = localStorage.getItem('token');
+    const token = (window as any).__FLOWOS_AUTH_TOKEN__;
     if (token) config.headers.Authorization = `Bearer ${token}`;
   }
   return config;

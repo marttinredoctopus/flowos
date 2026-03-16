@@ -46,16 +46,12 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'flowos-auth',
+      // Only persist user identity + auth flag — NOT the access token
+      // Access token lives in memory only; AuthInit refreshes it on every page load
       partialize: (state) => ({
         user: state.user,
         isAuthenticated: state.isAuthenticated,
-        accessToken: state.accessToken,
       }),
-      onRehydrateStorage: () => (state) => {
-        if (state?.accessToken && typeof window !== 'undefined') {
-          (window as any).__FLOWOS_AUTH_TOKEN__ = state.accessToken;
-        }
-      },
     }
   )
 );

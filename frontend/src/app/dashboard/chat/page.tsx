@@ -15,9 +15,16 @@ export default function ChatPage() {
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    apiClient.get('/chat/messages').then(r => setMessages(r.data || [])).catch(() => {});
+  }, []);
+
+  useEffect(() => {
     if (!accessToken) return;
     const s = io(SOCKET_URL, { auth: { token: accessToken } });
-    s.on('connect', () => setConnected(true));
+    s.on('connect', () => {
+      setConnected(true);
+      s.emit('join_room', 'channel:general');
+    });
     s.on('disconnect', () => setConnected(false));
     s.on('chat:message', (msg: any) => setMessages(prev => [...prev, msg]));
     setSocket(s);
@@ -29,7 +36,7 @@ export default function ChatPage() {
   function send(e: React.FormEvent) {
     e.preventDefault();
     if (!input.trim() || !socket) return;
-    socket.emit('chat:message', { content: input.trim(), channel: 'general' });
+    socket.emit('chat_message', { channelId: 'general', body: input.trim() });
     setInput('');
   }
 
@@ -54,16 +61,16 @@ export default function ChatPage() {
           </div>
         )}
         {messages.map((msg, i) => {
-          const isMe = msg.userId === user?.id || msg.user_id === user?.id;
+          const isMe = (msg.userId || msg.user_id) === user?.id;
           return (
             <div key={i} className={`flex items-end gap-3 ${isMe ? 'flex-row-reverse' : ''}`}>
               <div className={`w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-bold text-white ${isMe ? 'gradient-bg' : 'bg-white/10'}`}>
-                {(msg.userName || msg.user_name || '?')[0]?.toUpperCase()}
+                {(msg.userName || msg.user_name || msg.userId || '?')[0]?.toUpperCase()}
               </div>
               <div className={`max-w-xs lg:max-w-md ${isMe ? 'items-end' : 'items-start'} flex flex-col gap-1`}>
                 {!isMe && <span className="text-xs text-slate-500 px-1">{msg.userName || msg.user_name}</span>}
                 <div className={`px-4 py-2.5 rounded-2xl text-sm ${isMe ? 'gradient-bg text-white rounded-br-sm' : 'bg-white/5 text-slate-200 rounded-bl-sm'}`}>
-                  {msg.content}
+                  {msg.content || msg.body}
                 </div>
               </div>
             </div>

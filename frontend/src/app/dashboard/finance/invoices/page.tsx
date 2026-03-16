@@ -32,7 +32,7 @@ export default function InvoicesPage() {
   useEffect(() => {
     setLoading(true);
     Promise.all([
-      apiClient.get('/invoices').then(r => setInvoices(r.data || [])).catch(() => {}),
+      apiClient.get('/invoices').then(r => setInvoices(r.data?.invoices || r.data || [])).catch(() => {}),
       apiClient.get('/clients').then(r => setClients(r.data || [])).catch(() => {}),
     ]).finally(() => setLoading(false));
   }, []);
@@ -54,7 +54,7 @@ export default function InvoicesPage() {
     if (!form.clientId) return toast.error('Select a client');
     setCreating(true);
     try {
-      const r = await apiClient.post('/invoices', { ...form, subtotal, taxAmount: tax, totalAmount: total });
+      const r = await apiClient.post('/invoices', { clientId: form.clientId, notes: form.notes, dueDate: form.dueDate, lineItems: form.lineItems, subtotal, taxAmount: tax, discountAmount: form.discount, total });
       setInvoices(inv => [r.data, ...inv]);
       setShowModal(false);
       setForm({ clientId: '', notes: '', dueDate: '', taxRate: 0, discount: 0, lineItems: [{ description: '', quantity: 1, unitPrice: 0 }] });

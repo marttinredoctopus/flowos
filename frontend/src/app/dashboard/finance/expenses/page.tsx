@@ -24,7 +24,7 @@ export default function ExpensesPage() {
     if (!form.amount || !form.date) return toast.error('Amount and date required');
     setCreating(true);
     try {
-      const r = await apiClient.post('/invoices/expenses', { ...form, amount: parseFloat(form.amount) });
+      const r = await apiClient.post('/invoices/expenses', { description: form.description, amount: parseFloat(form.amount), category: form.category, expenseDate: form.date });
       setExpenses(ex => [r.data, ...ex]);
       setShowModal(false);
       setForm({ amount: '', category: 'Other', date: new Date().toISOString().split('T')[0], description: '', vendor: '' });
@@ -112,7 +112,7 @@ export default function ExpensesPage() {
               <tr><td colSpan={6} className="py-12 text-center text-slate-500 text-sm">No expenses recorded yet</td></tr>
             ) : expenses.map(exp => (
               <tr key={exp.id} className="hover:bg-white/2 transition">
-                <td className="px-5 py-3.5 text-sm text-slate-400">{new Date(exp.date).toLocaleDateString()}</td>
+                <td className="px-5 py-3.5 text-sm text-slate-400">{exp.expense_date ? new Date(exp.expense_date).toLocaleDateString() : '—'}</td>
                 <td className="px-5 py-3.5">
                   <span className="text-xs bg-white/5 text-slate-300 px-2 py-1 rounded-lg">{exp.category}</span>
                 </td>

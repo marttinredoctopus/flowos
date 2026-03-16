@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Toaster } from 'react-hot-toast';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -13,18 +14,22 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet" />
         <link rel="icon" href="/favicon.ico" />
+        {/* Prevent flash of wrong theme */}
+        <script dangerouslySetInnerHTML={{ __html: `(function(){try{var t=localStorage.getItem('theme');if(t==='light')document.documentElement.classList.add('light');}catch(e){}})()` }} />
       </head>
       <body>
-        {children}
-        <Toaster
-          position="bottom-right"
-          toastOptions={{
-            style: { background: '#161b27', color: '#e2e8f0', border: '1px solid #2a3347' },
-            duration: 4000,
-          }}
-        />
+        <ErrorBoundary>
+          {children}
+          <Toaster
+            position="bottom-right"
+            toastOptions={{
+              style: { background: 'var(--surface)', color: 'var(--text)', border: '1px solid var(--border)' },
+              duration: 4000,
+            }}
+          />
+        </ErrorBoundary>
       </body>
     </html>
   );

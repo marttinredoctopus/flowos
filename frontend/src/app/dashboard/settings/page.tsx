@@ -208,7 +208,7 @@ function AppearanceTab() {
 }
 
 function FinanceTab() {
-  const [cfg, setCfg] = useState({ currency: 'USD', defaultPaymentTerms: 30, invoicePrefix: 'INV', defaultTaxRate: 0, companyAddress: '' });
+  const [cfg, setCfg] = useState({ defaultCurrency: 'USD', defaultPaymentTerms: 30, invoicePrefix: 'INV', defaultTaxRate: 0, agencyAddress: '' });
   const [saving, setSaving] = useState(false);
   useEffect(() => { apiClient.get('/invoices/finance-settings').then(r => { if (r.data) setCfg(c => ({ ...c, ...r.data })); }).catch(() => {}); }, []);
   async function save(e: React.FormEvent) {
@@ -223,7 +223,7 @@ function FinanceTab() {
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div><label className="text-sm text-slate-400 block mb-1.5">Currency</label>
-              <select className={INPUT} value={cfg.currency} onChange={e => setCfg(c => ({ ...c, currency: e.target.value }))}>
+              <select className={INPUT} value={cfg.defaultCurrency} onChange={e => setCfg(c => ({ ...c, defaultCurrency: e.target.value }))}>
                 {['USD','EUR','GBP','AED','SAR','CAD','AUD'].map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
@@ -237,7 +237,7 @@ function FinanceTab() {
             <div><label className="text-sm text-slate-400 block mb-1.5">Invoice Prefix</label><input className={INPUT} value={cfg.invoicePrefix} onChange={e => setCfg(c => ({ ...c, invoicePrefix: e.target.value }))} placeholder="INV" /></div>
             <div><label className="text-sm text-slate-400 block mb-1.5">Default Tax Rate (%)</label><input type="number" min="0" max="100" step="0.01" className={INPUT} value={cfg.defaultTaxRate} onChange={e => setCfg(c => ({ ...c, defaultTaxRate: +e.target.value }))} /></div>
           </div>
-          <div><label className="text-sm text-slate-400 block mb-1.5">Company Address</label><textarea className={INPUT + ' h-20 resize-none'} value={cfg.companyAddress} onChange={e => setCfg(c => ({ ...c, companyAddress: e.target.value }))} /></div>
+          <div><label className="text-sm text-slate-400 block mb-1.5">Company Address</label><textarea className={INPUT + ' h-20 resize-none'} value={cfg.agencyAddress} onChange={e => setCfg(c => ({ ...c, agencyAddress: e.target.value }))} /></div>
         </div>
       </div>
       <button type="submit" disabled={saving} className={BTN}>{saving ? 'Saving...' : 'Save Finance Settings'}</button>

@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import apiClient from '@/lib/apiClient';
 import toast from 'react-hot-toast';
 
-type Tab = 'general' | 'profile' | 'team' | 'notifications' | 'appearance' | 'finance' | 'api' | 'webhooks' | 'danger';
+type Tab = 'general' | 'profile' | 'team' | 'notifications' | 'appearance' | 'finance' | 'billing' | 'api' | 'webhooks' | 'danger';
 
 const TABS: { id: Tab; label: string; icon: string }[] = [
   { id: 'general', label: 'General', icon: '⚙️' },
@@ -15,6 +15,7 @@ const TABS: { id: Tab; label: string; icon: string }[] = [
   { id: 'notifications', label: 'Notifications', icon: '🔔' },
   { id: 'appearance', label: 'Appearance', icon: '🎨' },
   { id: 'finance', label: 'Finance', icon: '💰' },
+  { id: 'billing', label: 'Billing', icon: '💳' },
   { id: 'api', label: 'API Keys', icon: '🔑' },
   { id: 'webhooks', label: 'Webhooks', icon: '🔗' },
   { id: 'danger', label: 'Danger Zone', icon: '⚠️' },
@@ -380,6 +381,157 @@ function WebhooksTab() {
   );
 }
 
+function BillingTab() {
+  const [billing, setBilling] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [cycle, setCycle] = useState<'monthly' | 'annual'>('monthly');
+  const [upgrading, setUpgrading] = useState('');
+  const [openingPortal, setOpeningPortal] = useState(false);
+
+  useEffect(() => {
+    apiClient.get('/billing/current')
+      .then(r => { setBilling(r.data); setCycle(r.data.billing_cycle || 'monthly'); })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  async function upgrade(planId: string) {
+    setUpgrading(planId);
+    try {
+      const r = await apiClient.post('/billing/create-checkout', { plan_id: planId, billing_cycle: cycle });
+      window.location.href = r.data.checkout_url;
+    } catch (err: any) {
+      toast.error(err?.response?.data?.error || 'Failed to start checkout');
+    } finally { setUpgrading(''); }
+  }
+
+  async function openPortal() {
+    setOpeningPortal(true);
+    try {
+      const r = await apiClient.post('/billing/create-portal');
+      window.location.href = r.data.portal_url;
+    } catch { toast.error('Failed to open billing portal'); setOpeningPortal(false); }
+  }
+
+  const PLAN_COLORS: Record<string, string> = {
+    starter: '#6e7681', pro: '#4a9eff', enterprise: '#7c6fe0',
+  };
+
+  function UsageBar({ label, used, limit }: { label: string; used: number; limit: number }) {
+    const pct = limit === -1 ? 0 : Math.min(100, Math.round((used / limit) * 100));
+    const isUnlimited = limit === -1;
+    return (
+      <div className="mb-3">
+        <div className="flex justify-between text-xs text-slate-400 mb-1">
+          <span>{label}</span>
+          <span>{isUnlimited ? `${used} / ∞` : `${used} / ${limit}`}</span>
+        </div>
+        {!isUnlimited && (
+          <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
+            <div className="h-full rounded-full transition-all" style={{
+              width: `${pct}%`,
+              background: pct > 90 ? '#ef5350' : pct > 70 ? '#ffc107' : '#4a9eff',
+            }} />
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  if (loading) return <div className={CARD}><p className="text-slate-400 text-sm">Loading billing info...</p></div>;
+
+  const currentPlan = billing?.plan || 'starter';
+  const usage = billing?.usage || {};
+  const planDetails = billing?.plan_details || {};
+
+  const PLANS_INFO = [
+    { id: 'starter', name: 'Starter', price_monthly: 0, price_annual: 0, color: '#6e7681', features: ['5 team members', '3 projects', '5 clients', 'Task & Kanban boards'] },
+    { id: 'pro', name: 'Pro', price_monthly: 49, price_annual: 39, color: '#4a9eff', features: ['25 team members', 'Unlimited projects & clients', 'Content Calendar', 'Ad Campaigns', 'Time Tracking & Invoices', 'Client Portal', 'AI Intelligence'] },
+    { id: 'enterprise', name: 'Enterprise', price_monthly: 149, price_annual: 119, color: '#7c6fe0', features: ['Unlimited everything', 'White-label branding', 'Public API + Webhooks', 'FB & Google Ads API', 'Dedicated support'] },
+  ];
+
+  return (
+    <div>
+      {/* Current plan */}
+      <div className={CARD}>
+        <div className="flex items-start justify-between mb-4">
+          <div>
+            <h2 className="font-display font-semibold text-white mb-1">Current Plan</h2>
+            <div className="flex items-center gap-2">
+              <span className="text-lg font-bold capitalize" style={{ color: PLAN_COLORS[currentPlan] }}>{currentPlan}</span>
+              {billing?.current_period_end && (
+                <span className="text-xs text-slate-500">· renews {new Date(billing.current_period_end).toLocaleDateString()}</span>
+              )}
+            </div>
+          </div>
+          {currentPlan !== 'starter' && (
+            <button onClick={openPortal} disabled={openingPortal}
+              className="text-xs border border-white/10 text-slate-300 px-3 py-1.5 rounded-lg hover:bg-white/5 transition">
+              {openingPortal ? 'Opening...' : '⚙️ Manage Subscription'}
+            </button>
+          )}
+        </div>
+        <div>
+          <p className="text-xs text-slate-500 mb-3 uppercase tracking-wider">Usage</p>
+          <UsageBar label="Team Members" used={usage.team_members || 0} limit={planDetails.limits?.team_members || 5} />
+          <UsageBar label="Projects" used={usage.projects || 0} limit={planDetails.limits?.projects || 3} />
+          <UsageBar label="Clients" used={usage.clients || 0} limit={planDetails.limits?.clients || 5} />
+        </div>
+      </div>
+
+      {/* Billing cycle toggle */}
+      <div className="flex items-center justify-center gap-3 mb-6">
+        <span className={`text-sm ${cycle === 'monthly' ? 'text-white' : 'text-slate-500'}`}>Monthly</span>
+        <button onClick={() => setCycle(c => c === 'monthly' ? 'annual' : 'monthly')}
+          className={`relative w-12 h-6 rounded-full transition-colors ${cycle === 'annual' ? 'bg-blue-500' : 'bg-white/10'}`}>
+          <span className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform ${cycle === 'annual' ? 'translate-x-6' : ''}`} />
+        </button>
+        <span className={`text-sm ${cycle === 'annual' ? 'text-white' : 'text-slate-500'}`}>
+          Annual <span className="text-green-400 text-xs font-semibold">Save 20%</span>
+        </span>
+      </div>
+
+      {/* Plan cards */}
+      <div className="grid grid-cols-3 gap-4">
+        {PLANS_INFO.map(plan => {
+          const isCurrent = plan.id === currentPlan;
+          const price = cycle === 'annual' ? plan.price_annual : plan.price_monthly;
+          return (
+            <div key={plan.id} className={`rounded-2xl p-5 border-2 transition-all ${isCurrent ? 'border-blue-500/50 bg-blue-500/5' : 'border-white/5 bg-[#0f1117] hover:border-white/20'}`}>
+              <div className="flex items-center gap-2 mb-3">
+                <span style={{ color: plan.color }} className="font-display font-bold text-lg">{plan.name}</span>
+                {isCurrent && <span className="text-[10px] bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded-full font-semibold">Current</span>}
+              </div>
+              <div className="mb-4">
+                <span className="text-2xl font-bold text-white">${price}</span>
+                {price > 0 && <span className="text-sm text-slate-500">/mo{cycle === 'annual' ? ' (billed annually)' : ''}</span>}
+              </div>
+              <ul className="space-y-1.5 mb-5">
+                {plan.features.map((f, i) => (
+                  <li key={i} className="flex items-start gap-2 text-xs text-slate-400">
+                    <span style={{ color: plan.color }}>✓</span> {f}
+                  </li>
+                ))}
+              </ul>
+              {isCurrent ? (
+                <button disabled className="w-full py-2 rounded-xl text-sm font-semibold bg-white/5 text-slate-500 cursor-default">Current Plan</button>
+              ) : plan.id === 'starter' ? (
+                <button disabled className="w-full py-2 rounded-xl text-sm font-semibold border border-white/10 text-slate-500 cursor-default">Free</button>
+              ) : (
+                <button onClick={() => upgrade(plan.id)} disabled={!!upgrading}
+                  className="w-full py-2 rounded-xl text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
+                  style={{ background: `linear-gradient(135deg, ${plan.color}, ${plan.color}99)` }}>
+                  {upgrading === plan.id ? 'Redirecting...' : `Upgrade to ${plan.name} →`}
+                </button>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function DangerTab() {
   const { logout } = useAuthStore();
   const router = useRouter();
@@ -417,7 +569,8 @@ export default function SettingsPage() {
   const [tab, setTab] = useState<Tab>('general');
   const tabContent: Record<Tab, React.ReactNode> = {
     general: <GeneralTab />, profile: <ProfileTab />, team: <TeamTab />, notifications: <NotificationsTab />,
-    appearance: <AppearanceTab />, finance: <FinanceTab />, api: <ApiKeysTab />, webhooks: <WebhooksTab />, danger: <DangerTab />,
+    appearance: <AppearanceTab />, finance: <FinanceTab />, billing: <BillingTab />,
+    api: <ApiKeysTab />, webhooks: <WebhooksTab />, danger: <DangerTab />,
   };
   return (
     <div className="p-6 max-w-5xl mx-auto">

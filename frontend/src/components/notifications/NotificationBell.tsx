@@ -6,6 +6,7 @@ import { formatDistanceToNow } from 'date-fns';
 import toast from 'react-hot-toast';
 import apiClient from '@/lib/apiClient';
 import { useAuthStore } from '@/store/authStore';
+import { onSocketEvent, offSocketEvent } from '@/lib/socket';
 
 interface Notification {
   id: string;
@@ -36,7 +37,6 @@ const TYPE_ICON: Record<string, string> = {
 
 export default function NotificationBell() {
   const router = useRouter();
-  const { accessToken } = useAuthStore();
   const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -54,39 +54,36 @@ export default function NotificationBell() {
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 
-  // Socket.io for real-time
+  // Subscribe to global socket events — do NOT create a new socket here
   useEffect(() => {
-    if (!accessToken) return;
-    let socket: any;
-    (async () => {
-      const { io } = await import('socket.io-client');
-      socket = io(process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3001', {
-        auth: { token: accessToken },
-        transports: ['websocket', 'polling'],
-      });
-      socket.on('notification:new', (notif: Notification) => {
-        setNotifications(prev => [notif, ...prev]);
-        setUnreadCount(c => c + 1);
-        if (!open) {
-          toast.custom((t) => (
-            <div className={`glass border border-white/10 rounded-xl p-4 max-w-sm animate-slide-up ${t.visible ? 'opacity-100' : 'opacity-0'}`}>
-              <div className="flex items-start gap-3">
-                <span className="text-xl">{TYPE_ICON[notif.type] || '🔔'}</span>
-                <div>
-                  <p className="text-sm font-medium text-white">{notif.title}</p>
-                  {notif.body && <p className="text-xs text-slate-400 mt-0.5">{notif.body}</p>}
-                </div>
-              </div>
+    function handleNewNotif(notif: Notification) {
+      setNotifications(prev => [notif, ...prev]);
+      setUnreadCount(c => c + 1);
+      toast.custom((t) => (
+        <div className={`glass border border-white/10 rounded-xl p-4 max-w-sm animate-slide-up ${t.visible ? 'opacity-100' : 'opacity-0'}`}>
+          <div className="flex items-start gap-3">
+            <span className="text-xl">{TYPE_ICON[notif.type] || '🔔'}</span>
+            <div>
+              <p className="text-sm font-medium text-white">{notif.title}</p>
+              {notif.body && <p className="text-xs text-slate-400 mt-0.5">{notif.body}</p>}
             </div>
-          ), { duration: 4000, position: 'bottom-right' });
-        }
-      });
-      socket.on('notification:count', ({ count }: { count: number }) => {
-        setUnreadCount(count);
-      });
-    })();
-    return () => socket?.disconnect();
-  }, [accessToken, open]);
+          </div>
+        </div>
+      ), { duration: 4000, position: 'bottom-right' });
+    }
+
+    function handleCount({ count }: { count: number }) {
+      setUnreadCount(count);
+    }
+
+    onSocketEvent('notification:new', handleNewNotif);
+    onSocketEvent('notification:count', handleCount);
+
+    return () => {
+      offSocketEvent('notification:new', handleNewNotif);
+      offSocketEvent('notification:count', handleCount);
+    };
+  }, []); // ← no dependencies: subscribe once, never reconnect
 
   async function loadNotifications() {
     try {

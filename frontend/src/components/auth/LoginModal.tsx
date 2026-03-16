@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import apiClient from '@/lib/apiClient';
 import { useAuthStore } from '@/store/authStore';
+import { connectSocket } from '@/lib/socket';
 
 interface Props {
   onClose: () => void;
@@ -220,6 +221,7 @@ export default function LoginModal({ onClose, onSwitchToSignup }: Props) {
       const { accessToken, user } = res.data;
       (window as any).__FLOWOS_AUTH_TOKEN__ = accessToken;
       setAuth(user, accessToken);
+      connectSocket(accessToken, user.id);
       setTimeout(async () => {
         try {
           const r = await apiClient.post('/auth/refresh');

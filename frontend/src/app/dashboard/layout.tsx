@@ -7,6 +7,7 @@ import { useAuthStore } from '@/store/authStore';
 import { useThemeStore } from '@/store/themeStore';
 import NotificationBell from '@/components/notifications/NotificationBell';
 import apiClient from '@/lib/apiClient';
+import { disconnectSocket } from '@/lib/socket';
 
 const NAV_SECTIONS = [
   {
@@ -226,7 +227,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     return () => window.removeEventListener('keydown', handleKey);
   }, [gPressed, router]);
 
-  function handleLogout() { logout(); router.replace('/'); }
+  function handleLogout() { disconnectSocket(); logout(); router.replace('/'); }
 
   function isActive(href: string) {
     if (href === '/dashboard') return pathname === '/dashboard';

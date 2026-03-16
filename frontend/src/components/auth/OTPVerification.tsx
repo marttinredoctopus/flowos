@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import apiClient from '@/lib/apiClient';
 import { useAuthStore } from '@/store/authStore';
+import { connectSocket } from '@/lib/socket';
 import toast from 'react-hot-toast';
 
 interface Props {
@@ -70,6 +71,7 @@ export default function OTPVerification({ userId, email, onVerified, onBack }: P
       const res = await apiClient.post('/auth/verify-email', { userId, otp });
       const { accessToken, user } = res.data;
       useAuthStore.getState().setAuth(user, accessToken);
+      connectSocket(accessToken, user.id);
       toast.success('Email verified! Welcome to FlowOS 🚀');
       onVerified(accessToken, user);
     } catch (err: any) {

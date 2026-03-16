@@ -36,6 +36,8 @@ export default function TasksPage() {
   });
   const [saving, setSaving]         = useState(false);
   const [selected, setSelected]     = useState<any | null>(null);
+  const [draggedId, setDraggedId]   = useState<string | null>(null);
+  const [dragOver, setDragOver]     = useState<string | null>(null);
   const [comments, setComments]     = useState<any[]>([]);
   const [commentText, setCommentText] = useState('');
   const [savingComment, setSavingComment] = useState(false);
@@ -96,6 +98,24 @@ export default function TasksPage() {
       setTasks(ts => ts.map(t => t.id === selected.id ? { ...t, ...body } : t));
     } catch {}
     setEditingField(null);
+  }
+
+  async function handleDrop(newStatus: string) {
+    if (!draggedId || draggedId === newStatus) return;
+    const task = tasks.find(t => t.id === draggedId);
+    if (!task || task.status === newStatus) { setDraggedId(null); setDragOver(null); return; }
+
+    // Optimistic update
+    setTasks(prev => prev.map(t => t.id === draggedId ? { ...t, status: newStatus } : t));
+    setDraggedId(null);
+    setDragOver(null);
+
+    try {
+      await apiClient.patch(`/tasks/${task.id}`, { status: newStatus });
+    } catch {
+      // Revert on failure
+      setTasks(prev => prev.map(t => t.id === task.id ? { ...t, status: task.status } : t));
+    }
   }
 
   async function addComment(e: React.FormEvent) {
@@ -395,7 +415,10 @@ export default function TasksPage() {
           {COLUMNS.map(col => {
             const colTasks = tasks.filter(t => t.status === col.id);
             return (
-              <div key={col.id} className="rounded-2xl p-4 flex flex-col" style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
+              <div key={col.id} className="rounded-2xl p-4 flex flex-col" style={{ background: dragOver === col.id ? col.dim : 'var(--card)', border: `1px solid ${dragOver === col.id ? col.color : 'var(--border)'}`, transition: 'all 0.15s' }}
+                onDragOver={e => { e.preventDefault(); setDragOver(col.id); }}
+                onDragLeave={() => setDragOver(null)}
+                onDrop={() => handleDrop(col.id)}>
                 <div className="flex items-center gap-2 mb-4">
                   <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: col.color }} />
                   <span className="text-sm font-bold" style={{ color: 'var(--text)' }}>{col.label}</span>
@@ -407,12 +430,17 @@ export default function TasksPage() {
                     const pCfg = PRIORITY[t.priority];
                     const assignee = getAssignee(t);
                     return (
-                      <div key={t.id} onClick={() => openTask(t)}
-                        className="rounded-xl p-3 cursor-pointer transition-all hover:-translate-y-0.5 hover:shadow-md"
+                      <div key={t.id}
+                        draggable
+                        onDragStart={() => setDraggedId(t.id)}
+                        onDragEnd={() => { setDraggedId(null); setDragOver(null); }}
+                        onClick={() => openTask(t)}
+                        className="rounded-xl p-3 cursor-grab active:cursor-grabbing transition-all hover:-translate-y-0.5 hover:shadow-md"
                         style={{
                           background: 'var(--surface)',
                           border: `1px solid var(--border)`,
                           borderLeft: `3px solid ${pCfg?.color || '#7b7fa8'}`,
+                          opacity: draggedId === t.id ? 0.5 : 1,
                         }}>
                         <p className="text-sm font-medium mb-2 leading-snug" style={{ color: 'var(--text)' }}>{t.title}</p>
                         {t.description && (

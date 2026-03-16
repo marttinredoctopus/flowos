@@ -1,13 +1,14 @@
 'use client';
 import { useEffect } from 'react';
 import { useAuthStore } from '@/store/authStore';
+import { connectSocket, disconnectSocket } from '@/lib/socket';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
 /**
  * Runs once on app mount. If the user was previously authenticated,
  * silently refreshes the access token using the HttpOnly refresh cookie.
- * This prevents "logged out on refresh" caused by the 15-min token expiry.
+ * After getting a fresh token, connects the global socket singleton.
  */
 export function AuthInit() {
   const { user, isAuthenticated, setToken, logout } = useAuthStore();
@@ -15,7 +16,6 @@ export function AuthInit() {
   useEffect(() => {
     if (!isAuthenticated || !user) return;
 
-    // Eagerly refresh so pages never hit 401 on first load
     async function init() {
       try {
         const res = await fetch(`${API}/auth/refresh`, {
@@ -25,14 +25,15 @@ export function AuthInit() {
         if (!res.ok) throw new Error('refresh failed');
         const data = await res.json();
         const token = data.accessToken || data.data?.accessToken;
-        if (token) {
+        if (token && user) {
           setToken(token);
-          // Schedule next silent refresh 14 min from now (1 min before 15m expiry)
-          setTimeout(silentRefresh, 14 * 60 * 1000);
+          // Connect global socket with fresh token (only once)
+          connectSocket(token, user.id);
+          setTimeout(() => silentRefresh(user.id), 14 * 60 * 1000);
         }
       } catch {
-        // Refresh cookie expired / invalid — log user out
         logout();
+        disconnectSocket();
         window.location.href = '/';
       }
     }
@@ -44,8 +45,7 @@ export function AuthInit() {
   return null;
 }
 
-async function silentRefresh() {
-  const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+async function silentRefresh(userId: string) {
   try {
     const res = await fetch(`${API}/auth/refresh`, {
       method: 'POST',
@@ -56,7 +56,9 @@ async function silentRefresh() {
     const token = data.accessToken || data.data?.accessToken;
     if (token) {
       useAuthStore.getState().setToken(token);
-      setTimeout(silentRefresh, 14 * 60 * 1000);
+      // Reconnect socket with fresh token
+      connectSocket(token, userId);
+      setTimeout(() => silentRefresh(userId), 14 * 60 * 1000);
     }
   } catch {
     // silent — don't force logout on background refresh failure

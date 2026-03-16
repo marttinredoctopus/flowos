@@ -31,9 +31,9 @@ export default function DesignHubPage() {
         apiClient.get('/design/assets'),
         apiClient.get('/clients'),
       ]);
-      setBriefs(b.data);
-      setAssets(a.data);
-      setClients(c.data);
+      setBriefs(b.data || []);
+      setAssets(a.data || []);
+      setClients(c.data || []);
     } catch {} finally { setLoading(false); }
   }
 

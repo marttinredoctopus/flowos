@@ -69,7 +69,8 @@ export default function SignupModal({ onClose, onSwitchToLogin }: Props) {
 
   function handleVerified(accessToken: string, user: any) {
     onClose();
-    router.push('/dashboard');
+    // New users always go through onboarding first
+    router.push('/onboarding');
   }
 
   const inputStyle: React.CSSProperties = {

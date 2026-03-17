@@ -61,7 +61,7 @@ export default function AdminPage() {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 32 }}>
         <div>
           <div style={{ fontSize: 22, fontWeight: 800, background: 'linear-gradient(135deg,#7c6fe0,#4a9eff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-            FlowOS Super Admin
+            TasksDone Super Admin
           </div>
           <div style={{ fontSize: 13, color: '#6e7681', marginTop: 2 }}>Platform metrics & organization management</div>
         </div>

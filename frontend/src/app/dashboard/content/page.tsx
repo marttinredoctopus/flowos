@@ -1,6 +1,6 @@
 import ContentCalendar from '@/components/content/ContentCalendar';
 
-export const metadata = { title: 'Content Calendar — FlowOS' };
+export const metadata = { title: 'Content Calendar — TasksDone' };
 
 export default function ContentPage() {
   return (

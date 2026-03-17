@@ -37,7 +37,7 @@ function OtpVerifyStep({ userId, email, onVerified }: { userId: string; email: s
     try {
       const res = await apiClient.post('/auth/verify-email', { userId, otp: code });
       const { accessToken, user } = res.data;
-      (window as any).__FLOWOS_AUTH_TOKEN__ = accessToken;
+      (window as any).__TASKSDONE_AUTH_TOKEN__ = accessToken;
       useAuthStore.getState().setAuth(user, accessToken);
       toast.success(`Welcome back, ${user.name}!`);
       onVerified();
@@ -219,13 +219,13 @@ export default function LoginModal({ onClose, onSwitchToSignup }: Props) {
         return;
       }
       const { accessToken, user } = res.data;
-      (window as any).__FLOWOS_AUTH_TOKEN__ = accessToken;
+      (window as any).__TASKSDONE_AUTH_TOKEN__ = accessToken;
       setAuth(user, accessToken);
       connectSocket(accessToken, user.id);
       setTimeout(async () => {
         try {
           const r = await apiClient.post('/auth/refresh');
-          (window as any).__FLOWOS_AUTH_TOKEN__ = r.data.accessToken;
+          (window as any).__TASKSDONE_AUTH_TOKEN__ = r.data.accessToken;
           useAuthStore.getState().setToken(r.data.accessToken);
         } catch {}
       }, 14 * 60 * 1000);
@@ -256,7 +256,7 @@ export default function LoginModal({ onClose, onSwitchToSignup }: Props) {
         ) : (
           <>
             <h2 className="font-display text-2xl font-bold mb-1">Welcome back</h2>
-            <p className="text-slate-400 text-sm mb-6">Sign in to your FlowOS workspace</p>
+            <p className="text-slate-400 text-sm mb-6">Sign in to your TasksDone workspace</p>
 
             {error && (
               <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">{error}</div>

@@ -266,7 +266,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           F
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-bold tracking-tight truncate" style={{ color: 'var(--text)' }}>FlowOS</p>
+          <p className="text-sm font-bold tracking-tight truncate" style={{ color: 'var(--text)' }}>TasksDone</p>
           <p className="text-[10px]" style={{ color: 'var(--text-3)' }}>Agency Edition</p>
         </div>
         <button
@@ -393,7 +393,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <button onClick={() => setSidebarOpen(true)} className="p-2 transition" style={{ color: 'var(--text-2)' }}>
             <Menu size={20} />
           </button>
-          <span className="font-bold text-base gradient-text tracking-tight">FlowOS</span>
+          <span className="font-bold text-base gradient-text tracking-tight">TasksDone</span>
           <div className="flex items-center gap-1">
             <button onClick={() => setSearchOpen(true)} className="p-2 transition" style={{ color: 'var(--text-2)' }}>
               <Search size={16} />

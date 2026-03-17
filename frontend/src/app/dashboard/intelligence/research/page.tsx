@@ -73,7 +73,7 @@ export default function MarketResearchPage() {
     setLoading(true); setStreaming(true);
 
     try {
-      const token = (window as any).__FLOWOS_AUTH_TOKEN__;
+      const token = (window as any).__TASKSDONE_AUTH_TOKEN__;
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
       const response = await fetch(`${apiUrl}/intelligence/chat`, {
         method: 'POST',

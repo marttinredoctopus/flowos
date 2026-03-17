@@ -12,7 +12,7 @@ apiClient.interceptors.request.use((config) => {
   if (typeof window !== 'undefined') {
     // Access token lives in memory (Zustand) — read it dynamically
     try {
-      const state = (window as any).__FLOWOS_AUTH_TOKEN__;
+      const state = (window as any).__TASKSDONE_AUTH_TOKEN__;
       if (state) config.headers.Authorization = `Bearer ${state}`;
     } catch {}
   }
@@ -41,13 +41,13 @@ apiClient.interceptors.response.use(
       try {
         const res = await axios.post(`${API_URL}/auth/refresh`, {}, { withCredentials: true });
         const newToken = res.data.accessToken;
-        (window as any).__FLOWOS_AUTH_TOKEN__ = newToken;
+        (window as any).__TASKSDONE_AUTH_TOKEN__ = newToken;
         queue.forEach((cb) => cb(newToken));
         queue = [];
         original.headers.Authorization = `Bearer ${newToken}`;
         return apiClient(original);
       } catch {
-        (window as any).__FLOWOS_AUTH_TOKEN__ = null;
+        (window as any).__TASKSDONE_AUTH_TOKEN__ = null;
         window.location.href = '/';
       } finally {
         isRefreshing = false;

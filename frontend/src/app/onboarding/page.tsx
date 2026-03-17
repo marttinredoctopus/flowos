@@ -10,7 +10,7 @@ const TEAM_SIZES = ['Just me', '2–5', '6–15', '16–50', '50+'];
 const GOALS = ['Manage client projects', 'Track team tasks', 'Create invoices', 'Schedule content', 'Track time & billing', 'Manage ad campaigns'];
 
 const STEPS = [
-  { id: 1, title: 'Welcome to FlowOS', subtitle: "Let's set up your workspace" },
+  { id: 1, title: 'Welcome to TasksDone', subtitle: "Let's set up your workspace" },
   { id: 2, title: 'Your Agency', subtitle: 'Tell us about your business' },
   { id: 3, title: 'Team Size', subtitle: 'How big is your team?' },
   { id: 4, title: 'Your Goals', subtitle: 'What do you want to accomplish?' },
@@ -61,7 +61,7 @@ export default function OnboardingPage() {
         {/* Logo */}
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
           <span style={{ fontSize: 24, fontWeight: 800, background: 'linear-gradient(135deg,#7c6fe0,#4a9eff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-            FlowOS
+            TasksDone
           </span>
         </div>
 
@@ -88,7 +88,7 @@ export default function OnboardingPage() {
                 Hey {user?.name?.split(' ')[0] || 'there'}!
               </p>
               <p style={{ fontSize: 14, color: '#8b949e', lineHeight: 1.6, marginBottom: 32 }}>
-                FlowOS helps agencies manage clients, projects, tasks, invoices, and content — all in one place. Let's get you set up in 2 minutes.
+                TasksDone helps agencies manage clients, projects, tasks, invoices, and content — all in one place. Let's get you set up in 2 minutes.
               </p>
               <button onClick={() => setStep(2)} style={btnStyle}>
                 Get Started →
@@ -184,7 +184,7 @@ export default function OnboardingPage() {
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: 64, marginBottom: 24 }}>🚀</div>
               <p style={{ fontSize: 15, color: '#8b949e', lineHeight: 1.7, marginBottom: 32 }}>
-                Your FlowOS workspace is ready. Start by adding your first client or project, or invite your team.
+                Your TasksDone workspace is ready. Start by adding your first client or project, or invite your team.
               </p>
               <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, padding: 20, marginBottom: 24, textAlign: 'left' }}>
                 <p style={{ fontSize: 12, color: '#6e7681', marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Suggested first steps</p>
@@ -198,7 +198,7 @@ export default function OnboardingPage() {
                 ))}
               </div>
               <button onClick={finish} disabled={saving} style={btnStyle}>
-                {saving ? 'Setting up...' : 'Enter FlowOS →'}
+                {saving ? 'Setting up...' : 'Enter TasksDone →'}
               </button>
             </div>
           )}

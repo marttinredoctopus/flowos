@@ -28,7 +28,7 @@ export const useThemeStore = create<ThemeStore>()(
       },
     }),
     {
-      name: 'flowos-theme',
+      name: 'tasksdone-theme',
       onRehydrateStorage: () => (state) => {
         if (state?.theme === 'light' && typeof document !== 'undefined') {
           document.documentElement.classList.add('light');

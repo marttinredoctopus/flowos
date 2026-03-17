@@ -27,25 +27,25 @@ export const useAuthStore = create<AuthState>()(
       isAuthenticated: false,
       setAuth: (user, accessToken) => {
         if (typeof window !== 'undefined') {
-          (window as any).__FLOWOS_AUTH_TOKEN__ = accessToken;
+          (window as any).__TASKSDONE_AUTH_TOKEN__ = accessToken;
         }
         set({ user, accessToken, isAuthenticated: true });
       },
       setToken: (accessToken) => {
         if (typeof window !== 'undefined') {
-          (window as any).__FLOWOS_AUTH_TOKEN__ = accessToken;
+          (window as any).__TASKSDONE_AUTH_TOKEN__ = accessToken;
         }
         set({ accessToken });
       },
       logout: () => {
         if (typeof window !== 'undefined') {
-          (window as any).__FLOWOS_AUTH_TOKEN__ = null;
+          (window as any).__TASKSDONE_AUTH_TOKEN__ = null;
         }
         set({ user: null, accessToken: null, isAuthenticated: false });
       },
     }),
     {
-      name: 'flowos-auth',
+      name: 'tasksdone-auth',
       // Only persist user identity + auth flag — NOT the access token
       // Access token lives in memory only; AuthInit refreshes it on every page load
       partialize: (state) => ({

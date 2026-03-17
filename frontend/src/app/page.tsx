@@ -1,430 +1,670 @@
 'use client';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
 import AuthModal from '@/components/auth/AuthModal';
 
-// ─── Data ─────────────────────────────────────────────────────────────────────
-
-const FEATURES = [
-  { icon: '✦', label: 'Task Management', color: '#6366f1', desc: 'Kanban boards, list views, subtasks, priorities, assignees, due dates and custom tags — all in one place.' },
-  { icon: '◈', label: 'Project Tracker', color: '#a855f7', desc: 'Plan milestones, set project-level deadlines, track progress and keep teams aligned without the chaos.' },
-  { icon: '◉', label: 'Team Chat', color: '#22d3ee', desc: 'Real-time channels, direct messages, file sharing and threaded replies — no more switching to Slack.' },
-  { icon: '◆', label: 'Finance Hub', color: '#10b981', desc: 'Invoices, expense tracking, budget overviews and revenue reports built for growing businesses.' },
-  { icon: '◇', label: 'CRM & Clients', color: '#f59e0b', desc: 'Track contacts, deals, pipeline stages and client portals. Your sales funnel without the bloat.' },
-  { icon: '○', label: 'Content Calendar', color: '#f43f5e', desc: 'Plan and schedule social posts, blogs and campaigns. Drag to reschedule, filter by platform.' },
-  { icon: '□', label: 'Design Hub', color: '#8b5cf6', desc: 'Asset library with Cloudflare R2 storage, brand guidelines, design briefs and feedback pins.' },
-  { icon: '△', label: 'AI Assistant', color: '#06b6d4', desc: 'Claude-powered drafting, task suggestions, meeting summaries and smart automations across the whole OS.' },
-  { icon: '▷', label: 'Analytics', color: '#84cc16', desc: 'Revenue charts, team velocity, project health scores and custom dashboards — data you can act on.' },
-];
-
-const STEPS = [
-  { n: '01', title: 'Create your workspace', desc: 'Sign up free. Set your org name, invite teammates and you are live in under two minutes.' },
-  { n: '02', title: 'Add projects & tasks', desc: 'Create projects, break them into tasks, assign owners and set due dates. Kanban or list — your choice.' },
-  { n: '03', title: 'Collaborate in real-time', desc: 'Chat, comment on tasks, share files and get AI suggestions as your team works together.' },
-  { n: '04', title: 'Ship faster, grow smarter', desc: 'Track finances, manage clients, analyse performance and scale — all without leaving FlowOS.' },
-];
-
-const PRICING = [
-  {
-    name: 'Starter',
-    monthlyPrice: 0,
-    annualPrice: 0,
-    color: 'rgba(255,255,255,0.06)',
-    border: 'rgba(255,255,255,0.1)',
-    badge: null as string | null,
-    features: ['Up to 5 members', '3 active projects', 'Task management', 'Basic chat', '5 GB storage', 'Community support'],
-    cta: 'Start free',
-  },
-  {
-    name: 'Pro',
-    monthlyPrice: 29,
-    annualPrice: 19,
-    color: 'linear-gradient(160deg, rgba(99,102,241,0.15), rgba(168,85,247,0.15))',
-    border: 'rgba(99,102,241,0.4)',
-    badge: 'Most Popular' as string | null,
-    features: ['Up to 25 members', 'Unlimited projects', 'Full task + kanban', 'Finance & CRM', '50 GB storage', 'AI assistant (100 calls/mo)', 'Priority support'],
-    cta: 'Start 14-day trial',
-  },
-  {
-    name: 'Agency',
-    monthlyPrice: 79,
-    annualPrice: 59,
-    color: 'rgba(255,255,255,0.04)',
-    border: 'rgba(255,255,255,0.08)',
-    badge: null as string | null,
-    features: ['Unlimited members', 'Unlimited projects', 'Client portals', 'White-label options', '500 GB storage', 'Unlimited AI calls', 'Dedicated account manager', 'Custom integrations'],
-    cta: 'Contact sales',
-  },
-];
-
-const FAQ = [
-  { q: 'Can I use FlowOS for free?', a: 'Yes — the Starter plan is free forever with up to 5 members and 3 active projects. No credit card required.' },
-  { q: 'How does the AI assistant work?', a: 'FlowOS uses Claude (Anthropic) to draft content, summarise meetings, suggest task priorities and automate repetitive work. Pro gets 100 calls/month; Agency is unlimited.' },
-  { q: 'Can I migrate from Trello, Asana or Notion?', a: 'We support CSV import for tasks and projects. Direct integrations with Trello and Asana are on our roadmap for Q3.' },
-  { q: 'Is my data secure?', a: 'All data is encrypted in transit (TLS 1.3) and at rest (AES-256). Files are stored on Cloudflare R2 with private access controls. We never sell your data.' },
-  { q: 'Can clients access FlowOS?', a: 'Yes. Pro and Agency plans include a read-only client portal that can be shared with external stakeholders without giving them full account access.' },
-  { q: 'What happens after the trial?', a: 'After your 14-day trial ends you drop to the Starter plan automatically — no unexpected charges. Upgrade any time to restore Pro features.' },
-];
-
-const STATS = [
-  { value: '12k+', label: 'Teams using FlowOS' },
-  { value: '3.2M', label: 'Tasks completed' },
-  { value: '98%', label: 'Customer satisfaction' },
-  { value: '40%', label: 'Faster project delivery' },
-];
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-function useReveal() {
-  const ref = useRef<HTMLDivElement>(null);
-  const [visible, setVisible] = useState(false);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const obs = new IntersectionObserver(
-      ([e]) => { if (e.isIntersecting) { setVisible(true); obs.disconnect(); } },
-      { threshold: 0.12 }
-    );
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, []);
-  return { ref, visible };
-}
-
-function Reveal({ children, delay = 0, style = {} }: { children: React.ReactNode; delay?: number; style?: React.CSSProperties }) {
-  const { ref, visible } = useReveal();
-  return (
-    <div ref={ref} style={{
-      opacity: visible ? 1 : 0,
-      transform: visible ? 'translateY(0)' : 'translateY(28px)',
-      transition: `opacity 0.6s ease ${delay}ms, transform 0.6s ease ${delay}ms`,
-      ...style,
-    }}>
-      {children}
-    </div>
-  );
-}
-
-// ─── Component ────────────────────────────────────────────────────────────────
-
 export default function LandingPage() {
-  const router = useRouter();
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
-  const [authMode, setAuthMode] = useState<'login' | 'signup' | null>(null);
-  const [annual, setAnnual] = useState(false);
-  const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const router = useRouter();
+  const [authMode, setAuthMode] = useState<'login'|'signup'|null>(null);
+  const [scrolled, setScrolled] = useState(false);
+  const [faqOpen, setFaqOpen] = useState<number|null>(null);
+  const [cycle, setCycle] = useState<'monthly'|'annual'>('monthly');
 
   useEffect(() => {
     if (isAuthenticated) router.push('/dashboard');
   }, [isAuthenticated, router]);
 
-  const open = (mode: 'login' | 'signup') => setAuthMode(mode);
+  useEffect(() => {
+    const h = () => setScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', h);
+    return () => window.removeEventListener('scroll', h);
+  }, []);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      entries => entries.forEach(e => {
+        if (e.isIntersecting) e.target.classList.add('visible');
+      }),
+      { threshold: 0.1 }
+    );
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+    return () => observer.disconnect();
+  }, []);
 
   return (
-    <div style={{ background: '#07080f', color: '#fff', minHeight: '100vh', fontFamily: "'Inter', system-ui, sans-serif", overflowX: 'hidden' }}>
-      <style>{`
-        *{box-sizing:border-box;margin:0;padding:0}
-        ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:#0f1117}::-webkit-scrollbar-thumb{background:#2d2f3e;border-radius:3px}
-        a{color:inherit;text-decoration:none}
-        input,button,textarea,select{font-family:inherit}
-        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap');
-        .outfit{font-family:'Outfit',system-ui,sans-serif}
-        .hover-lift{transition:transform 0.2s,box-shadow 0.2s}
-        .hover-lift:hover{transform:translateY(-3px);box-shadow:0 16px 48px rgba(0,0,0,0.4)}
-        @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
-        @keyframes pulse-glow{0%,100%{opacity:0.6}50%{opacity:1}}
-      `}</style>
+    <div style={{ background:'#07080f', color:'#e8eaf0',
+      fontFamily:"'Inter',-apple-system,sans-serif", overflowX:'hidden' }}>
 
-      {/* ── NAVBAR ── */}
-      <header style={{
-        position: 'sticky', top: 0, zIndex: 100,
-        background: 'rgba(7,8,15,0.85)', backdropFilter: 'blur(16px)',
-        borderBottom: '1px solid rgba(255,255,255,0.06)',
+      {/* NAVBAR */}
+      <nav style={{
+        position:'fixed', top:0, left:0, right:0, zIndex:100,
+        height:60,
+        background: scrolled ? 'rgba(7,8,15,0.92)' : 'transparent',
+        backdropFilter: scrolled ? 'blur(20px)' : 'none',
+        borderBottom: scrolled ? '1px solid rgba(255,255,255,0.06)' : 'none',
+        display:'flex', alignItems:'center',
+        padding:'0 40px', justifyContent:'space-between',
+        transition:'all 0.3s',
       }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 1.5rem', height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div className="outfit" style={{ fontWeight: 800, fontSize: '1.35rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <span style={{ width: 32, height: 32, borderRadius: 8, background: 'linear-gradient(135deg,#6366f1,#a855f7)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.85rem', fontWeight: 900 }}>F</span>
-            FlowOS
-          </div>
-          <nav style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
-            {['Features', 'How it works', 'Pricing', 'FAQ'].map((label) => (
-              <a key={label} href={`#${label.toLowerCase().replace(/ /g, '-')}`}
-                style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.9rem', fontWeight: 500, transition: 'color 0.2s' }}
-                onMouseEnter={(e) => (e.currentTarget.style.color = '#fff')}
-                onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.6)')}
-              >{label}</a>
-            ))}
-          </nav>
-          <div style={{ display: 'flex', gap: '0.75rem' }}>
-            <button
-              onClick={() => open('login')}
-              style={{ padding: '0.5rem 1.2rem', background: 'transparent', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 8, color: 'rgba(255,255,255,0.8)', fontSize: '0.88rem', fontWeight: 600, cursor: 'pointer' }}
-              onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.4)'; e.currentTarget.style.color = '#fff'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)'; e.currentTarget.style.color = 'rgba(255,255,255,0.8)'; }}
-            >Sign in</button>
-            <button
-              onClick={() => open('signup')}
-              style={{ padding: '0.5rem 1.2rem', background: 'linear-gradient(135deg,#6366f1,#a855f7)', border: 'none', borderRadius: 8, color: '#fff', fontSize: '0.88rem', fontWeight: 700, cursor: 'pointer' }}
-            >Get started free</button>
-          </div>
+        <div style={{
+          fontFamily:"'Outfit',sans-serif", fontWeight:800, fontSize:22,
+          background:'linear-gradient(135deg,#6366f1,#8b5cf6)',
+          WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent',
+        }}>
+          TasksDone
         </div>
-      </header>
 
-      {/* ── HERO ── */}
-      <section style={{ padding: '7rem 1.5rem 5rem', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', top: '10%', left: '20%', width: 500, height: 500, borderRadius: '50%', background: 'radial-gradient(circle, rgba(99,102,241,0.15) 0%, transparent 70%)', pointerEvents: 'none', animation: 'pulse-glow 4s ease-in-out infinite' }} />
-        <div style={{ position: 'absolute', top: '20%', right: '15%', width: 400, height: 400, borderRadius: '50%', background: 'radial-gradient(circle, rgba(168,85,247,0.12) 0%, transparent 70%)', pointerEvents: 'none', animation: 'pulse-glow 5s ease-in-out infinite 1s' }} />
-
-        <div style={{ maxWidth: 800, margin: '0 auto', position: 'relative' }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.4rem 1rem', borderRadius: 100, background: 'rgba(99,102,241,0.12)', border: '1px solid rgba(99,102,241,0.3)', fontSize: '0.82rem', color: '#a5b4fc', fontWeight: 600, marginBottom: '1.75rem' }}>
-            <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#6366f1', display: 'inline-block', animation: 'pulse-glow 1.5s ease-in-out infinite' }} />
-            Now in public beta — join 12,000+ teams
-          </div>
-
-          <h1 className="outfit" style={{ fontSize: 'clamp(2.8rem, 7vw, 5rem)', fontWeight: 900, lineHeight: 1.08, letterSpacing: '-0.03em', marginBottom: '1.5rem' }}>
-            One OS for your<br />
-            <span style={{ background: 'linear-gradient(135deg,#6366f1,#a855f7,#22d3ee)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>entire business</span>
-          </h1>
-
-          <p style={{ fontSize: 'clamp(1rem, 2.5vw, 1.22rem)', color: 'rgba(255,255,255,0.55)', lineHeight: 1.7, maxWidth: 580, margin: '0 auto 2.5rem' }}>
-            Tasks, projects, chat, finance, CRM, content calendar, design hub and AI — all connected in a single workspace. Stop juggling 8 tools.
-          </p>
-
-          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <button onClick={() => open('signup')} style={{ padding: '0.9rem 2.2rem', background: 'linear-gradient(135deg,#6366f1,#a855f7)', border: 'none', borderRadius: 12, color: '#fff', fontSize: '1.05rem', fontWeight: 700, cursor: 'pointer', boxShadow: '0 8px 32px rgba(99,102,241,0.35)' }}>
-              Start for free →
-            </button>
-            <button onClick={() => open('login')} style={{ padding: '0.9rem 2.2rem', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 12, color: '#fff', fontSize: '1.05rem', fontWeight: 600, cursor: 'pointer' }}>
-              Sign in
-            </button>
-          </div>
-          <p style={{ marginTop: '1rem', fontSize: '0.8rem', color: 'rgba(255,255,255,0.3)' }}>Free forever plan · No credit card required · Setup in 2 min</p>
+        <div style={{ display:'flex', alignItems:'center', gap:32 }}>
+          {['Features','Pricing','FAQ'].map(item => (
+            <a key={item} href={`#${item.toLowerCase()}`} style={{
+              color:'rgba(255,255,255,0.6)', textDecoration:'none',
+              fontSize:14, fontWeight:500, transition:'color 0.2s',
+            }}
+            onMouseEnter={e=>(e.currentTarget.style.color='white')}
+            onMouseLeave={e=>(e.currentTarget.style.color='rgba(255,255,255,0.6)')}>
+              {item}
+            </a>
+          ))}
         </div>
+
+        <div style={{ display:'flex', gap:10 }}>
+          <button onClick={()=>setAuthMode('login')} style={{
+            padding:'8px 18px', borderRadius:8,
+            background:'transparent',
+            border:'1px solid rgba(255,255,255,0.15)',
+            color:'rgba(255,255,255,0.8)', fontSize:14,
+            fontWeight:500, cursor:'pointer', transition:'all 0.2s',
+          }}>Sign in</button>
+          <button onClick={()=>setAuthMode('signup')} style={{
+            padding:'8px 18px', borderRadius:8,
+            background:'linear-gradient(135deg,#6366f1,#8b5cf6)',
+            border:'none', color:'white', fontSize:14,
+            fontWeight:600, cursor:'pointer',
+            boxShadow:'0 4px 16px rgba(99,102,241,0.35)',
+          }}>Start free →</button>
+        </div>
+      </nav>
+
+      {/* HERO */}
+      <section style={{
+        minHeight:'100vh', display:'flex', flexDirection:'column',
+        alignItems:'center', justifyContent:'center',
+        textAlign:'center', padding:'120px 20px 80px',
+        position:'relative', overflow:'hidden',
+      }}>
+        <div style={{
+          position:'absolute', width:800, height:600, borderRadius:'50%',
+          background:'radial-gradient(circle,rgba(99,102,241,0.12) 0%,transparent 70%)',
+          top:'10%', left:'50%', transform:'translateX(-50%)',
+          pointerEvents:'none',
+        }} />
+
+        <div style={{
+          display:'inline-flex', alignItems:'center', gap:8,
+          background:'rgba(99,102,241,0.10)',
+          border:'1px solid rgba(99,102,241,0.25)',
+          borderRadius:100, padding:'6px 16px',
+          fontSize:13, color:'#818cf8', fontWeight:500,
+          marginBottom:28, animation:'fadeUp 0.6s ease both',
+        }}>
+          <span style={{ width:7, height:7, borderRadius:'50%',
+            background:'#22c55e', animation:'pulse 2s infinite' }} />
+          Built for marketing agencies
+        </div>
+
+        <h1 style={{
+          fontFamily:"'Outfit',sans-serif",
+          fontSize:'clamp(42px,7vw,82px)',
+          fontWeight:800, lineHeight:1.05,
+          letterSpacing:'-0.03em', marginBottom:24,
+          animation:'fadeUp 0.6s 0.1s ease both',
+        }}>
+          Get more done.<br/>
+          <span style={{
+            background:'linear-gradient(135deg,#6366f1 0%,#8b5cf6 50%,#ec4899 100%)',
+            WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent',
+          }}>Tasks. Done.</span>
+        </h1>
+
+        <p style={{
+          fontSize:18, color:'rgba(255,255,255,0.55)',
+          maxWidth:520, lineHeight:1.7, marginBottom:40,
+          animation:'fadeUp 0.6s 0.2s ease both',
+        }}>
+          The all-in-one OS for marketing agencies.
+          Replace Trello, ClickUp, Notion, Slack, and Harvest
+          with one platform.
+        </p>
+
+        <div style={{
+          display:'flex', gap:12, marginBottom:16,
+          flexWrap:'wrap', justifyContent:'center',
+          animation:'fadeUp 0.6s 0.3s ease both',
+        }}>
+          <button onClick={()=>setAuthMode('signup')} style={{
+            padding:'14px 32px', borderRadius:10, border:'none',
+            background:'linear-gradient(135deg,#6366f1,#8b5cf6)',
+            color:'white', fontSize:16, fontWeight:700,
+            cursor:'pointer', transition:'all 0.2s',
+            boxShadow:'0 8px 32px rgba(99,102,241,0.35)',
+          }}
+          onMouseEnter={e=>{
+            e.currentTarget.style.transform='translateY(-2px)';
+            e.currentTarget.style.boxShadow='0 12px 40px rgba(99,102,241,0.5)';
+          }}
+          onMouseLeave={e=>{
+            e.currentTarget.style.transform='none';
+            e.currentTarget.style.boxShadow='0 8px 32px rgba(99,102,241,0.35)';
+          }}>
+            Start for free →
+          </button>
+          <button onClick={()=>setAuthMode('login')} style={{
+            padding:'14px 32px', borderRadius:10,
+            background:'transparent',
+            border:'1px solid rgba(255,255,255,0.15)',
+            color:'rgba(255,255,255,0.8)', fontSize:16,
+            fontWeight:600, cursor:'pointer',
+          }}>
+            Sign in to workspace
+          </button>
+        </div>
+
+        <p style={{ fontSize:13, color:'rgba(255,255,255,0.3)',
+          animation:'fadeUp 0.6s 0.4s ease both' }}>
+          Free 14-day trial · No credit card · Cancel anytime
+        </p>
 
         {/* App mockup */}
-        <div style={{ maxWidth: 960, margin: '4rem auto 0', animation: 'float 6s ease-in-out infinite' }}>
-          <div style={{ background: '#0f1117', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 16, overflow: 'hidden', boxShadow: '0 0 0 1px rgba(255,255,255,0.04), 0 32px 100px rgba(0,0,0,0.7), 0 0 80px rgba(99,102,241,0.12)' }}>
-            <div style={{ padding: '0.75rem 1rem', background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              {['#ff5f57','#ffbd2e','#28c840'].map((c, i) => <span key={i} style={{ width: 12, height: 12, borderRadius: '50%', background: c }} />)}
-              <span style={{ flex: 1, textAlign: 'center', fontSize: '0.8rem', color: 'rgba(255,255,255,0.25)' }}>flowos.app/dashboard</span>
+        <div style={{
+          marginTop:60, width:'100%', maxWidth:860,
+          border:'1px solid rgba(255,255,255,0.08)',
+          borderRadius:16, overflow:'hidden',
+          boxShadow:'0 0 80px rgba(99,102,241,0.15), 0 40px 80px rgba(0,0,0,0.5)',
+          animation:'fadeUp 0.8s 0.5s ease both',
+        }}>
+          <div style={{ background:'#111318', padding:'10px 16px',
+            display:'flex', alignItems:'center', gap:8,
+            borderBottom:'1px solid rgba(255,255,255,0.06)' }}>
+            <div style={{ display:'flex', gap:6 }}>
+              {['#ff5f57','#ffbd2e','#28c840'].map(c=>(
+                <div key={c} style={{ width:12, height:12,
+                  borderRadius:'50%', background:c }} />
+              ))}
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '180px 1fr', minHeight: 360 }}>
-              <div style={{ background: 'rgba(255,255,255,0.02)', borderRight: '1px solid rgba(255,255,255,0.06)', padding: '1.25rem 0.75rem', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                {['Dashboard','Tasks','Projects','Chat','Finance','CRM','Content','Design'].map((item, i) => (
-                  <div key={item} style={{ padding: '0.45rem 0.75rem', borderRadius: 7, fontSize: '0.8rem', fontWeight: 500, background: i === 1 ? 'rgba(99,102,241,0.15)' : 'transparent', color: i === 1 ? '#818cf8' : 'rgba(255,255,255,0.35)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <span style={{ width: 6, height: 6, borderRadius: 2, background: i === 1 ? '#6366f1' : 'rgba(255,255,255,0.15)' }} />
-                    {item}
+            <div style={{ flex:1, background:'rgba(255,255,255,0.05)',
+              borderRadius:6, padding:'4px 12px',
+              fontSize:12, color:'rgba(255,255,255,0.3)',
+              textAlign:'center' }}>
+              app.tasksdone.cloud/dashboard
+            </div>
+          </div>
+          <div style={{ background:'#0c0d1a', padding:20 }}>
+            <div style={{ display:'grid',
+              gridTemplateColumns:'repeat(4,1fr)', gap:10, marginBottom:16 }}>
+              {[
+                { label:'Active Projects', value:'12', color:'#6366f1' },
+                { label:'Open Tasks',      value:'48', color:'#8b5cf6' },
+                { label:'Due Today',       value:'5',  color:'#f59e0b' },
+                { label:'Team Online',     value:'8',  color:'#22c55e' },
+              ].map(s=>(
+                <div key={s.label} style={{
+                  background:`${s.color}15`,
+                  border:`1px solid ${s.color}25`,
+                  borderRadius:10, padding:'14px 16px',
+                }}>
+                  <div style={{ fontSize:11, color:s.color, fontWeight:600,
+                    textTransform:'uppercase', letterSpacing:'0.5px',
+                    marginBottom:6 }}>{s.label}</div>
+                  <div style={{ fontSize:28, fontWeight:800,
+                    color:'white' }}>{s.value}</div>
+                </div>
+              ))}
+            </div>
+            <div style={{ display:'grid',
+              gridTemplateColumns:'repeat(4,1fr)', gap:10 }}>
+              {[
+                { col:'To Do',       color:'#6b7280',
+                  tasks:['Design banner','Write copy','Research'] },
+                { col:'In Progress', color:'#6366f1',
+                  tasks:['Social campaign','FB Ads'] },
+                { col:'In Review',   color:'#f59e0b',
+                  tasks:['Monthly report'] },
+                { col:'Done',        color:'#22c55e',
+                  tasks:['Presentation','Brand guide'] },
+              ].map(col=>(
+                <div key={col.col} style={{
+                  background:'#111318',
+                  border:'1px solid rgba(255,255,255,0.06)',
+                  borderRadius:10, padding:10,
+                }}>
+                  <div style={{ display:'flex', alignItems:'center',
+                    gap:6, marginBottom:8 }}>
+                    <div style={{ width:8, height:8, borderRadius:'50%',
+                      background:col.color }} />
+                    <span style={{ fontSize:11, fontWeight:600,
+                      color:col.color }}>{col.col}</span>
                   </div>
-                ))}
-              </div>
-              <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                <div style={{ display: 'flex', gap: '1rem' }}>
-                  {[{ label: 'Total tasks', val: '142', color: '#6366f1' },{ label: 'In progress', val: '38', color: '#f59e0b' },{ label: 'Completed', val: '94', color: '#10b981' },{ label: 'Overdue', val: '10', color: '#f43f5e' }].map((s) => (
-                    <div key={s.label} style={{ flex: 1, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 10, padding: '0.75rem' }}>
-                      <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.35)', marginBottom: '0.25rem' }}>{s.label}</div>
-                      <div style={{ fontSize: '1.4rem', fontWeight: 800, color: s.color }}>{s.val}</div>
-                    </div>
+                  {col.tasks.map(t=>(
+                    <div key={t} style={{
+                      background:'rgba(255,255,255,0.04)',
+                      border:'1px solid rgba(255,255,255,0.06)',
+                      borderLeft:`2px solid ${col.color}`,
+                      borderRadius:6, padding:'7px 9px', marginBottom:6,
+                      fontSize:11, color:'rgba(255,255,255,0.7)',
+                    }}>{t}</div>
                   ))}
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                  {['Design new homepage mockups','Review Q4 budget proposal','Set up client onboarding flow','Push API v2 to production'].map((t, i) => (
-                    <div key={t} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.5rem 0.75rem', background: 'rgba(255,255,255,0.03)', borderRadius: 8 }}>
-                      <span style={{ width: 14, height: 14, borderRadius: 4, border: `2px solid ${['#6366f1','#10b981','#f59e0b','#6366f1'][i]}`, background: i === 1 ? '#10b981' : 'transparent', flexShrink: 0 }} />
-                      <span style={{ fontSize: '0.78rem', color: i === 1 ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.7)', textDecoration: i === 1 ? 'line-through' : 'none', flex: 1 }}>{t}</span>
-                      <span style={{ fontSize: '0.68rem', padding: '2px 8px', borderRadius: 100, background: ['rgba(99,102,241,0.15)','rgba(16,185,129,0.15)','rgba(245,158,11,0.15)','rgba(239,68,68,0.15)'][i], color: ['#818cf8','#6ee7b7','#fcd34d','#fca5a5'][i] }}>
-                        {['Design','Done','Finance','Dev'][i]}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              ))}
             </div>
           </div>
         </div>
       </section>
 
-      {/* ── STATS ── */}
-      <section style={{ padding: '3rem 1.5rem', borderTop: '1px solid rgba(255,255,255,0.06)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-        <div style={{ maxWidth: 900, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '2rem', textAlign: 'center' }}>
-          {STATS.map(({ value, label }) => (
-            <Reveal key={label}>
-              <div className="outfit" style={{ fontSize: 'clamp(2rem, 4vw, 2.8rem)', fontWeight: 900, background: 'linear-gradient(135deg,#6366f1,#a855f7)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>{value}</div>
-              <div style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.45)', marginTop: '0.3rem' }}>{label}</div>
-            </Reveal>
+      {/* STATS */}
+      <div style={{
+        borderTop:'1px solid rgba(255,255,255,0.06)',
+        borderBottom:'1px solid rgba(255,255,255,0.06)',
+        padding:'32px 20px',
+        display:'flex', justifyContent:'center',
+        gap:80, flexWrap:'wrap',
+      }}>
+        {[
+          { value:'2,400+', label:'Agencies worldwide',  color:'#6366f1' },
+          { value:'98%',    label:'Satisfaction rate',   color:'#22c55e' },
+          { value:'6 tools',label:'Replaced on average', color:'#8b5cf6' },
+          { value:'4.9 ★',  label:'Average rating',      color:'#f59e0b' },
+        ].map(s=>(
+          <div key={s.label} style={{ textAlign:'center' }}>
+            <div style={{ fontSize:32, fontWeight:800,
+              color:s.color, marginBottom:4 }}>{s.value}</div>
+            <div style={{ fontSize:13,
+              color:'rgba(255,255,255,0.4)' }}>{s.label}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* FEATURES */}
+      <section id="features" style={{
+        padding:'100px 20px',
+        maxWidth:1100, margin:'0 auto',
+      }}>
+        <div className="reveal" style={{ textAlign:'center', marginBottom:60 }}>
+          <div style={{ fontSize:12, fontWeight:700, letterSpacing:'2px',
+            textTransform:'uppercase', color:'#6366f1', marginBottom:12 }}>
+            Everything you need
+          </div>
+          <h2 style={{
+            fontFamily:"'Outfit',sans-serif",
+            fontSize:'clamp(28px,4vw,44px)',
+            fontWeight:800, letterSpacing:'-0.02em', marginBottom:16,
+          }}>
+            Built for agencies, not generic teams
+          </h2>
+        </div>
+
+        <div style={{ display:'grid',
+          gridTemplateColumns:'repeat(3,1fr)', gap:16 }}>
+          {[
+            { icon:'✅', title:'Task Management',      color:'#6366f1',
+              desc:'Kanban, List, Calendar, Timeline views.' },
+            { icon:'📅', title:'Content Calendar',    color:'#8b5cf6',
+              desc:'Plan content across all platforms.' },
+            { icon:'📈', title:'Ad Campaign Tracker', color:'#ec4899',
+              desc:'Track ROAS, CTR, CPC across all ad platforms.' },
+            { icon:'💬', title:'Team Chat',            color:'#06b6d4',
+              desc:'Real-time messaging with channels and DMs.' },
+            { icon:'⏱️', title:'Time Tracking',        color:'#10b981',
+              desc:'One-click timers and billable hours.' },
+            { icon:'✨', title:'AI Intelligence',     color:'#f59e0b',
+              desc:'Competitor analysis and campaign ideas.' },
+            { icon:'🧾', title:'Invoices',             color:'#6366f1',
+              desc:'Create invoices and track payments.' },
+            { icon:'👥', title:'Client Portal',       color:'#8b5cf6',
+              desc:'Clients track progress and approve work.' },
+            { icon:'🎨', title:'Design Hub',          color:'#ec4899',
+              desc:'Upload designs, get feedback, manage versions.' },
+          ].map((f,i)=>(
+            <div key={f.title} className="reveal" style={{
+              background:'#111318',
+              border:'1px solid rgba(255,255,255,0.06)',
+              borderRadius:14, padding:24, transition:'all 0.2s',
+            }}
+            onMouseEnter={e=>{
+              e.currentTarget.style.borderColor=`${f.color}40`;
+              e.currentTarget.style.transform='translateY(-4px)';
+              e.currentTarget.style.boxShadow=`0 8px 32px ${f.color}15`;
+            }}
+            onMouseLeave={e=>{
+              e.currentTarget.style.borderColor='rgba(255,255,255,0.06)';
+              e.currentTarget.style.transform='none';
+              e.currentTarget.style.boxShadow='none';
+            }}>
+              <div style={{ width:44, height:44, borderRadius:10,
+                background:`${f.color}20`,
+                display:'flex', alignItems:'center', justifyContent:'center',
+                fontSize:22, marginBottom:14 }}>{f.icon}</div>
+              <h3 style={{ fontSize:15, fontWeight:700, marginBottom:8 }}>
+                {f.title}
+              </h3>
+              <p style={{ fontSize:13, color:'rgba(255,255,255,0.5)',
+                lineHeight:1.6 }}>{f.desc}</p>
+            </div>
           ))}
         </div>
       </section>
 
-      {/* ── FEATURES ── */}
-      <section id="features" style={{ padding: '6rem 1.5rem' }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-          <Reveal style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
-            <div style={{ fontSize: '0.8rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: '#818cf8', fontWeight: 700, marginBottom: '1rem' }}>Everything you need</div>
-            <h2 className="outfit" style={{ fontSize: 'clamp(2rem, 4vw, 2.8rem)', fontWeight: 800, letterSpacing: '-0.02em' }}>
-              Nine powerful modules.<br /><span style={{ color: 'rgba(255,255,255,0.4)' }}>One monthly price.</span>
-            </h2>
-          </Reveal>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.25rem' }}>
-            {FEATURES.map(({ icon, label, color, desc }, i) => (
-              <Reveal key={label} delay={i * 60}>
-                <div className="hover-lift" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 16, padding: '1.75rem', cursor: 'default' }}>
-                  <div style={{ width: 44, height: 44, borderRadius: 12, background: `${color}22`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1rem', fontSize: '1.3rem', color }}>
-                    {icon}
-                  </div>
-                  <h3 style={{ fontWeight: 700, fontSize: '1.05rem', marginBottom: '0.5rem' }}>{label}</h3>
-                  <p style={{ fontSize: '0.88rem', color: 'rgba(255,255,255,0.45)', lineHeight: 1.65 }}>{desc}</p>
-                </div>
-              </Reveal>
-            ))}
+      {/* PRICING */}
+      <section id="pricing" style={{
+        padding:'100px 20px', maxWidth:960,
+        margin:'0 auto', textAlign:'center',
+      }}>
+        <div className="reveal" style={{ marginBottom:48 }}>
+          <div style={{ fontSize:12, fontWeight:700, letterSpacing:'2px',
+            textTransform:'uppercase', color:'#6366f1', marginBottom:12 }}>
+            Pricing
           </div>
+          <h2 style={{
+            fontFamily:"'Outfit',sans-serif",
+            fontSize:'clamp(26px,3.5vw,40px)',
+            fontWeight:800, letterSpacing:'-0.02em', marginBottom:16,
+          }}>Simple, honest pricing</h2>
+          <p style={{ color:'rgba(255,255,255,0.45)', fontSize:15 }}>
+            No hidden fees. No per-seat surprises.
+          </p>
+        </div>
+
+        {/* Toggle */}
+        <div className="reveal" style={{
+          display:'inline-flex', alignItems:'center', gap:12,
+          marginBottom:40, background:'#111318',
+          border:'1px solid rgba(255,255,255,0.08)',
+          borderRadius:100, padding:'6px 20px',
+        }}>
+          <span style={{ fontSize:13,
+            color: cycle==='monthly' ? 'white' : 'rgba(255,255,255,0.4)',
+            fontWeight: cycle==='monthly' ? 600 : 400 }}>Monthly</span>
+          <div onClick={()=>setCycle(c=>c==='monthly'?'annual':'monthly')}
+            style={{ width:40, height:22, borderRadius:11,
+              background: cycle==='annual'
+                ? '#6366f1' : 'rgba(255,255,255,0.15)',
+              position:'relative', cursor:'pointer', transition:'background 0.2s',
+            }}>
+            <div style={{ position:'absolute', top:2,
+              left: cycle==='annual' ? 20 : 2,
+              width:18, height:18, borderRadius:'50%',
+              background:'white', transition:'left 0.2s',
+            }} />
+          </div>
+          <span style={{ fontSize:13,
+            color: cycle==='annual' ? 'white' : 'rgba(255,255,255,0.4)',
+            fontWeight: cycle==='annual' ? 600 : 400 }}>Annual</span>
+          <span style={{ fontSize:11, fontWeight:700, color:'#22c55e',
+            background:'rgba(34,197,94,0.15)',
+            padding:'2px 8px', borderRadius:100 }}>Save 17%</span>
+        </div>
+
+        <div className="reveal" style={{
+          display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:16,
+        }}>
+          {[
+            {
+              id:'free', name:'Free', monthly:0, annual:0,
+              storage:'1 GB', fileLimit:'10 MB/file',
+              highlight:false, badge:null as string|null,
+              features:['5 clients','3 team members','3 projects',
+                        'Basic Kanban','1 GB storage','Community support'],
+            },
+            {
+              id:'pro', name:'Pro', monthly:18, annual:15,
+              storage:'20 GB', fileLimit:'100 MB/file',
+              highlight:true, badge:'Most Popular' as string|null,
+              features:['Unlimited clients','15 team members','All views',
+                        'Content calendar','Time tracking & invoices',
+                        'Client portal','50 AI requests/mo',
+                        '20 GB storage','Priority support'],
+            },
+            {
+              id:'agency', name:'Agency', monthly:38, annual:32,
+              storage:'100 GB', fileLimit:'500 MB/file',
+              highlight:false, badge:'Best Value' as string|null,
+              features:['Everything in Pro','Unlimited team members',
+                        'Unlimited AI requests','White-label branding',
+                        'Public API + Webhooks','100 GB storage',
+                        'Dedicated support'],
+            },
+          ].map(plan=>{
+            const price = cycle==='annual' ? plan.annual : plan.monthly;
+            return (
+              <div key={plan.id} style={{
+                background: plan.highlight
+                  ? 'rgba(99,102,241,0.08)' : '#111318',
+                border:`1px solid ${plan.highlight
+                  ? '#6366f1' : 'rgba(255,255,255,0.06)'}`,
+                borderRadius:16, padding:28, position:'relative',
+                boxShadow: plan.highlight
+                  ? '0 0 40px rgba(99,102,241,0.12)' : 'none',
+              }}>
+                {plan.badge && (
+                  <div style={{
+                    position:'absolute', top:-12, left:'50%',
+                    transform:'translateX(-50%)',
+                    background: plan.highlight
+                      ? 'linear-gradient(135deg,#6366f1,#8b5cf6)'
+                      : 'linear-gradient(135deg,#f59e0b,#ef4444)',
+                    color:'white', fontSize:10, fontWeight:700,
+                    padding:'4px 14px', borderRadius:100,
+                    whiteSpace:'nowrap',
+                  }}>{plan.badge}</div>
+                )}
+
+                <div style={{ fontSize:16, fontWeight:700, marginBottom:16 }}>
+                  {plan.name}
+                </div>
+
+                <div style={{ marginBottom:8 }}>
+                  <span style={{ fontSize:38, fontWeight:900 }}>${price}</span>
+                  <span style={{ color:'rgba(255,255,255,0.4)', fontSize:14 }}>
+                    {price===0 ? ' forever' : '/mo'}
+                  </span>
+                </div>
+
+                {cycle==='annual' && price>0 && (
+                  <div style={{ fontSize:12, color:'#22c55e', marginBottom:8 }}>
+                    Billed ${price*12}/year
+                  </div>
+                )}
+
+                <div style={{
+                  background:'rgba(255,255,255,0.04)',
+                  border:'1px solid rgba(255,255,255,0.08)',
+                  borderRadius:8, padding:'8px 12px', marginBottom:20,
+                  fontSize:12, color:'rgba(255,255,255,0.6)',
+                  display:'flex', alignItems:'center', gap:6,
+                }}>
+                  💾 <strong style={{ color:'white' }}>{plan.storage}</strong>
+                  · {plan.fileLimit} max
+                </div>
+
+                <ul style={{ listStyle:'none', padding:0,
+                  display:'flex', flexDirection:'column', gap:8,
+                  marginBottom:24, textAlign:'left' }}>
+                  {plan.features.map(f=>(
+                    <li key={f} style={{ display:'flex', gap:8,
+                      fontSize:13, color:'rgba(255,255,255,0.6)',
+                      alignItems:'flex-start' }}>
+                      <span style={{ color:'#22c55e', flexShrink:0,
+                        marginTop:1 }}>✓</span>
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+
+                <button onClick={()=>setAuthMode('signup')} style={{
+                  width:'100%', padding:'11px',
+                  borderRadius:8, border:'none', fontSize:14,
+                  fontWeight:600, cursor:'pointer', transition:'all 0.2s',
+                  background: plan.highlight
+                    ? 'linear-gradient(135deg,#6366f1,#8b5cf6)'
+                    : 'rgba(255,255,255,0.07)',
+                  color: plan.highlight ? 'white' : 'rgba(255,255,255,0.7)',
+                  boxShadow: plan.highlight
+                    ? '0 4px 16px rgba(99,102,241,0.3)' : 'none',
+                }}>
+                  {plan.id==='free'
+                    ? 'Start for free'
+                    : `Start ${plan.name} trial →`}
+                </button>
+              </div>
+            );
+          })}
         </div>
       </section>
 
-      {/* ── HOW IT WORKS ── */}
-      <section id="how-it-works" style={{ padding: '6rem 1.5rem', background: 'rgba(255,255,255,0.015)' }}>
-        <div style={{ maxWidth: 900, margin: '0 auto' }}>
-          <Reveal style={{ textAlign: 'center', marginBottom: '4rem' }}>
-            <div style={{ fontSize: '0.8rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: '#818cf8', fontWeight: 700, marginBottom: '1rem' }}>Getting started</div>
-            <h2 className="outfit" style={{ fontSize: 'clamp(2rem, 4vw, 2.6rem)', fontWeight: 800, letterSpacing: '-0.02em' }}>Up and running in minutes</h2>
-          </Reveal>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', position: 'relative' }}>
-            <div style={{ position: 'absolute', left: 28, top: 52, bottom: 52, width: 1, background: 'linear-gradient(to bottom, #6366f1, transparent)', opacity: 0.3 }} />
-            {STEPS.map(({ n, title, desc }, i) => (
-              <Reveal key={n} delay={i * 100}>
-                <div style={{ display: 'flex', gap: '2rem', alignItems: 'flex-start' }}>
-                  <div style={{ width: 56, height: 56, borderRadius: 16, background: 'linear-gradient(135deg, rgba(99,102,241,0.2), rgba(168,85,247,0.2))', border: '1px solid rgba(99,102,241,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.9rem', fontWeight: 800, color: '#818cf8', flexShrink: 0 }}>
-                    {n}
-                  </div>
-                  <div style={{ paddingTop: '0.75rem' }}>
-                    <h3 style={{ fontWeight: 700, fontSize: '1.15rem', marginBottom: '0.4rem' }}>{title}</h3>
-                    <p style={{ color: 'rgba(255,255,255,0.45)', lineHeight: 1.65, fontSize: '0.92rem' }}>{desc}</p>
-                  </div>
-                </div>
-              </Reveal>
-            ))}
-          </div>
+      {/* FAQ */}
+      <section id="faq" style={{
+        padding:'80px 20px', maxWidth:680, margin:'0 auto',
+      }}>
+        <div className="reveal" style={{ textAlign:'center', marginBottom:48 }}>
+          <h2 style={{
+            fontFamily:"'Outfit',sans-serif",
+            fontSize:'clamp(26px,3.5vw,40px)',
+            fontWeight:800, letterSpacing:'-0.02em',
+          }}>Frequently asked questions</h2>
         </div>
-      </section>
 
-      {/* ── PRICING ── */}
-      <section id="pricing" style={{ padding: '6rem 1.5rem' }}>
-        <div style={{ maxWidth: 1050, margin: '0 auto' }}>
-          <Reveal style={{ textAlign: 'center', marginBottom: '3rem' }}>
-            <div style={{ fontSize: '0.8rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: '#818cf8', fontWeight: 700, marginBottom: '1rem' }}>Pricing</div>
-            <h2 className="outfit" style={{ fontSize: 'clamp(2rem, 4vw, 2.6rem)', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: '1.5rem' }}>Simple, transparent pricing</h2>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.75rem', padding: '0.4rem', background: 'rgba(255,255,255,0.05)', borderRadius: 100 }}>
-              <button onClick={() => setAnnual(false)} style={{ padding: '0.4rem 1.1rem', borderRadius: 100, border: 'none', cursor: 'pointer', background: !annual ? '#fff' : 'transparent', color: !annual ? '#07080f' : 'rgba(255,255,255,0.5)', fontWeight: 600, fontSize: '0.85rem', transition: 'all 0.2s' }}>Monthly</button>
-              <button onClick={() => setAnnual(true)} style={{ padding: '0.4rem 1.1rem', borderRadius: 100, border: 'none', cursor: 'pointer', background: annual ? '#fff' : 'transparent', color: annual ? '#07080f' : 'rgba(255,255,255,0.5)', fontWeight: 600, fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                Annual
-                <span style={{ padding: '1px 7px', borderRadius: 100, background: '#6366f1', color: '#fff', fontSize: '0.72rem', fontWeight: 700 }}>-35%</span>
+        <div className="reveal">
+          {[
+            { q:'Is TasksDone really free to start?',
+              a:'Yes! The Free plan is free forever. No credit card required. You get 5 clients, 3 projects, and 1GB storage.' },
+            { q:'Can I upgrade or downgrade anytime?',
+              a:'Absolutely. Upgrades take effect immediately. Downgrades take effect at the end of your billing period.' },
+            { q:'What happens to my files if I downgrade?',
+              a:'Your files stay safe. You just cannot upload new files until you are under the storage limit.' },
+            { q:'How does the Client Portal work?',
+              a:'Each client gets a unique login to see only their projects, approve deliverables, and view invoices.' },
+            { q:'Do you have a mobile app?',
+              a:'The web app is fully responsive and works great on mobile. A native app is on our roadmap.' },
+            { q:'How does AI competitor analysis work?',
+              a:'Enter your brand, industry, and up to 5 competitors. Our AI analyzes them and gives you a full SWOT report with quick wins.' },
+          ].map((item,i)=>(
+            <div key={i} style={{
+              borderBottom:'1px solid rgba(255,255,255,0.07)',
+            }}>
+              <button onClick={()=>setFaqOpen(faqOpen===i?null:i)} style={{
+                width:'100%', display:'flex',
+                justifyContent:'space-between', alignItems:'center',
+                padding:'18px 0', background:'none', border:'none',
+                color:'white', fontSize:15, fontWeight:500,
+                cursor:'pointer', textAlign:'left',
+              }}>
+                {item.q}
+                <span style={{ fontSize:20, color:'rgba(255,255,255,0.4)',
+                  transform: faqOpen===i ? 'rotate(180deg)' : 'none',
+                  transition:'transform 0.2s', flexShrink:0, marginLeft:16,
+                }}>⌄</span>
               </button>
+              {faqOpen===i && (
+                <p style={{ fontSize:14, color:'rgba(255,255,255,0.5)',
+                  lineHeight:1.7, paddingBottom:18,
+                  animation:'fadeUp 0.2s ease' }}>
+                  {item.a}
+                </p>
+              )}
             </div>
-          </Reveal>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem' }}>
-            {PRICING.map(({ name, monthlyPrice, annualPrice, color, border, badge, features, cta }, i) => (
-              <Reveal key={name} delay={i * 80}>
-                <div style={{ background: color, border: `1px solid ${border}`, borderRadius: 20, padding: '2rem', position: 'relative', height: '100%', display: 'flex', flexDirection: 'column' }}>
-                  {badge && (
-                    <div style={{ position: 'absolute', top: '-1px', left: '50%', transform: 'translateX(-50%)', padding: '4px 16px', background: 'linear-gradient(135deg,#6366f1,#a855f7)', borderRadius: '0 0 10px 10px', fontSize: '0.75rem', fontWeight: 700, color: '#fff', whiteSpace: 'nowrap' }}>{badge}</div>
-                  )}
-                  <div className="outfit" style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '1rem', marginTop: badge ? '0.5rem' : 0 }}>{name}</div>
-                  <div style={{ marginBottom: '1.75rem' }}>
-                    <span className="outfit" style={{ fontSize: '2.8rem', fontWeight: 900 }}>${annual ? annualPrice : monthlyPrice}</span>
-                    {(annual ? annualPrice : monthlyPrice) > 0
-                      ? <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.9rem' }}>/mo</span>
-                      : <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.9rem' }}> forever</span>}
-                  </div>
-                  <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.65rem', flex: 1, marginBottom: '2rem' }}>
-                    {features.map((f) => (
-                      <li key={f} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.6rem', fontSize: '0.88rem', color: 'rgba(255,255,255,0.65)' }}>
-                        <span style={{ color: '#10b981', flexShrink: 0, fontWeight: 700, marginTop: '1px' }}>✓</span>{f}
-                      </li>
-                    ))}
-                  </ul>
-                  <button
-                    onClick={() => open('signup')}
-                    style={{ width: '100%', padding: '0.8rem', background: i === 1 ? 'linear-gradient(135deg,#6366f1,#a855f7)' : 'rgba(255,255,255,0.08)', border: i === 1 ? 'none' : '1px solid rgba(255,255,255,0.12)', borderRadius: 10, color: '#fff', fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer' }}
-                  >{cta}</button>
-                </div>
-              </Reveal>
-            ))}
-          </div>
+          ))}
         </div>
       </section>
 
-      {/* ── FAQ ── */}
-      <section id="faq" style={{ padding: '6rem 1.5rem', background: 'rgba(255,255,255,0.015)' }}>
-        <div style={{ maxWidth: 720, margin: '0 auto' }}>
-          <Reveal style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
-            <div style={{ fontSize: '0.8rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: '#818cf8', fontWeight: 700, marginBottom: '1rem' }}>FAQ</div>
-            <h2 className="outfit" style={{ fontSize: 'clamp(2rem, 4vw, 2.6rem)', fontWeight: 800, letterSpacing: '-0.02em' }}>Frequently asked questions</h2>
-          </Reveal>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            {FAQ.map(({ q, a }, i) => (
-              <Reveal key={i} delay={i * 50}>
-                <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12, overflow: 'hidden' }}>
-                  <button
-                    onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                    style={{ width: '100%', padding: '1.1rem 1.5rem', background: 'transparent', border: 'none', color: '#fff', fontSize: '0.95rem', fontWeight: 600, cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', textAlign: 'left' }}
-                  >
-                    {q}
-                    <span style={{ color: '#818cf8', fontSize: '1.2rem', flexShrink: 0, transform: openFaq === i ? 'rotate(45deg)' : 'none', transition: 'transform 0.2s' }}>+</span>
-                  </button>
-                  {openFaq === i && (
-                    <div style={{ padding: '0 1.5rem 1.25rem', color: 'rgba(255,255,255,0.5)', fontSize: '0.9rem', lineHeight: 1.7 }}>{a}</div>
-                  )}
-                </div>
-              </Reveal>
-            ))}
-          </div>
+      {/* CTA */}
+      <section style={{
+        padding:'100px 20px', textAlign:'center',
+        position:'relative', overflow:'hidden',
+      }}>
+        <div style={{ position:'absolute', inset:0,
+          background:'radial-gradient(ellipse at center,rgba(99,102,241,0.12) 0%,transparent 70%)',
+          pointerEvents:'none' }} />
+        <div className="reveal">
+          <h2 style={{
+            fontFamily:"'Outfit',sans-serif",
+            fontSize:'clamp(30px,5vw,56px)',
+            fontWeight:800, letterSpacing:'-0.03em', marginBottom:16,
+          }}>Ready to get things done?</h2>
+          <p style={{ color:'rgba(255,255,255,0.45)', fontSize:16,
+            marginBottom:36 }}>
+            Join 2,400+ agencies already using TasksDone
+          </p>
+          <button onClick={()=>setAuthMode('signup')} style={{
+            padding:'16px 40px', borderRadius:12, border:'none',
+            background:'linear-gradient(135deg,#6366f1,#8b5cf6)',
+            color:'white', fontSize:18, fontWeight:700,
+            cursor:'pointer', transition:'all 0.2s',
+            boxShadow:'0 8px 40px rgba(99,102,241,0.4)',
+          }}
+          onMouseEnter={e=>{
+            e.currentTarget.style.transform='translateY(-3px)';
+            e.currentTarget.style.boxShadow='0 16px 50px rgba(99,102,241,0.5)';
+          }}
+          onMouseLeave={e=>{
+            e.currentTarget.style.transform='none';
+            e.currentTarget.style.boxShadow='0 8px 40px rgba(99,102,241,0.4)';
+          }}>
+            Start for free →
+          </button>
         </div>
       </section>
 
-      {/* ── CTA ── */}
-      <section style={{ padding: '6rem 1.5rem', textAlign: 'center' }}>
-        <Reveal>
-          <div style={{ maxWidth: 600, margin: '0 auto' }}>
-            <h2 className="outfit" style={{ fontSize: 'clamp(2rem, 5vw, 3.2rem)', fontWeight: 900, letterSpacing: '-0.03em', marginBottom: '1.25rem', lineHeight: 1.1 }}>
-              Ready to run your<br />
-              <span style={{ background: 'linear-gradient(135deg,#6366f1,#a855f7,#22d3ee)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>business on one OS?</span>
-            </h2>
-            <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: '1.05rem', lineHeight: 1.65, marginBottom: '2.5rem' }}>
-              Join thousands of teams that replaced 5+ tools with FlowOS. Start free — no credit card, no time limit on the Starter plan.
-            </p>
-            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-              <button onClick={() => open('signup')} style={{ padding: '1rem 2.5rem', background: 'linear-gradient(135deg,#6366f1,#a855f7)', border: 'none', borderRadius: 12, color: '#fff', fontSize: '1.05rem', fontWeight: 700, cursor: 'pointer', boxShadow: '0 8px 32px rgba(99,102,241,0.4)' }}>
-                Create free workspace
-              </button>
-              <button onClick={() => open('login')} style={{ padding: '1rem 2.5rem', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 12, color: '#fff', fontSize: '1.05rem', fontWeight: 600, cursor: 'pointer' }}>
-                Sign in
-              </button>
-            </div>
-          </div>
-        </Reveal>
-      </section>
-
-      {/* ── FOOTER ── */}
-      <footer style={{ borderTop: '1px solid rgba(255,255,255,0.06)', padding: '3rem 1.5rem' }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1.5rem' }}>
-          <div className="outfit" style={{ fontWeight: 800, fontSize: '1.2rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <span style={{ width: 28, height: 28, borderRadius: 7, background: 'linear-gradient(135deg,#6366f1,#a855f7)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 900 }}>F</span>
-            FlowOS
-          </div>
-          <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
-            {['Privacy', 'Terms', 'Security', 'Status', 'Blog'].map((item) => (
-              <span key={item} style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.35)', cursor: 'pointer' }}
-                onMouseEnter={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.7)')}
-                onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.35)')}
-              >{item}</span>
-            ))}
-          </div>
-          <p style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.2)' }}>© 2025 FlowOS · All rights reserved</p>
+      {/* FOOTER */}
+      <footer style={{
+        padding:'40px', borderTop:'1px solid rgba(255,255,255,0.06)',
+        display:'flex', alignItems:'center',
+        justifyContent:'space-between', flexWrap:'wrap', gap:16,
+      }}>
+        <div style={{
+          fontFamily:"'Outfit',sans-serif", fontWeight:800, fontSize:20,
+          background:'linear-gradient(135deg,#6366f1,#8b5cf6)',
+          WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent',
+        }}>TasksDone</div>
+        <div style={{ fontSize:13, color:'rgba(255,255,255,0.3)' }}>
+          © 2025 TasksDone · Built for marketing agencies
+        </div>
+        <div style={{ display:'flex', gap:20 }}>
+          {['Privacy','Terms','Support'].map(l=>(
+            <a key={l} href="#" style={{ fontSize:13,
+              color:'rgba(255,255,255,0.35)', textDecoration:'none',
+            }}>{l}</a>
+          ))}
         </div>
       </footer>
 
-      {/* ── AUTH MODAL ── */}
-      {authMode && <AuthModal initialMode={authMode} onClose={() => setAuthMode(null)} />}
+      {authMode && (
+        <AuthModal
+          mode={authMode}
+          onClose={()=>setAuthMode(null)}
+          onSwitch={(m: 'login'|'signup')=>setAuthMode(m)}
+        />
+      )}
+
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap');
+        @keyframes fadeUp {
+          from { opacity:0; transform:translateY(20px); }
+          to   { opacity:1; transform:translateY(0); }
+        }
+        @keyframes pulse {
+          0%,100% { opacity:1; transform:scale(1); }
+          50%      { opacity:.5; transform:scale(1.4); }
+        }
+        .reveal {
+          opacity:0; transform:translateY(24px);
+          transition:opacity 0.6s ease, transform 0.6s ease;
+        }
+        .reveal.visible { opacity:1; transform:translateY(0); }
+        @media (max-width:768px) {
+          nav > div:nth-child(2) { display:none !important; }
+        }
+      `}</style>
     </div>
   );
 }

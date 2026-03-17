@@ -72,7 +72,7 @@ export default function OTPVerification({ userId, email, onVerified, onBack }: P
       const { accessToken, user } = res.data;
       useAuthStore.getState().setAuth(user, accessToken);
       connectSocket(accessToken, user.id);
-      toast.success('Email verified! Welcome to FlowOS 🚀');
+      toast.success('Email verified! Welcome to TasksDone 🚀');
       onVerified(accessToken, user);
     } catch (err: any) {
       const msg = err.response?.data?.error || 'Invalid code. Try again.';

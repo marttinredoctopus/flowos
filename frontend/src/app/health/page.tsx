@@ -17,7 +17,7 @@ export default function HealthPage() {
 
   return (
     <div style={{ padding: 40, background: '#08090d', minHeight: '100vh', color: '#fff', fontFamily: 'monospace' }}>
-      <h1 style={{ fontSize: 24, marginBottom: 24 }}>FlowOS Health Check</h1>
+      <h1 style={{ fontSize: 24, marginBottom: 24 }}>TasksDone Health Check</h1>
       <table style={{ borderCollapse: 'collapse', width: '100%' }}>
         <tbody>
           {[

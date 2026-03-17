@@ -50,7 +50,7 @@ export function FileUpload({
     if (entityId)   formData.append('entity_id', entityId);
 
     try {
-      const token   = (window as any).__FLOWOS_AUTH_TOKEN__ || '';
+      const token   = (window as any).__TASKSDONE_AUTH_TOKEN__ || '';
       const apiBase = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api').replace(/\/api$/, '');
 
       const result = await new Promise<UploadedFile>((resolve, reject) => {

@@ -5,7 +5,7 @@ import { AuthInit } from '@/components/AuthInit';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'FlowOS — Agency Management Platform',
+  title: 'TasksDone — Agency Management Platform',
   description: 'The all-in-one platform that replaces 6 tools for marketing agencies. Manage tasks, clients, campaigns, and your team in one place.',
 };
 

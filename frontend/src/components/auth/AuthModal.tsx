@@ -11,7 +11,9 @@ const api = axios.create({
 
 interface Props {
   initialMode?: 'login' | 'signup';
+  mode?: 'login' | 'signup';
   onClose: () => void;
+  onSwitch?: (m: 'login' | 'signup') => void;
 }
 
 function EyeIcon({ open }: { open: boolean }) {
@@ -28,10 +30,11 @@ function EyeIcon({ open }: { open: boolean }) {
   );
 }
 
-export default function AuthModal({ initialMode = 'login', onClose }: Props) {
+export default function AuthModal({ initialMode, mode: modeProp, onClose, onSwitch }: Props) {
   const router = useRouter();
   const setAuth = useAuthStore((s) => s.setAuth);
-  const [mode, setMode] = useState<'login' | 'signup'>(initialMode);
+  const resolvedInitial = modeProp ?? initialMode ?? 'login';
+  const [mode, setMode] = useState<'login' | 'signup'>(resolvedInitial);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -47,14 +50,14 @@ export default function AuthModal({ initialMode = 'login', onClose }: Props) {
       if (mode === 'login') {
         const { data } = await api.post('/auth/login', { email, password });
         setAuth(data.user, data.accessToken);
-        (window as any).__FLOWOS_AUTH_TOKEN__ = data.accessToken;
+        (window as any).__TASKSDONE_AUTH_TOKEN__ = data.accessToken;
         router.push('/dashboard');
       } else {
         await api.post('/auth/register', { name, email, password });
         // After registration, log in automatically
         const { data } = await api.post('/auth/login', { email, password });
         setAuth(data.user, data.accessToken);
-        (window as any).__FLOWOS_AUTH_TOKEN__ = data.accessToken;
+        (window as any).__TASKSDONE_AUTH_TOKEN__ = data.accessToken;
         router.push('/dashboard');
       }
     } catch (err: any) {
@@ -110,7 +113,7 @@ export default function AuthModal({ initialMode = 'login', onClose }: Props) {
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontSize: '0.9rem',
             }}>F</span>
-            FlowOS
+            TasksDone
           </div>
         </div>
 
@@ -122,7 +125,7 @@ export default function AuthModal({ initialMode = 'login', onClose }: Props) {
           {(['login', 'signup'] as const).map((m) => (
             <button
               key={m}
-              onClick={() => { setMode(m); setError(''); }}
+              onClick={() => { setMode(m); setError(''); onSwitch?.(m); }}
               style={{
                 flex: 1, padding: '0.55rem', border: 'none', cursor: 'pointer',
                 borderRadius: 8, fontSize: '0.9rem', fontWeight: 600,
@@ -248,7 +251,7 @@ export default function AuthModal({ initialMode = 'login', onClose }: Props) {
         <p style={{ textAlign: 'center', marginTop: '1.5rem', color: 'rgba(255,255,255,0.4)', fontSize: '0.82rem' }}>
           {mode === 'login' ? "Don't have an account? " : 'Already have an account? '}
           <button
-            onClick={() => { setMode(mode === 'login' ? 'signup' : 'login'); setError(''); }}
+            onClick={() => { const next = mode === 'login' ? 'signup' : 'login'; setMode(next); setError(''); onSwitch?.(next); }}
             style={{ background: 'none', border: 'none', color: '#818cf8', cursor: 'pointer', fontWeight: 600, fontSize: 'inherit' }}
           >
             {mode === 'login' ? 'Create one free' : 'Sign in'}

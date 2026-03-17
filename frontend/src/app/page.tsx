@@ -1,443 +1,430 @@
 'use client';
-
 import { useState, useEffect, useRef } from 'react';
-import LoginModal from '@/components/auth/LoginModal';
-import SignupModal from '@/components/auth/SignupModal';
+import { useRouter } from 'next/navigation';
+import { useAuthStore } from '@/store/authStore';
+import AuthModal from '@/components/auth/AuthModal';
+
+// ─── Data ─────────────────────────────────────────────────────────────────────
 
 const FEATURES = [
-  { icon: '🎯', color: '#7c6fe0', dim: '#7c6fe022', title: 'Task & Project Management', desc: 'Kanban, List, Calendar. Every view your team needs to stay aligned and deliver on time.' },
-  { icon: '📅', color: '#4a9eff', dim: '#4a9eff22', title: 'Content Calendar', desc: 'Plan and schedule content across every platform in one unified calendar. Goodbye spreadsheets.' },
-  { icon: '📈', color: '#ff6b9d', dim: '#ff6b9d22', title: 'Ad Campaign Tracker', desc: 'Track ROAS, CTR, CPC across Facebook, Google, and TikTok. All metrics in one dashboard.' },
-  { icon: '💬', color: '#00c9b1', dim: '#00c9b122', title: 'Team Chat', desc: 'Real-time messaging with channels, DMs, and task links. Kill the WhatsApp chaos.' },
-  { icon: '⏱', color: '#ffc107', dim: '#ffc10722', title: 'Time Tracking', desc: 'One-click timers, billable hours, and auto reports per client. Know where every hour goes.' },
-  { icon: '🤖', color: '#7c6fe0', dim: '#7c6fe022', title: 'AI Intelligence', desc: 'Competitor analysis, market research, and campaign ideas powered by AI. Win more pitches.' },
-  { icon: '🧾', color: '#ff7043', dim: '#ff704322', title: 'Invoicing', desc: 'Create, send, and track invoices. Stripe integration so you get paid faster with less chasing.' },
-  { icon: '👥', color: '#4a9eff', dim: '#4a9eff22', title: 'Client Portal', desc: 'Branded portals where clients track progress, approve work, and review reports.' },
-  { icon: '⚡', color: '#4caf82', dim: '#4caf8222', title: 'Automation', desc: 'Auto-assign tasks, send reminders, and trigger actions without lifting a finger.' },
+  { icon: '✦', label: 'Task Management', color: '#6366f1', desc: 'Kanban boards, list views, subtasks, priorities, assignees, due dates and custom tags — all in one place.' },
+  { icon: '◈', label: 'Project Tracker', color: '#a855f7', desc: 'Plan milestones, set project-level deadlines, track progress and keep teams aligned without the chaos.' },
+  { icon: '◉', label: 'Team Chat', color: '#22d3ee', desc: 'Real-time channels, direct messages, file sharing and threaded replies — no more switching to Slack.' },
+  { icon: '◆', label: 'Finance Hub', color: '#10b981', desc: 'Invoices, expense tracking, budget overviews and revenue reports built for growing businesses.' },
+  { icon: '◇', label: 'CRM & Clients', color: '#f59e0b', desc: 'Track contacts, deals, pipeline stages and client portals. Your sales funnel without the bloat.' },
+  { icon: '○', label: 'Content Calendar', color: '#f43f5e', desc: 'Plan and schedule social posts, blogs and campaigns. Drag to reschedule, filter by platform.' },
+  { icon: '□', label: 'Design Hub', color: '#8b5cf6', desc: 'Asset library with Cloudflare R2 storage, brand guidelines, design briefs and feedback pins.' },
+  { icon: '△', label: 'AI Assistant', color: '#06b6d4', desc: 'Claude-powered drafting, task suggestions, meeting summaries and smart automations across the whole OS.' },
+  { icon: '▷', label: 'Analytics', color: '#84cc16', desc: 'Revenue charts, team velocity, project health scores and custom dashboards — data you can act on.' },
 ];
 
 const STEPS = [
-  { num: '01', color: '#7c6fe0', title: 'Create workspace', desc: 'Set up your agency workspace in 60 seconds. No credit card required.' },
-  { num: '02', color: '#4a9eff', title: 'Add clients & team', desc: 'Invite your team, onboard clients, and assign roles instantly.' },
-  { num: '03', color: '#ff6b9d', title: 'Run your projects', desc: 'Create projects, assign tasks, track time, and manage content calendars.' },
-  { num: '04', color: '#4caf82', title: 'Get paid', desc: 'Send invoices, track time, and close the loop on every project.' },
+  { n: '01', title: 'Create your workspace', desc: 'Sign up free. Set your org name, invite teammates and you are live in under two minutes.' },
+  { n: '02', title: 'Add projects & tasks', desc: 'Create projects, break them into tasks, assign owners and set due dates. Kanban or list — your choice.' },
+  { n: '03', title: 'Collaborate in real-time', desc: 'Chat, comment on tasks, share files and get AI suggestions as your team works together.' },
+  { n: '04', title: 'Ship faster, grow smarter', desc: 'Track finances, manage clients, analyse performance and scale — all without leaving FlowOS.' },
 ];
 
-const PRICING_PLANS = [
+const PRICING = [
   {
     name: 'Starter',
-    price: { monthly: 0, annual: 0 },
-    desc: 'For freelancers & small teams',
-    features: ['Up to 5 members', '3 active projects', 'Task & project management', 'Team chat', 'Basic reporting'],
-    cta: 'Get started free',
-    accent: '#7c6fe0',
-    popular: false,
+    monthlyPrice: 0,
+    annualPrice: 0,
+    color: 'rgba(255,255,255,0.06)',
+    border: 'rgba(255,255,255,0.1)',
+    badge: null as string | null,
+    features: ['Up to 5 members', '3 active projects', 'Task management', 'Basic chat', '5 GB storage', 'Community support'],
+    cta: 'Start free',
   },
   {
     name: 'Pro',
-    price: { monthly: 49, annual: 39 },
-    desc: 'For growing agencies',
-    features: ['Unlimited members', 'Unlimited projects', 'Content calendar', 'Time tracking', 'Invoicing & expenses', 'Client portal', 'AI Intelligence'],
-    cta: 'Start free trial',
-    accent: '#4a9eff',
-    popular: true,
+    monthlyPrice: 29,
+    annualPrice: 19,
+    color: 'linear-gradient(160deg, rgba(99,102,241,0.15), rgba(168,85,247,0.15))',
+    border: 'rgba(99,102,241,0.4)',
+    badge: 'Most Popular' as string | null,
+    features: ['Up to 25 members', 'Unlimited projects', 'Full task + kanban', 'Finance & CRM', '50 GB storage', 'AI assistant (100 calls/mo)', 'Priority support'],
+    cta: 'Start 14-day trial',
   },
   {
     name: 'Agency',
-    price: { monthly: 99, annual: 79 },
-    desc: 'For established agencies',
-    features: ['Everything in Pro', 'Custom branding', 'Advanced analytics', 'Automation workflows', 'Priority support', 'Dedicated onboarding'],
+    monthlyPrice: 79,
+    annualPrice: 59,
+    color: 'rgba(255,255,255,0.04)',
+    border: 'rgba(255,255,255,0.08)',
+    badge: null as string | null,
+    features: ['Unlimited members', 'Unlimited projects', 'Client portals', 'White-label options', '500 GB storage', 'Unlimited AI calls', 'Dedicated account manager', 'Custom integrations'],
     cta: 'Contact sales',
-    accent: '#ff6b9d',
-    popular: false,
   },
 ];
 
-const FAQ_ITEMS = [
-  { q: 'Is FlowOS really free to start?', a: 'Yes — our Starter plan is free forever for up to 5 team members and 3 active projects. No credit card required.' },
-  { q: 'Can I import from ClickUp or Trello?', a: 'Yes. FlowOS supports CSV import from Trello and ClickUp, and we have a one-click migration tool. Your team can be up and running in minutes.' },
-  { q: 'How does the client portal work?', a: 'Each client gets a branded portal to view project status, approve deliverables, leave feedback, and download reports — without access to your internal workspace.' },
-  { q: 'Do you support Arabic?', a: 'Yes. FlowOS fully supports Arabic with RTL layout. Switch the interface language in your workspace settings.' },
-  { q: 'Is my data secure?', a: 'All data is encrypted at rest (AES-256) and in transit (TLS 1.3). We run regular security audits and never sell your data.' },
-  { q: 'Can I cancel anytime?', a: 'Yes, cancel anytime with no penalties. You keep access until the end of your billing period.' },
-];
-
-const TESTIMONIALS = [
-  { stars: 5, quote: 'We replaced 6 tools with FlowOS. Our team went from chaos to clarity in one week.', name: 'Sarah Mitchell', role: 'Founder, Pulse Creative', color: '#7c6fe0' },
-  { stars: 5, quote: 'The AI competitor analysis changed how we pitch. We walk into every meeting with a full market report.', name: 'Ahmed Al-Rashidi', role: 'CEO, Momentum Digital', color: '#4a9eff' },
-  { stars: 5, quote: 'The content calendar and approval flow cut our review cycles in half. Incredible product.', name: 'Layla Hassan', role: 'Managing Director, Narrative Studio', color: '#ff6b9d' },
-];
-
-const SOCIAL_PROOF = [
-  'Pulse Creative', 'Momentum Digital', 'Narrative Studio', 'Bright Side Digital',
-  'Norte Agency', 'Vortex Media', 'Apex Creative', 'Nova Studios', 'Orbit Digital',
-  'Catalyst Agency', 'Prism Creative', 'Zenith Media',
+const FAQ = [
+  { q: 'Can I use FlowOS for free?', a: 'Yes — the Starter plan is free forever with up to 5 members and 3 active projects. No credit card required.' },
+  { q: 'How does the AI assistant work?', a: 'FlowOS uses Claude (Anthropic) to draft content, summarise meetings, suggest task priorities and automate repetitive work. Pro gets 100 calls/month; Agency is unlimited.' },
+  { q: 'Can I migrate from Trello, Asana or Notion?', a: 'We support CSV import for tasks and projects. Direct integrations with Trello and Asana are on our roadmap for Q3.' },
+  { q: 'Is my data secure?', a: 'All data is encrypted in transit (TLS 1.3) and at rest (AES-256). Files are stored on Cloudflare R2 with private access controls. We never sell your data.' },
+  { q: 'Can clients access FlowOS?', a: 'Yes. Pro and Agency plans include a read-only client portal that can be shared with external stakeholders without giving them full account access.' },
+  { q: 'What happens after the trial?', a: 'After your 14-day trial ends you drop to the Starter plan automatically — no unexpected charges. Upgrade any time to restore Pro features.' },
 ];
 
 const STATS = [
-  { value: '2,400+', label: 'Agencies', color: '#7c6fe0' },
-  { value: '98%', label: 'Satisfaction', color: '#4a9eff' },
-  { value: '6 tools', label: 'Replaced', color: '#ff6b9d' },
-  { value: '4.9★', label: 'Rating', color: '#4caf82' },
+  { value: '12k+', label: 'Teams using FlowOS' },
+  { value: '3.2M', label: 'Tasks completed' },
+  { value: '98%', label: 'Customer satisfaction' },
+  { value: '40%', label: 'Faster project delivery' },
 ];
 
-export default function LandingPage() {
-  const [showLogin, setShowLogin] = useState(false);
-  const [showSignup, setShowSignup] = useState(false);
-  const [billing, setBilling] = useState<'monthly' | 'annual'>('monthly');
-  const [openFaq, setOpenFaq] = useState<number | null>(null);
-  const revealRefs = useRef<HTMLElement[]>([]);
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
+function useReveal() {
+  const ref = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
   useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
     const obs = new IntersectionObserver(
-      (entries) => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); }),
+      ([e]) => { if (e.isIntersecting) { setVisible(true); obs.disconnect(); } },
       { threshold: 0.12 }
     );
-    document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+    obs.observe(el);
     return () => obs.disconnect();
   }, []);
+  return { ref, visible };
+}
+
+function Reveal({ children, delay = 0, style = {} }: { children: React.ReactNode; delay?: number; style?: React.CSSProperties }) {
+  const { ref, visible } = useReveal();
+  return (
+    <div ref={ref} style={{
+      opacity: visible ? 1 : 0,
+      transform: visible ? 'translateY(0)' : 'translateY(28px)',
+      transition: `opacity 0.6s ease ${delay}ms, transform 0.6s ease ${delay}ms`,
+      ...style,
+    }}>
+      {children}
+    </div>
+  );
+}
+
+// ─── Component ────────────────────────────────────────────────────────────────
+
+export default function LandingPage() {
+  const router = useRouter();
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const [authMode, setAuthMode] = useState<'login' | 'signup' | null>(null);
+  const [annual, setAnnual] = useState(false);
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (isAuthenticated) router.push('/dashboard');
+  }, [isAuthenticated, router]);
+
+  const open = (mode: 'login' | 'signup') => setAuthMode(mode);
 
   return (
-    <div style={{ background: 'var(--bg)', color: 'var(--text)', overflowX: 'hidden' }}>
-      {showLogin && <LoginModal onClose={() => setShowLogin(false)} onSwitchToSignup={() => { setShowLogin(false); setShowSignup(true); }} />}
-      {showSignup && <SignupModal onClose={() => setShowSignup(false)} onSwitchToLogin={() => { setShowSignup(false); setShowLogin(true); }} />}
+    <div style={{ background: '#07080f', color: '#fff', minHeight: '100vh', fontFamily: "'Inter', system-ui, sans-serif", overflowX: 'hidden' }}>
+      <style>{`
+        *{box-sizing:border-box;margin:0;padding:0}
+        ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:#0f1117}::-webkit-scrollbar-thumb{background:#2d2f3e;border-radius:3px}
+        a{color:inherit;text-decoration:none}
+        input,button,textarea,select{font-family:inherit}
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap');
+        .outfit{font-family:'Outfit',system-ui,sans-serif}
+        .hover-lift{transition:transform 0.2s,box-shadow 0.2s}
+        .hover-lift:hover{transform:translateY(-3px);box-shadow:0 16px 48px rgba(0,0,0,0.4)}
+        @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+        @keyframes pulse-glow{0%,100%{opacity:0.6}50%{opacity:1}}
+      `}</style>
 
-      {/* ── Navbar ── */}
-      <nav className="fixed top-0 inset-x-0 z-50 glass" style={{ borderBottom: '1px solid var(--border)' }}>
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <span className="text-xl font-bold gradient-text">FlowOS</span>
-          <div className="hidden md:flex items-center gap-8">
-            {['Features', 'Pricing', 'FAQ'].map(item => (
-              <a key={item} href={`#${item.toLowerCase()}`}
-                className="text-sm font-medium transition hover:opacity-100"
-                style={{ color: 'var(--text-muted)' }}>
-                {item}
-              </a>
-            ))}
+      {/* ── NAVBAR ── */}
+      <header style={{
+        position: 'sticky', top: 0, zIndex: 100,
+        background: 'rgba(7,8,15,0.85)', backdropFilter: 'blur(16px)',
+        borderBottom: '1px solid rgba(255,255,255,0.06)',
+      }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 1.5rem', height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div className="outfit" style={{ fontWeight: 800, fontSize: '1.35rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <span style={{ width: 32, height: 32, borderRadius: 8, background: 'linear-gradient(135deg,#6366f1,#a855f7)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.85rem', fontWeight: 900 }}>F</span>
+            FlowOS
           </div>
-          <div className="flex items-center gap-3">
-            <button onClick={() => setShowLogin(true)}
-              className="text-sm font-semibold px-4 py-2 rounded-xl transition"
-              style={{ color: 'var(--text-muted)' }}>
-              Sign in
-            </button>
-            <button onClick={() => setShowSignup(true)}
-              className="text-sm font-bold px-5 py-2 rounded-xl text-white gradient-bg hover:opacity-90 transition">
-              Start free
-            </button>
+          <nav style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
+            {['Features', 'How it works', 'Pricing', 'FAQ'].map((label) => (
+              <a key={label} href={`#${label.toLowerCase().replace(/ /g, '-')}`}
+                style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.9rem', fontWeight: 500, transition: 'color 0.2s' }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = '#fff')}
+                onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.6)')}
+              >{label}</a>
+            ))}
+          </nav>
+          <div style={{ display: 'flex', gap: '0.75rem' }}>
+            <button
+              onClick={() => open('login')}
+              style={{ padding: '0.5rem 1.2rem', background: 'transparent', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 8, color: 'rgba(255,255,255,0.8)', fontSize: '0.88rem', fontWeight: 600, cursor: 'pointer' }}
+              onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.4)'; e.currentTarget.style.color = '#fff'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)'; e.currentTarget.style.color = 'rgba(255,255,255,0.8)'; }}
+            >Sign in</button>
+            <button
+              onClick={() => open('signup')}
+              style={{ padding: '0.5rem 1.2rem', background: 'linear-gradient(135deg,#6366f1,#a855f7)', border: 'none', borderRadius: 8, color: '#fff', fontSize: '0.88rem', fontWeight: 700, cursor: 'pointer' }}
+            >Get started free</button>
           </div>
         </div>
-      </nav>
+      </header>
 
-      {/* ── Hero ── */}
-      <section className="relative min-h-screen flex flex-col items-center justify-center pt-16 px-6 text-center overflow-hidden">
-        <div className="hero-orb-1" />
-        <div className="hero-orb-2" />
-        <div className="hero-orb-3" />
-        <div className="grid-pattern absolute inset-0 pointer-events-none" />
+      {/* ── HERO ── */}
+      <section style={{ padding: '7rem 1.5rem 5rem', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', top: '10%', left: '20%', width: 500, height: 500, borderRadius: '50%', background: 'radial-gradient(circle, rgba(99,102,241,0.15) 0%, transparent 70%)', pointerEvents: 'none', animation: 'pulse-glow 4s ease-in-out infinite' }} />
+        <div style={{ position: 'absolute', top: '20%', right: '15%', width: 400, height: 400, borderRadius: '50%', background: 'radial-gradient(circle, rgba(168,85,247,0.12) 0%, transparent 70%)', pointerEvents: 'none', animation: 'pulse-glow 5s ease-in-out infinite 1s' }} />
 
-        <div className="relative z-10 max-w-5xl mx-auto">
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold mb-8 animate-fade-up-1"
-            style={{ background: 'var(--purple-dim)', color: 'var(--purple-light)', border: '1px solid var(--purple)33' }}>
-            <span className="w-1.5 h-1.5 rounded-full animate-pulse-dot" style={{ background: 'var(--purple)' }} />
-            Agency Management · Powered by AI
+        <div style={{ maxWidth: 800, margin: '0 auto', position: 'relative' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.4rem 1rem', borderRadius: 100, background: 'rgba(99,102,241,0.12)', border: '1px solid rgba(99,102,241,0.3)', fontSize: '0.82rem', color: '#a5b4fc', fontWeight: 600, marginBottom: '1.75rem' }}>
+            <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#6366f1', display: 'inline-block', animation: 'pulse-glow 1.5s ease-in-out infinite' }} />
+            Now in public beta — join 12,000+ teams
           </div>
 
-          <h1 className="text-5xl md:text-7xl font-bold leading-tight mb-6 animate-fade-up-2"
-            style={{ letterSpacing: 'clamp(-1px, -0.03em, -2px)' }}>
-            One platform to run{' '}
-            <span className="gradient-text">your entire agency</span>
+          <h1 className="outfit" style={{ fontSize: 'clamp(2.8rem, 7vw, 5rem)', fontWeight: 900, lineHeight: 1.08, letterSpacing: '-0.03em', marginBottom: '1.5rem' }}>
+            One OS for your<br />
+            <span style={{ background: 'linear-gradient(135deg,#6366f1,#a855f7,#22d3ee)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>entire business</span>
           </h1>
 
-          <p className="text-lg md:text-xl mb-10 max-w-2xl mx-auto animate-fade-up-3" style={{ color: 'var(--text-muted)', lineHeight: '1.7' }}>
-            Replace Trello, Slack, Notion, Harvest, and 3 more tools. FlowOS gives your team everything to manage projects, clients, content, and campaigns — all in one place.
+          <p style={{ fontSize: 'clamp(1rem, 2.5vw, 1.22rem)', color: 'rgba(255,255,255,0.55)', lineHeight: 1.7, maxWidth: 580, margin: '0 auto 2.5rem' }}>
+            Tasks, projects, chat, finance, CRM, content calendar, design hub and AI — all connected in a single workspace. Stop juggling 8 tools.
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12 animate-fade-up-4">
-            <button onClick={() => setShowSignup(true)}
-              className="px-8 py-4 gradient-bg rounded-2xl text-white font-bold text-lg hover:opacity-90 transition-all hover:-translate-y-0.5 hover:shadow-xl w-full sm:w-auto"
-              style={{ boxShadow: '0 0 40px rgba(124,111,224,0.3)' }}>
+          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <button onClick={() => open('signup')} style={{ padding: '0.9rem 2.2rem', background: 'linear-gradient(135deg,#6366f1,#a855f7)', border: 'none', borderRadius: 12, color: '#fff', fontSize: '1.05rem', fontWeight: 700, cursor: 'pointer', boxShadow: '0 8px 32px rgba(99,102,241,0.35)' }}>
               Start for free →
             </button>
-            <button onClick={() => setShowLogin(true)}
-              className="px-8 py-4 rounded-2xl font-semibold text-base transition hover:opacity-80 w-full sm:w-auto"
-              style={{ background: 'var(--card)', color: 'var(--text)', border: '1px solid var(--border-hover)' }}>
-              Sign in to workspace
+            <button onClick={() => open('login')} style={{ padding: '0.9rem 2.2rem', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 12, color: '#fff', fontSize: '1.05rem', fontWeight: 600, cursor: 'pointer' }}>
+              Sign in
             </button>
           </div>
-
-          {/* Stats row */}
-          <div className="flex flex-wrap items-center justify-center gap-8 animate-fade-up-5">
-            {STATS.map(s => (
-              <div key={s.label} className="text-center">
-                <p className="text-2xl font-bold" style={{ color: s.color }}>{s.value}</p>
-                <p className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>{s.label}</p>
-              </div>
-            ))}
-          </div>
+          <p style={{ marginTop: '1rem', fontSize: '0.8rem', color: 'rgba(255,255,255,0.3)' }}>Free forever plan · No credit card required · Setup in 2 min</p>
         </div>
-      </section>
 
-      {/* ── Social proof marquee ── */}
-      <section style={{ background: 'var(--surface)', borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)', padding: '20px 0' }}>
-        <p className="text-center text-xs font-bold uppercase tracking-widest mb-4" style={{ color: 'var(--text-dim)' }}>Trusted by agencies worldwide</p>
-        <div className="marquee-container">
-          <div className="animate-marquee">
-            {[...SOCIAL_PROOF, ...SOCIAL_PROOF].map((name, i) => (
-              <div key={i} className="flex items-center gap-2 px-8 text-sm font-semibold whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>
-                <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--purple)' }} />
-                {name}
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── Problem → Solution ── */}
-      <section className="max-w-6xl mx-auto px-6 py-24">
-        <div className="reveal grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-          {/* Problem */}
-          <div>
-            <div className="inline-block px-3 py-1 rounded-lg text-xs font-bold mb-4" style={{ background: '#ef535022', color: '#ef5350' }}>😩 The Problem</div>
-            <h2 className="text-3xl md:text-4xl font-bold mb-6" style={{ color: 'var(--text)' }}>You're running your agency on 6 different tools</h2>
-            <div className="space-y-3">
-              {['Trello for tasks', 'Slack for communication', 'Google Drive for files', 'Harvest for time tracking', 'Notion for docs', 'QuickBooks for invoices'].map(p => (
-                <div key={p} className="flex items-center gap-3 p-3 rounded-xl" style={{ background: '#ef535011', border: '1px solid #ef535022' }}>
-                  <span style={{ color: '#ef5350' }}>✕</span>
-                  <span className="text-sm" style={{ color: 'var(--text-muted)' }}>{p}</span>
-                </div>
-              ))}
+        {/* App mockup */}
+        <div style={{ maxWidth: 960, margin: '4rem auto 0', animation: 'float 6s ease-in-out infinite' }}>
+          <div style={{ background: '#0f1117', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 16, overflow: 'hidden', boxShadow: '0 0 0 1px rgba(255,255,255,0.04), 0 32px 100px rgba(0,0,0,0.7), 0 0 80px rgba(99,102,241,0.12)' }}>
+            <div style={{ padding: '0.75rem 1rem', background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              {['#ff5f57','#ffbd2e','#28c840'].map((c, i) => <span key={i} style={{ width: 12, height: 12, borderRadius: '50%', background: c }} />)}
+              <span style={{ flex: 1, textAlign: 'center', fontSize: '0.8rem', color: 'rgba(255,255,255,0.25)' }}>flowos.app/dashboard</span>
             </div>
-          </div>
-          {/* Solution */}
-          <div>
-            <div className="inline-block px-3 py-1 rounded-lg text-xs font-bold mb-4" style={{ background: '#4caf8222', color: '#4caf82' }}>✨ The Solution</div>
-            <h2 className="text-3xl md:text-4xl font-bold mb-6" style={{ color: 'var(--text)' }}>One workspace. Everything your agency needs.</h2>
-            <div className="space-y-3">
-              {['Tasks, projects & kanban', 'Real-time team chat', 'File management & docs', 'Time tracking & billing', 'Client portal & approvals', 'Invoicing & reporting'].map(s => (
-                <div key={s} className="flex items-center gap-3 p-3 rounded-xl" style={{ background: '#4caf8211', border: '1px solid #4caf8222' }}>
-                  <span style={{ color: '#4caf82' }}>✓</span>
-                  <span className="text-sm font-medium" style={{ color: 'var(--text)' }}>{s}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Features ── */}
-      <section id="features" className="max-w-7xl mx-auto px-6 py-24">
-        <div className="text-center mb-16 reveal">
-          <div className="inline-block px-3 py-1 rounded-lg text-xs font-bold mb-4" style={{ background: 'var(--purple-dim)', color: 'var(--purple-light)' }}>Everything you need</div>
-          <h2 className="text-4xl md:text-5xl font-bold mb-4" style={{ color: 'var(--text)' }}>Built for ambitious agencies</h2>
-          <p className="text-lg max-w-2xl mx-auto" style={{ color: 'var(--text-muted)' }}>9 powerful modules working together so your team never needs another tool.</p>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {FEATURES.map((f, i) => (
-            <div key={f.title} className={`reveal p-6 rounded-2xl transition-all hover:-translate-y-1 hover:shadow-xl cursor-default`}
-              style={{ background: 'var(--card)', border: `1px solid ${f.color}33` }}>
-              <div className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl mb-4" style={{ background: f.dim }}>
-                {f.icon}
-              </div>
-              <h3 className="text-base font-bold mb-2" style={{ color: 'var(--text)' }}>{f.title}</h3>
-              <p className="text-sm leading-relaxed" style={{ color: 'var(--text-muted)' }}>{f.desc}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ── How it works ── */}
-      <section className="py-24 px-6" style={{ background: 'var(--surface)', borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)' }}>
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-16 reveal">
-            <div className="inline-block px-3 py-1 rounded-lg text-xs font-bold mb-4" style={{ background: 'var(--blue-dim)', color: 'var(--blue)' }}>Get started in minutes</div>
-            <h2 className="text-4xl md:text-5xl font-bold" style={{ color: 'var(--text)' }}>How FlowOS works</h2>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {STEPS.map((s, i) => (
-              <div key={s.num} className="reveal text-center">
-                <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-black mx-auto mb-4"
-                  style={{ background: `${s.color}22`, color: s.color, border: `2px solid ${s.color}44` }}>
-                  {s.num}
-                </div>
-                <h3 className="font-bold mb-2" style={{ color: 'var(--text)' }}>{s.title}</h3>
-                <p className="text-sm leading-relaxed" style={{ color: 'var(--text-muted)' }}>{s.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── Pricing ── */}
-      <section id="pricing" className="max-w-6xl mx-auto px-6 py-24">
-        <div className="text-center mb-12 reveal">
-          <div className="inline-block px-3 py-1 rounded-lg text-xs font-bold mb-4" style={{ background: '#ffc10722', color: '#ffc107' }}>Simple pricing</div>
-          <h2 className="text-4xl md:text-5xl font-bold mb-4" style={{ color: 'var(--text)' }}>Start free. Scale as you grow.</h2>
-          {/* Billing toggle */}
-          <div className="billing-toggle mt-6">
-            <button className={billing === 'monthly' ? 'active' : ''} onClick={() => setBilling('monthly')}>Monthly</button>
-            <button className={billing === 'annual' ? 'active' : ''} onClick={() => setBilling('annual')}>
-              Annual <span className="ml-1 text-xs px-1.5 py-0.5 rounded-full" style={{ background: '#4caf8222', color: '#4caf82' }}>-20%</span>
-            </button>
-          </div>
-        </div>
-        <div className="pricing-grid grid grid-cols-1 md:grid-cols-3 gap-6">
-          {PRICING_PLANS.map((plan) => (
-            <div key={plan.name} className="reveal rounded-2xl p-7 relative transition-all hover:-translate-y-1"
-              style={{
-                background: plan.popular ? `linear-gradient(135deg, ${plan.accent}18, ${plan.accent}08)` : 'var(--card)',
-                border: `1px solid ${plan.popular ? plan.accent + '55' : 'var(--border)'}`,
-                boxShadow: plan.popular ? `0 0 40px ${plan.accent}22` : undefined,
-              }}>
-              {plan.popular && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full text-xs font-bold text-white gradient-bg">
-                  Most Popular
-                </div>
-              )}
-              <div className="mb-6">
-                <p className="font-bold text-lg mb-1" style={{ color: plan.accent }}>{plan.name}</p>
-                <p className="text-sm mb-4" style={{ color: 'var(--text-muted)' }}>{plan.desc}</p>
-                <div className="flex items-end gap-1">
-                  <span className="text-5xl font-black" style={{ color: 'var(--text)' }}>
-                    ${plan.price[billing]}
-                  </span>
-                  {plan.price[billing] > 0 && <span className="text-sm pb-1" style={{ color: 'var(--text-muted)' }}>/mo</span>}
-                </div>
-              </div>
-              <ul className="space-y-2.5 mb-7">
-                {plan.features.map(f => (
-                  <li key={f} className="flex items-center gap-2.5 text-sm" style={{ color: 'var(--text)' }}>
-                    <span className="font-bold" style={{ color: plan.accent }}>✓</span>
-                    {f}
-                  </li>
+            <div style={{ display: 'grid', gridTemplateColumns: '180px 1fr', minHeight: 360 }}>
+              <div style={{ background: 'rgba(255,255,255,0.02)', borderRight: '1px solid rgba(255,255,255,0.06)', padding: '1.25rem 0.75rem', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                {['Dashboard','Tasks','Projects','Chat','Finance','CRM','Content','Design'].map((item, i) => (
+                  <div key={item} style={{ padding: '0.45rem 0.75rem', borderRadius: 7, fontSize: '0.8rem', fontWeight: 500, background: i === 1 ? 'rgba(99,102,241,0.15)' : 'transparent', color: i === 1 ? '#818cf8' : 'rgba(255,255,255,0.35)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <span style={{ width: 6, height: 6, borderRadius: 2, background: i === 1 ? '#6366f1' : 'rgba(255,255,255,0.15)' }} />
+                    {item}
+                  </div>
                 ))}
-              </ul>
-              <button onClick={() => setShowSignup(true)}
-                className="w-full py-3 rounded-xl font-bold text-sm transition hover:opacity-90"
-                style={{
-                  background: plan.popular ? `linear-gradient(135deg, #7c6fe0, ${plan.accent})` : 'var(--surface)',
-                  color: plan.popular ? 'white' : plan.accent,
-                  border: `1px solid ${plan.accent}55`,
-                }}>
-                {plan.cta}
-              </button>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ── Testimonials ── */}
-      <section className="py-24 px-6" style={{ background: 'var(--surface)', borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)' }}>
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16 reveal">
-            <div className="inline-block px-3 py-1 rounded-lg text-xs font-bold mb-4" style={{ background: '#ff6b9d22', color: '#ff6b9d' }}>What teams say</div>
-            <h2 className="text-4xl md:text-5xl font-bold" style={{ color: 'var(--text)' }}>Agency leaders love FlowOS</h2>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {TESTIMONIALS.map((t, i) => (
-              <div key={i} className="reveal rounded-2xl p-7"
-                style={{ background: 'var(--card)', border: `1px solid ${t.color}33` }}>
-                <div className="flex gap-1 mb-4">
-                  {Array(t.stars).fill(0).map((_, j) => (
-                    <span key={j} style={{ color: '#ffc107' }}>★</span>
+              </div>
+              <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <div style={{ display: 'flex', gap: '1rem' }}>
+                  {[{ label: 'Total tasks', val: '142', color: '#6366f1' },{ label: 'In progress', val: '38', color: '#f59e0b' },{ label: 'Completed', val: '94', color: '#10b981' },{ label: 'Overdue', val: '10', color: '#f43f5e' }].map((s) => (
+                    <div key={s.label} style={{ flex: 1, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 10, padding: '0.75rem' }}>
+                      <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.35)', marginBottom: '0.25rem' }}>{s.label}</div>
+                      <div style={{ fontSize: '1.4rem', fontWeight: 800, color: s.color }}>{s.val}</div>
+                    </div>
                   ))}
                 </div>
-                <p className="text-sm leading-relaxed mb-5" style={{ color: 'var(--text)' }}>"{t.quote}"</p>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white flex-shrink-0 gradient-bg">
-                    {t.name[0]}
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold" style={{ color: 'var(--text)' }}>{t.name}</p>
-                    <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{t.role}</p>
-                  </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  {['Design new homepage mockups','Review Q4 budget proposal','Set up client onboarding flow','Push API v2 to production'].map((t, i) => (
+                    <div key={t} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.5rem 0.75rem', background: 'rgba(255,255,255,0.03)', borderRadius: 8 }}>
+                      <span style={{ width: 14, height: 14, borderRadius: 4, border: `2px solid ${['#6366f1','#10b981','#f59e0b','#6366f1'][i]}`, background: i === 1 ? '#10b981' : 'transparent', flexShrink: 0 }} />
+                      <span style={{ fontSize: '0.78rem', color: i === 1 ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.7)', textDecoration: i === 1 ? 'line-through' : 'none', flex: 1 }}>{t}</span>
+                      <span style={{ fontSize: '0.68rem', padding: '2px 8px', borderRadius: 100, background: ['rgba(99,102,241,0.15)','rgba(16,185,129,0.15)','rgba(245,158,11,0.15)','rgba(239,68,68,0.15)'][i], color: ['#818cf8','#6ee7b7','#fcd34d','#fca5a5'][i] }}>
+                        {['Design','Done','Finance','Dev'][i]}
+                      </span>
+                    </div>
+                  ))}
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── STATS ── */}
+      <section style={{ padding: '3rem 1.5rem', borderTop: '1px solid rgba(255,255,255,0.06)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+        <div style={{ maxWidth: 900, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '2rem', textAlign: 'center' }}>
+          {STATS.map(({ value, label }) => (
+            <Reveal key={label}>
+              <div className="outfit" style={{ fontSize: 'clamp(2rem, 4vw, 2.8rem)', fontWeight: 900, background: 'linear-gradient(135deg,#6366f1,#a855f7)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>{value}</div>
+              <div style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.45)', marginTop: '0.3rem' }}>{label}</div>
+            </Reveal>
+          ))}
+        </div>
+      </section>
+
+      {/* ── FEATURES ── */}
+      <section id="features" style={{ padding: '6rem 1.5rem' }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+          <Reveal style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
+            <div style={{ fontSize: '0.8rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: '#818cf8', fontWeight: 700, marginBottom: '1rem' }}>Everything you need</div>
+            <h2 className="outfit" style={{ fontSize: 'clamp(2rem, 4vw, 2.8rem)', fontWeight: 800, letterSpacing: '-0.02em' }}>
+              Nine powerful modules.<br /><span style={{ color: 'rgba(255,255,255,0.4)' }}>One monthly price.</span>
+            </h2>
+          </Reveal>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.25rem' }}>
+            {FEATURES.map(({ icon, label, color, desc }, i) => (
+              <Reveal key={label} delay={i * 60}>
+                <div className="hover-lift" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 16, padding: '1.75rem', cursor: 'default' }}>
+                  <div style={{ width: 44, height: 44, borderRadius: 12, background: `${color}22`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1rem', fontSize: '1.3rem', color }}>
+                    {icon}
+                  </div>
+                  <h3 style={{ fontWeight: 700, fontSize: '1.05rem', marginBottom: '0.5rem' }}>{label}</h3>
+                  <p style={{ fontSize: '0.88rem', color: 'rgba(255,255,255,0.45)', lineHeight: 1.65 }}>{desc}</p>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── HOW IT WORKS ── */}
+      <section id="how-it-works" style={{ padding: '6rem 1.5rem', background: 'rgba(255,255,255,0.015)' }}>
+        <div style={{ maxWidth: 900, margin: '0 auto' }}>
+          <Reveal style={{ textAlign: 'center', marginBottom: '4rem' }}>
+            <div style={{ fontSize: '0.8rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: '#818cf8', fontWeight: 700, marginBottom: '1rem' }}>Getting started</div>
+            <h2 className="outfit" style={{ fontSize: 'clamp(2rem, 4vw, 2.6rem)', fontWeight: 800, letterSpacing: '-0.02em' }}>Up and running in minutes</h2>
+          </Reveal>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', position: 'relative' }}>
+            <div style={{ position: 'absolute', left: 28, top: 52, bottom: 52, width: 1, background: 'linear-gradient(to bottom, #6366f1, transparent)', opacity: 0.3 }} />
+            {STEPS.map(({ n, title, desc }, i) => (
+              <Reveal key={n} delay={i * 100}>
+                <div style={{ display: 'flex', gap: '2rem', alignItems: 'flex-start' }}>
+                  <div style={{ width: 56, height: 56, borderRadius: 16, background: 'linear-gradient(135deg, rgba(99,102,241,0.2), rgba(168,85,247,0.2))', border: '1px solid rgba(99,102,241,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.9rem', fontWeight: 800, color: '#818cf8', flexShrink: 0 }}>
+                    {n}
+                  </div>
+                  <div style={{ paddingTop: '0.75rem' }}>
+                    <h3 style={{ fontWeight: 700, fontSize: '1.15rem', marginBottom: '0.4rem' }}>{title}</h3>
+                    <p style={{ color: 'rgba(255,255,255,0.45)', lineHeight: 1.65, fontSize: '0.92rem' }}>{desc}</p>
+                  </div>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── PRICING ── */}
+      <section id="pricing" style={{ padding: '6rem 1.5rem' }}>
+        <div style={{ maxWidth: 1050, margin: '0 auto' }}>
+          <Reveal style={{ textAlign: 'center', marginBottom: '3rem' }}>
+            <div style={{ fontSize: '0.8rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: '#818cf8', fontWeight: 700, marginBottom: '1rem' }}>Pricing</div>
+            <h2 className="outfit" style={{ fontSize: 'clamp(2rem, 4vw, 2.6rem)', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: '1.5rem' }}>Simple, transparent pricing</h2>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.75rem', padding: '0.4rem', background: 'rgba(255,255,255,0.05)', borderRadius: 100 }}>
+              <button onClick={() => setAnnual(false)} style={{ padding: '0.4rem 1.1rem', borderRadius: 100, border: 'none', cursor: 'pointer', background: !annual ? '#fff' : 'transparent', color: !annual ? '#07080f' : 'rgba(255,255,255,0.5)', fontWeight: 600, fontSize: '0.85rem', transition: 'all 0.2s' }}>Monthly</button>
+              <button onClick={() => setAnnual(true)} style={{ padding: '0.4rem 1.1rem', borderRadius: 100, border: 'none', cursor: 'pointer', background: annual ? '#fff' : 'transparent', color: annual ? '#07080f' : 'rgba(255,255,255,0.5)', fontWeight: 600, fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                Annual
+                <span style={{ padding: '1px 7px', borderRadius: 100, background: '#6366f1', color: '#fff', fontSize: '0.72rem', fontWeight: 700 }}>-35%</span>
+              </button>
+            </div>
+          </Reveal>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem' }}>
+            {PRICING.map(({ name, monthlyPrice, annualPrice, color, border, badge, features, cta }, i) => (
+              <Reveal key={name} delay={i * 80}>
+                <div style={{ background: color, border: `1px solid ${border}`, borderRadius: 20, padding: '2rem', position: 'relative', height: '100%', display: 'flex', flexDirection: 'column' }}>
+                  {badge && (
+                    <div style={{ position: 'absolute', top: '-1px', left: '50%', transform: 'translateX(-50%)', padding: '4px 16px', background: 'linear-gradient(135deg,#6366f1,#a855f7)', borderRadius: '0 0 10px 10px', fontSize: '0.75rem', fontWeight: 700, color: '#fff', whiteSpace: 'nowrap' }}>{badge}</div>
+                  )}
+                  <div className="outfit" style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '1rem', marginTop: badge ? '0.5rem' : 0 }}>{name}</div>
+                  <div style={{ marginBottom: '1.75rem' }}>
+                    <span className="outfit" style={{ fontSize: '2.8rem', fontWeight: 900 }}>${annual ? annualPrice : monthlyPrice}</span>
+                    {(annual ? annualPrice : monthlyPrice) > 0
+                      ? <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.9rem' }}>/mo</span>
+                      : <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.9rem' }}> forever</span>}
+                  </div>
+                  <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.65rem', flex: 1, marginBottom: '2rem' }}>
+                    {features.map((f) => (
+                      <li key={f} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.6rem', fontSize: '0.88rem', color: 'rgba(255,255,255,0.65)' }}>
+                        <span style={{ color: '#10b981', flexShrink: 0, fontWeight: 700, marginTop: '1px' }}>✓</span>{f}
+                      </li>
+                    ))}
+                  </ul>
+                  <button
+                    onClick={() => open('signup')}
+                    style={{ width: '100%', padding: '0.8rem', background: i === 1 ? 'linear-gradient(135deg,#6366f1,#a855f7)' : 'rgba(255,255,255,0.08)', border: i === 1 ? 'none' : '1px solid rgba(255,255,255,0.12)', borderRadius: 10, color: '#fff', fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer' }}
+                  >{cta}</button>
+                </div>
+              </Reveal>
             ))}
           </div>
         </div>
       </section>
 
       {/* ── FAQ ── */}
-      <section id="faq" className="max-w-3xl mx-auto px-6 py-24">
-        <div className="text-center mb-16 reveal">
-          <div className="inline-block px-3 py-1 rounded-lg text-xs font-bold mb-4" style={{ background: '#00c9b122', color: '#00c9b1' }}>FAQ</div>
-          <h2 className="text-4xl md:text-5xl font-bold" style={{ color: 'var(--text)' }}>Common questions</h2>
-        </div>
-        <div className="space-y-1 reveal">
-          {FAQ_ITEMS.map((item, i) => (
-            <div key={i} className={`faq-item ${openFaq === i ? 'open' : ''}`}>
-              <button className="w-full flex items-center justify-between gap-4 py-5 text-left"
-                onClick={() => setOpenFaq(openFaq === i ? null : i)}>
-                <span className="font-semibold text-sm" style={{ color: 'var(--text)' }}>{item.q}</span>
-                <span className="faq-icon text-xl flex-shrink-0" style={{ color: 'var(--text-muted)' }}>⌄</span>
-              </button>
-              <div className="faq-answer">
-                <p className="text-sm leading-relaxed pb-5" style={{ color: 'var(--text-muted)' }}>{item.a}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ── Final CTA ── */}
-      <section className="px-6 py-24 text-center reveal">
-        <div className="max-w-3xl mx-auto">
-          <div className="inline-block px-3 py-1 rounded-lg text-xs font-bold mb-6" style={{ background: 'var(--purple-dim)', color: 'var(--purple-light)' }}>
-            Limited time: Free Pro trial for first 100 agencies
-          </div>
-          <h2 className="text-4xl md:text-6xl font-black mb-6" style={{ color: 'var(--text)', lineHeight: '1.1' }}>
-            Ready to run your agency like a{' '}
-            <span className="gradient-text">pro?</span>
-          </h2>
-          <p className="text-lg mb-10" style={{ color: 'var(--text-muted)' }}>
-            Join 2,400+ agencies already using FlowOS. Free forever on Starter, no card required.
-          </p>
-          <button onClick={() => setShowSignup(true)}
-            className="inline-flex items-center gap-3 px-10 py-5 gradient-bg rounded-2xl text-white text-lg font-black hover:opacity-90 transition-all hover:-translate-y-0.5 hover:shadow-2xl"
-            style={{ boxShadow: '0 0 60px rgba(124,111,224,0.4)' }}>
-            Create free workspace →
-          </button>
-          <p className="text-xs mt-4" style={{ color: 'var(--text-dim)' }}>No credit card · Takes 60 seconds</p>
-        </div>
-      </section>
-
-      {/* ── Footer ── */}
-      <footer style={{ background: 'var(--surface)', borderTop: '1px solid var(--border)', padding: '48px 24px 24px' }}>
-        <div className="max-w-7xl mx-auto">
-          <div className="footer-grid grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
-            <div className="col-span-2 md:col-span-1">
-              <div className="text-xl font-black gradient-text mb-2">FlowOS</div>
-              <p className="text-sm leading-relaxed" style={{ color: 'var(--text-muted)' }}>
-                The all-in-one platform for marketing agencies.
-              </p>
-            </div>
-            {[
-              { title: 'Product', links: ['Features', 'Pricing', 'Changelog', 'Roadmap'] },
-              { title: 'Company', links: ['About', 'Blog', 'Careers', 'Contact'] },
-              { title: 'Legal', links: ['Privacy', 'Terms', 'Security'] },
-            ].map(col => (
-              <div key={col.title}>
-                <p className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: 'var(--text-dim)' }}>{col.title}</p>
-                <ul className="space-y-2">
-                  {col.links.map(link => (
-                    <li key={link}><a href="#" className="text-sm transition hover:opacity-100" style={{ color: 'var(--text-muted)' }}>{link}</a></li>
-                  ))}
-                </ul>
-              </div>
+      <section id="faq" style={{ padding: '6rem 1.5rem', background: 'rgba(255,255,255,0.015)' }}>
+        <div style={{ maxWidth: 720, margin: '0 auto' }}>
+          <Reveal style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
+            <div style={{ fontSize: '0.8rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: '#818cf8', fontWeight: 700, marginBottom: '1rem' }}>FAQ</div>
+            <h2 className="outfit" style={{ fontSize: 'clamp(2rem, 4vw, 2.6rem)', fontWeight: 800, letterSpacing: '-0.02em' }}>Frequently asked questions</h2>
+          </Reveal>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            {FAQ.map(({ q, a }, i) => (
+              <Reveal key={i} delay={i * 50}>
+                <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12, overflow: 'hidden' }}>
+                  <button
+                    onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                    style={{ width: '100%', padding: '1.1rem 1.5rem', background: 'transparent', border: 'none', color: '#fff', fontSize: '0.95rem', fontWeight: 600, cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', textAlign: 'left' }}
+                  >
+                    {q}
+                    <span style={{ color: '#818cf8', fontSize: '1.2rem', flexShrink: 0, transform: openFaq === i ? 'rotate(45deg)' : 'none', transition: 'transform 0.2s' }}>+</span>
+                  </button>
+                  {openFaq === i && (
+                    <div style={{ padding: '0 1.5rem 1.25rem', color: 'rgba(255,255,255,0.5)', fontSize: '0.9rem', lineHeight: 1.7 }}>{a}</div>
+                  )}
+                </div>
+              </Reveal>
             ))}
           </div>
-          <div className="flex flex-col sm:flex-row items-center justify-between pt-6" style={{ borderTop: '1px solid var(--border)' }}>
-            <p className="text-xs" style={{ color: 'var(--text-dim)' }}>© 2026 FlowOS. All rights reserved.</p>
-            <div className="flex items-center gap-4 mt-3 sm:mt-0">
-              {['Privacy', 'Terms', 'Cookies'].map(l => (
-                <a key={l} href="#" className="text-xs transition hover:opacity-80" style={{ color: 'var(--text-dim)' }}>{l}</a>
-              ))}
+        </div>
+      </section>
+
+      {/* ── CTA ── */}
+      <section style={{ padding: '6rem 1.5rem', textAlign: 'center' }}>
+        <Reveal>
+          <div style={{ maxWidth: 600, margin: '0 auto' }}>
+            <h2 className="outfit" style={{ fontSize: 'clamp(2rem, 5vw, 3.2rem)', fontWeight: 900, letterSpacing: '-0.03em', marginBottom: '1.25rem', lineHeight: 1.1 }}>
+              Ready to run your<br />
+              <span style={{ background: 'linear-gradient(135deg,#6366f1,#a855f7,#22d3ee)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>business on one OS?</span>
+            </h2>
+            <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: '1.05rem', lineHeight: 1.65, marginBottom: '2.5rem' }}>
+              Join thousands of teams that replaced 5+ tools with FlowOS. Start free — no credit card, no time limit on the Starter plan.
+            </p>
+            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+              <button onClick={() => open('signup')} style={{ padding: '1rem 2.5rem', background: 'linear-gradient(135deg,#6366f1,#a855f7)', border: 'none', borderRadius: 12, color: '#fff', fontSize: '1.05rem', fontWeight: 700, cursor: 'pointer', boxShadow: '0 8px 32px rgba(99,102,241,0.4)' }}>
+                Create free workspace
+              </button>
+              <button onClick={() => open('login')} style={{ padding: '1rem 2.5rem', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 12, color: '#fff', fontSize: '1.05rem', fontWeight: 600, cursor: 'pointer' }}>
+                Sign in
+              </button>
             </div>
           </div>
+        </Reveal>
+      </section>
+
+      {/* ── FOOTER ── */}
+      <footer style={{ borderTop: '1px solid rgba(255,255,255,0.06)', padding: '3rem 1.5rem' }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1.5rem' }}>
+          <div className="outfit" style={{ fontWeight: 800, fontSize: '1.2rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <span style={{ width: 28, height: 28, borderRadius: 7, background: 'linear-gradient(135deg,#6366f1,#a855f7)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 900 }}>F</span>
+            FlowOS
+          </div>
+          <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
+            {['Privacy', 'Terms', 'Security', 'Status', 'Blog'].map((item) => (
+              <span key={item} style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.35)', cursor: 'pointer' }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.7)')}
+                onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.35)')}
+              >{item}</span>
+            ))}
+          </div>
+          <p style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.2)' }}>© 2025 FlowOS · All rights reserved</p>
         </div>
       </footer>
+
+      {/* ── AUTH MODAL ── */}
+      {authMode && <AuthModal initialMode={authMode} onClose={() => setAuthMode(null)} />}
     </div>
   );
 }

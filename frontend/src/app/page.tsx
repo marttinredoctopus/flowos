@@ -1,20 +1,12 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuthStore } from '@/store/authStore';
-import AuthModal from '@/components/auth/AuthModal';
 
 export default function LandingPage() {
-  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const router = useRouter();
-  const [authMode, setAuthMode] = useState<'login'|'signup'|null>(null);
   const [scrolled, setScrolled] = useState(false);
   const [faqOpen, setFaqOpen] = useState<number|null>(null);
   const [cycle, setCycle] = useState<'monthly'|'annual'>('monthly');
-
-  useEffect(() => {
-    if (isAuthenticated) router.push('/dashboard');
-  }, [isAuthenticated, router]);
 
   useEffect(() => {
     const h = () => setScrolled(window.scrollY > 20);
@@ -70,14 +62,14 @@ export default function LandingPage() {
         </div>
 
         <div style={{ display:'flex', gap:10 }}>
-          <button onClick={()=>setAuthMode('login')} style={{
+          <button onClick={()=>router.push('/login')} style={{
             padding:'8px 18px', borderRadius:8,
             background:'transparent',
             border:'1px solid rgba(255,255,255,0.15)',
             color:'rgba(255,255,255,0.8)', fontSize:14,
             fontWeight:500, cursor:'pointer', transition:'all 0.2s',
           }}>Sign in</button>
-          <button onClick={()=>setAuthMode('signup')} style={{
+          <button onClick={()=>router.push('/register')} style={{
             padding:'8px 18px', borderRadius:8,
             background:'linear-gradient(135deg,#6366f1,#8b5cf6)',
             border:'none', color:'white', fontSize:14,
@@ -143,7 +135,7 @@ export default function LandingPage() {
           flexWrap:'wrap', justifyContent:'center',
           animation:'fadeUp 0.6s 0.3s ease both',
         }}>
-          <button onClick={()=>setAuthMode('signup')} style={{
+          <button onClick={()=>router.push('/register')} style={{
             padding:'14px 32px', borderRadius:10, border:'none',
             background:'linear-gradient(135deg,#6366f1,#8b5cf6)',
             color:'white', fontSize:16, fontWeight:700,
@@ -160,7 +152,7 @@ export default function LandingPage() {
           }}>
             Start for free →
           </button>
-          <button onClick={()=>setAuthMode('login')} style={{
+          <button onClick={()=>router.push('/login')} style={{
             padding:'14px 32px', borderRadius:10,
             background:'transparent',
             border:'1px solid rgba(255,255,255,0.15)',
@@ -501,7 +493,7 @@ export default function LandingPage() {
                   ))}
                 </ul>
 
-                <button onClick={()=>setAuthMode('signup')} style={{
+                <button onClick={()=>router.push('/register')} style={{
                   width:'100%', padding:'11px',
                   borderRadius:8, border:'none', fontSize:14,
                   fontWeight:600, cursor:'pointer', transition:'all 0.2s',
@@ -595,7 +587,7 @@ export default function LandingPage() {
             marginBottom:36 }}>
             Join 2,400+ agencies already using TasksDone
           </p>
-          <button onClick={()=>setAuthMode('signup')} style={{
+          <button onClick={()=>router.push('/register')} style={{
             padding:'16px 40px', borderRadius:12, border:'none',
             background:'linear-gradient(135deg,#6366f1,#8b5cf6)',
             color:'white', fontSize:18, fontWeight:700,
@@ -637,14 +629,6 @@ export default function LandingPage() {
           ))}
         </div>
       </footer>
-
-      {authMode && (
-        <AuthModal
-          mode={authMode}
-          onClose={()=>setAuthMode(null)}
-          onSwitch={(m: 'login'|'signup')=>setAuthMode(m)}
-        />
-      )}
 
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap');

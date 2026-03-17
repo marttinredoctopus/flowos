@@ -139,10 +139,10 @@ export default function NotificationBell() {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-12 w-96 bg-dark-800 border border-white/10 rounded-2xl shadow-2xl shadow-black/50 animate-slide-up z-50 overflow-hidden">
+        <div className="absolute right-0 top-12 w-96 rounded-2xl shadow-2xl animate-slide-up z-50 overflow-hidden" style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-white/5">
-            <h3 className="font-display font-semibold">Notifications</h3>
+          <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: '1px solid var(--border)' }}>
+            <h3 className="font-display font-semibold" style={{ color: 'var(--text)' }}>Notifications</h3>
             {unreadCount > 0 && (
               <button onClick={markAllRead} className="text-xs text-brand-blue hover:underline">
                 Mark all as read
@@ -160,22 +160,25 @@ export default function NotificationBell() {
             ) : (
               group(notifications.slice(0, 20)).map(({ label, items }) => (
                 <div key={label}>
-                  <div className="px-4 py-2 text-xs text-slate-500 uppercase tracking-wider bg-dark-900/50">{label}</div>
+                  <div className="px-4 py-2 text-xs uppercase tracking-wider" style={{ background: 'var(--surface)', color: 'var(--text-dim)' }}>{label}</div>
                   {items.map((n) => (
                     <button
                       key={n.id}
                       onClick={() => markRead(n.id, n.action_url)}
-                      className="w-full flex items-start gap-3 px-4 py-3 hover:bg-dark-700 transition-colors text-left"
+                      className="w-full flex items-start gap-3 px-4 py-3 transition-colors text-left"
+                      style={{ background: 'transparent' }}
+                      onMouseEnter={e => (e.currentTarget.style.background = 'var(--card-hover)')}
+                      onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                     >
                       <span className="text-lg mt-0.5 flex-shrink-0">{TYPE_ICON[n.type] || '🔔'}</span>
                       <div className="flex-1 min-w-0">
-                        <p className={`text-sm leading-snug ${n.is_read ? 'text-slate-400' : 'text-white font-medium'}`}>{n.title}</p>
-                        {n.body && <p className="text-xs text-slate-500 mt-0.5 truncate">{n.body}</p>}
-                        <p className="text-xs text-slate-600 mt-1">
+                        <p className="text-sm leading-snug" style={{ color: n.is_read ? 'var(--text-muted)' : 'var(--text)', fontWeight: n.is_read ? 400 : 500 }}>{n.title}</p>
+                        {n.body && <p className="text-xs mt-0.5 truncate" style={{ color: 'var(--text-muted)' }}>{n.body}</p>}
+                        <p className="text-xs mt-1" style={{ color: 'var(--text-dim)' }}>
                           {formatDistanceToNow(new Date(n.created_at), { addSuffix: true })}
                         </p>
                       </div>
-                      {!n.is_read && <span className="w-2 h-2 rounded-full bg-brand-blue flex-shrink-0 mt-1.5" />}
+                      {!n.is_read && <span className="w-2 h-2 rounded-full flex-shrink-0 mt-1.5" style={{ background: 'var(--blue)' }} />}
                     </button>
                   ))}
                 </div>

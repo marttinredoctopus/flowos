@@ -47,7 +47,7 @@ export default function InboxPage() {
 
   async function markAllRead() {
     try {
-      await apiClient.post('/notifications/mark-all-read');
+      await apiClient.patch('/notifications/read-all');
       setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
       toast.success('All marked as read');
     } catch {}

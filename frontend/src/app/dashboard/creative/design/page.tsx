@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import apiClient from '@/lib/apiClient';
 import toast from 'react-hot-toast';
 
@@ -20,6 +20,8 @@ export default function DesignHubPage() {
   const [form, setForm] = useState({ title: '', assetType: 'Other', deadline: '', briefContent: '', clientId: '' });
   const [saving, setSaving] = useState(false);
   const [dragging, setDragging] = useState<{id: string; status: string} | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => { loadData(); }, []);
 
@@ -62,6 +64,29 @@ export default function DesignHubPage() {
       setBriefs(prev => prev.filter(b => b.id !== id));
       toast.success('Deleted');
     } catch {}
+  }
+
+  async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      const uploadRes = await apiClient.post('/upload/single', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+      const fileUrl = uploadRes.data.url || uploadRes.data.path;
+      const isImage = /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(file.name);
+      const assetRes = await apiClient.post('/design/assets', {
+        name: file.name.replace(/\.[^/.]+$/, ''),
+        fileUrl,
+        fileType: isImage ? 'image' : 'file',
+      });
+      setAssets(prev => [assetRes.data, ...prev]);
+      toast.success('Asset uploaded!');
+    } catch { toast.error('Upload failed'); } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
   }
 
   function getBriefsByStatus(status: string) {
@@ -142,6 +167,14 @@ export default function DesignHubPage() {
       {/* ASSET LIBRARY */}
       {tab === 'assets' && (
         <div>
+          <div className="flex justify-end mb-4">
+            <input ref={fileInputRef} type="file" className="hidden" accept="image/*,.pdf,.doc,.docx,.mp4,.mov"
+              onChange={handleFileUpload} />
+            <button onClick={() => fileInputRef.current?.click()} disabled={uploading}
+              className="px-4 py-2 gradient-bg rounded-xl text-sm font-semibold text-white hover:opacity-90 disabled:opacity-60">
+              {uploading ? 'Uploading…' : '⬆ Upload Asset'}
+            </button>
+          </div>
           {loading ? (
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
               {[1,2,3,4,5,6].map(i => <div key={i} className="aspect-square rounded-xl bg-white/5 animate-pulse" />)}

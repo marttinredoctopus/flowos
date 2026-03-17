@@ -43,6 +43,10 @@
   /* legacy */
   --brand: #7c6fe0;
   --brand-blue: #4a9eff;
+
+  /* Theme-dependent utility vars */
+  --glass-bg: rgba(12,13,20,0.85);
+  --nav-hover-bg: rgba(255,255,255,0.04);
 }
 
 /* Light mode */
@@ -58,8 +62,36 @@
   --text-dim: #b0b5cc;
   --input-bg: #f4f5fb;
   --shadow: rgba(0,0,0,0.08);
-  --purple-dim: rgba(124,111,224,0.1);
-  --blue-dim: rgba(74,158,255,0.1);
+
+  /* Brand colors — same hues, slightly adjusted for light bg */
+  --purple: #6c5ce7;
+  --purple-light: #8b7cf0;
+  --purple-dim: rgba(108,92,231,0.1);
+  --blue: #2d86e8;
+  --blue-dim: rgba(45,134,232,0.1);
+  --pink: #e8407a;
+  --pink-dim: rgba(232,64,122,0.1);
+  --teal: #00a896;
+  --teal-dim: rgba(0,168,150,0.1);
+  --green: #2e9e6b;
+  --green-dim: rgba(46,158,107,0.1);
+  --yellow: #d4980a;
+  --yellow-dim: rgba(212,152,10,0.1);
+  --orange: #e8572a;
+  --orange-dim: rgba(232,87,42,0.1);
+  --red: #d63031;
+  --red-dim: rgba(214,48,49,0.1);
+
+  --gradient: linear-gradient(135deg, #6c5ce7, #2d86e8);
+  --glow: rgba(108,92,231,0.15);
+
+  /* legacy */
+  --brand: #6c5ce7;
+  --brand-blue: #2d86e8;
+
+  /* Theme-dependent utility vars */
+  --glass-bg: rgba(255,255,255,0.85);
+  --nav-hover-bg: rgba(0,0,0,0.04);
 }
 
 /* ── Base ────────────────────────────────────────────────────── */
@@ -100,7 +132,7 @@
     background-origin: border-box;
   }
   .glass {
-    background: rgba(12,13,20,0.85);
+    background: var(--glass-bg, rgba(12,13,20,0.85));
     backdrop-filter: blur(20px) saturate(180%);
     -webkit-backdrop-filter: blur(20px) saturate(180%);
   }
@@ -130,7 +162,7 @@
     padding-left: calc(1rem - 3px);
   }
   .nav-item-inactive:hover {
-    background: rgba(255,255,255,0.04);
+    background: var(--nav-hover-bg, rgba(255,255,255,0.04));
     color: var(--text);
   }
 }
@@ -399,8 +431,8 @@
 /* ── Scrollbar ───────────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.15); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--border-hover); }
 
 /* ── Landing page mobile ─────────────────────────────────────── */
 @media (max-width: 640px) {

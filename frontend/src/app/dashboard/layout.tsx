@@ -17,6 +17,7 @@ import { useAuthStore } from '@/store/authStore';
 import { useThemeStore } from '@/store/themeStore';
 import NotificationBell from '@/components/notifications/NotificationBell';
 import { Avatar } from '@/components/ui/Avatar';
+import StorageBar from '@/components/ui/StorageBar';
 import apiClient from '@/lib/apiClient';
 import { disconnectSocket } from '@/lib/socket';
 
@@ -335,6 +336,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
         ))}
       </nav>
+
+      {/* Storage bar */}
+      <StorageBar />
 
       {/* User footer */}
       <div className="px-3 py-3" style={{ borderTop: '1px solid var(--border)' }}>

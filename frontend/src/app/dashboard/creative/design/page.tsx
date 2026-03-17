@@ -1,7 +1,8 @@
 'use client';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import apiClient from '@/lib/apiClient';
 import toast from 'react-hot-toast';
+import { FileUpload } from '@/components/ui/FileUpload';
 
 const STATUSES = ['brief_received','in_design','review','client_approval','done'];
 const STATUS_LABELS: Record<string,string> = {
@@ -20,8 +21,6 @@ export default function DesignHubPage() {
   const [form, setForm] = useState({ title: '', assetType: 'Other', deadline: '', briefContent: '', clientId: '' });
   const [saving, setSaving] = useState(false);
   const [dragging, setDragging] = useState<{id: string; status: string} | null>(null);
-  const [uploading, setUploading] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => { loadData(); }, []);
 
@@ -66,27 +65,17 @@ export default function DesignHubPage() {
     } catch {}
   }
 
-  async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setUploading(true);
+  async function handleR2Upload(file: { url: string; filename: string; mimeType: string }) {
     try {
-      const fd = new FormData();
-      fd.append('file', file);
-      const uploadRes = await apiClient.post('/upload/single', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
-      const fileUrl = uploadRes.data.url || uploadRes.data.path;
-      const isImage = /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(file.name);
+      const isImage = /^image\//.test(file.mimeType);
       const assetRes = await apiClient.post('/design/assets', {
-        name: file.name.replace(/\.[^/.]+$/, ''),
-        fileUrl,
+        name:     file.filename.replace(/\.[^/.]+$/, ''),
+        fileUrl:  file.url,
         fileType: isImage ? 'image' : 'file',
       });
       setAssets(prev => [assetRes.data, ...prev]);
-      toast.success('Asset uploaded!');
-    } catch { toast.error('Upload failed'); } finally {
-      setUploading(false);
-      if (fileInputRef.current) fileInputRef.current.value = '';
-    }
+      toast.success('Asset uploaded to cloud!');
+    } catch { toast.error('Failed to save asset'); }
   }
 
   function getBriefsByStatus(status: string) {
@@ -168,12 +157,15 @@ export default function DesignHubPage() {
       {tab === 'assets' && (
         <div>
           <div className="flex justify-end mb-4">
-            <input ref={fileInputRef} type="file" className="hidden" accept="image/*,.pdf,.doc,.docx,.mp4,.mov"
-              onChange={handleFileUpload} />
-            <button onClick={() => fileInputRef.current?.click()} disabled={uploading}
-              className="px-4 py-2 gradient-bg rounded-xl text-sm font-semibold text-white hover:opacity-90 disabled:opacity-60">
-              {uploading ? 'Uploading…' : '⬆ Upload Asset'}
-            </button>
+            <FileUpload
+              folder="designs"
+              entityType="design_asset"
+              accept="image/*,.pdf,.ai,.psd,.svg,.fig,.sketch,.doc,.docx"
+              compact
+              label="Upload Asset"
+              onUpload={handleR2Upload}
+              onError={err => toast.error(err)}
+            />
           </div>
           {loading ? (
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">

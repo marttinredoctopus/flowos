@@ -34,7 +34,8 @@ export function AuthInit() {
       } catch {
         logout();
         disconnectSocket();
-        window.location.href = '/';
+        // Don't hard-redirect — stale localStorage will be cleared by logout()
+        // and the current page's useEffect will handle navigation if needed
       }
     }
 

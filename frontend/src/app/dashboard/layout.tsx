@@ -11,8 +11,9 @@ import {
   TrendingUp, Search, Sparkles,
   Receipt, CreditCard, BarChart3,
   BookOpen, ClipboardList, Video, Camera, HardDrive, Settings,
-  Plus, Sun, Moon, LogOut, Menu, Bell,
+  Plus, Sun, Moon, LogOut, Menu, Bell, Zap, Globe, LayoutTemplate,
 } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useThemeStore } from '@/store/themeStore';
 import NotificationBell from '@/components/notifications/NotificationBell';
@@ -59,9 +60,10 @@ const NAV_SECTIONS = [
   {
     label: 'Intelligence',
     items: [
-      { label: 'Competitor Analysis', href: '/dashboard/intelligence',           Icon: TrendingUp, color: 'var(--emerald)' },
-      { label: 'Market Research',     href: '/dashboard/intelligence/research',  Icon: Search,     color: 'var(--indigo)' },
-      { label: 'Campaign Generator',  href: '/dashboard/intelligence/campaigns', Icon: Sparkles,   color: 'var(--amber)' },
+      { label: 'AI Campaign Builder', href: '/dashboard/intelligence/campaign-builder', Icon: Sparkles,   color: 'var(--violet)' },
+      { label: 'AI Generator',        href: '/dashboard/intelligence/generate',         Icon: Sparkles,   color: 'var(--indigo)' },
+      { label: 'Competitor Analysis', href: '/dashboard/intelligence',                  Icon: TrendingUp, color: 'var(--emerald)' },
+      { label: 'Market Research',     href: '/dashboard/intelligence/research',         Icon: Search,     color: 'var(--cyan)' },
     ],
   },
   {
@@ -75,15 +77,51 @@ const NAV_SECTIONS = [
   {
     label: 'Agency',
     items: [
-      { label: 'Docs & Wiki',     href: '/dashboard/docs',      Icon: BookOpen,      color: 'var(--amber)' },
-      { label: 'Forms',           href: '/dashboard/forms',     Icon: ClipboardList, color: 'var(--cyan)' },
-      { label: 'Meetings',        href: '/dashboard/meetings',  Icon: Video,         color: 'var(--rose)' },
-      { label: 'Shoot Sessions',  href: '/dashboard/shoots',    Icon: Camera,        color: 'var(--indigo)' },
-      { label: 'Files',           href: '/dashboard/files',     Icon: HardDrive,     color: 'var(--violet)' },
-      { label: 'Settings',        href: '/dashboard/settings',  Icon: Settings,      color: 'var(--text-2)' },
+      { label: 'Automations',     href: '/dashboard/automations',     Icon: Zap,           color: 'var(--amber)' },
+      { label: 'Templates',       href: '/dashboard/templates',       Icon: LayoutTemplate,color: 'var(--cyan)' },
+      { label: 'Client Portal',   href: '/dashboard/clients/portal',  Icon: Globe,         color: 'var(--emerald)' },
+      { label: 'Docs & Wiki',     href: '/dashboard/docs',            Icon: BookOpen,      color: 'var(--indigo)' },
+      { label: 'Forms',           href: '/dashboard/forms',           Icon: ClipboardList, color: 'var(--violet)' },
+      { label: 'Meetings',        href: '/dashboard/meetings',        Icon: Video,         color: 'var(--rose)' },
+      { label: 'Shoot Sessions',  href: '/dashboard/shoots',          Icon: Camera,        color: 'var(--indigo)' },
+      { label: 'Files',           href: '/dashboard/files',           Icon: HardDrive,     color: 'var(--cyan)' },
+      { label: 'Settings',        href: '/dashboard/settings',        Icon: Settings,      color: 'var(--text-2)' },
     ],
   },
 ];
+
+const PAGE_TITLES: Record<string, string> = {
+  '/dashboard': 'Dashboard',
+  '/dashboard/tasks': 'Tasks',
+  '/dashboard/projects': 'Projects',
+  '/dashboard/clients': 'Clients',
+  '/dashboard/team': 'Team',
+  '/dashboard/inbox': 'Inbox',
+  '/dashboard/chat': 'Chat',
+  '/dashboard/time-tracking': 'Time Tracking',
+  '/dashboard/goals': 'Goals & OKRs',
+  '/dashboard/content': 'Content Planner',
+  '/dashboard/ideas': 'Idea Bank',
+  '/dashboard/campaigns': 'Ad Campaigns',
+  '/dashboard/creative/design': 'Design Hub',
+  '/dashboard/creative/content': 'Content Team',
+  '/dashboard/intelligence': 'Competitor Analysis',
+  '/dashboard/intelligence/generate': 'AI Generator',
+  '/dashboard/intelligence/campaign-builder': 'AI Campaign Builder',
+  '/dashboard/intelligence/research': 'Market Research',
+  '/dashboard/finance/invoices': 'Invoices',
+  '/dashboard/finance/expenses': 'Expenses',
+  '/dashboard/reports': 'Reports',
+  '/dashboard/automations': 'Automations',
+  '/dashboard/templates': 'Templates',
+  '/dashboard/clients/portal': 'Client Portal',
+  '/dashboard/docs': 'Docs & Wiki',
+  '/dashboard/forms': 'Forms',
+  '/dashboard/meetings': 'Meetings',
+  '/dashboard/shoots': 'Shoot Sessions',
+  '/dashboard/files': 'Files',
+  '/dashboard/settings': 'Settings',
+};
 
 interface SearchResult {
   id: string;
@@ -209,8 +247,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [gPressed, setGPressed] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
 
   useEffect(() => { setHydrated(true); }, []);
+
+  // Restore collapsed state from localStorage after hydration
+  useEffect(() => {
+    if (!hydrated) return;
+    const stored = localStorage.getItem('sidebar-collapsed');
+    if (stored === '1') setCollapsed(true);
+  }, [hydrated]);
 
   useEffect(() => {
     if (!hydrated) return;
@@ -248,6 +294,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     return pathname.startsWith(href);
   }
 
+  function toggleCollapsed() {
+    const next = !collapsed;
+    setCollapsed(next);
+    localStorage.setItem('sidebar-collapsed', next ? '1' : '0');
+  }
+
+  const pageTitle = PAGE_TITLES[pathname] || 'Dashboard';
+
   if (!hydrated) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg)' }}>
@@ -258,67 +312,154 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   if (!isAuthenticated) return null;
 
-  const SidebarContent = () => (
-    <aside className="w-60 flex-shrink-0 flex flex-col h-full overflow-hidden" style={{ background: 'var(--surface)', borderRight: '1px solid var(--border)' }}>
+  const sidebarWidth = collapsed ? 56 : 224;
+
+  const SidebarContent = ({ isMobile = false }: { isMobile?: boolean }) => (
+    <aside
+      className="flex-shrink-0 flex flex-col h-full overflow-hidden"
+      style={{
+        width: isMobile ? 224 : sidebarWidth,
+        background: 'var(--surface)',
+        borderRight: '1px solid var(--border)',
+        transition: 'width 0.2s ease',
+      }}
+    >
       {/* Workspace header */}
-      <div className="flex items-center gap-3 px-4 py-4" style={{ borderBottom: '1px solid var(--border)' }}>
-        <div className="w-8 h-8 rounded-xl flex items-center justify-center text-white font-bold text-sm flex-shrink-0" style={{ background: 'var(--grad-primary)' }}>
-          F
+      {(!collapsed || isMobile) ? (
+        <div className="flex items-center gap-3 px-4 py-4" style={{ borderBottom: '1px solid var(--border)' }}>
+          <div className="w-8 h-8 rounded-xl flex items-center justify-center text-white font-bold text-sm flex-shrink-0" style={{ background: 'var(--grad-primary)' }}>
+            F
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-bold tracking-tight truncate" style={{ color: 'var(--text)' }}>TasksDone</p>
+            <p className="text-[10px]" style={{ color: 'var(--text-3)' }}>Agency Edition</p>
+          </div>
+          <button
+            onClick={toggleTheme}
+            className="w-7 h-7 flex items-center justify-center rounded-lg transition flex-shrink-0"
+            style={{ color: 'var(--text-2)', background: 'var(--border)' }}
+            title="Toggle theme"
+          >
+            {theme === 'dark' ? <Sun size={13} /> : <Moon size={13} />}
+          </button>
         </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-bold tracking-tight truncate" style={{ color: 'var(--text)' }}>TasksDone</p>
-          <p className="text-[10px]" style={{ color: 'var(--text-3)' }}>Agency Edition</p>
+      ) : (
+        <div className="flex items-center justify-center py-4" style={{ borderBottom: '1px solid var(--border)' }}>
+          <div className="w-8 h-8 rounded-xl flex items-center justify-center text-white font-bold text-sm flex-shrink-0" style={{ background: 'var(--grad-primary)' }}>
+            F
+          </div>
         </div>
-        <button
-          onClick={toggleTheme}
-          className="w-7 h-7 flex items-center justify-center rounded-lg transition flex-shrink-0"
-          style={{ color: 'var(--text-2)', background: 'var(--border)' }}
-          title="Toggle theme"
-        >
-          {theme === 'dark' ? <Sun size={13} /> : <Moon size={13} />}
-        </button>
-      </div>
+      )}
 
       {/* Search bar */}
-      <div className="px-3 pt-3 pb-2">
-        <button
-          onClick={() => setSearchOpen(true)}
-          className="w-full flex items-center gap-2 px-3 h-8 rounded-lg text-sm transition"
-          style={{ background: 'var(--card)', color: 'var(--text-2)', border: '1px solid var(--border)' }}
-        >
-          <Search size={12} style={{ flexShrink: 0 }} />
-          <span className="flex-1 text-left text-xs">Search…</span>
-          <kbd className="text-[10px] px-1 rounded" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-3)' }}>⌘K</kbd>
-        </button>
-      </div>
+      {(!collapsed || isMobile) ? (
+        <div className="px-3 pt-3 pb-2">
+          <button
+            onClick={() => setSearchOpen(true)}
+            className="w-full flex items-center gap-2 px-3 h-8 rounded-lg text-sm transition"
+            style={{ background: 'var(--card)', color: 'var(--text-2)', border: '1px solid var(--border)' }}
+          >
+            <Search size={12} style={{ flexShrink: 0 }} />
+            <span className="flex-1 text-left text-xs">Search…</span>
+            <kbd className="text-[10px] px-1 rounded" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-3)' }}>⌘K</kbd>
+          </button>
+        </div>
+      ) : (
+        <div className="flex items-center justify-center pt-3 pb-2">
+          <button
+            onClick={() => setSearchOpen(true)}
+            className="w-8 h-8 flex items-center justify-center rounded-lg transition"
+            style={{ background: 'var(--card)', color: 'var(--text-2)', border: '1px solid var(--border)' }}
+            title="Search (⌘K)"
+          >
+            <Search size={14} />
+          </button>
+        </div>
+      )}
 
       {/* Create button */}
-      <div className="px-3 pb-3">
-        <Link
-          href="/dashboard/tasks?new=1"
-          className="w-full flex items-center justify-center gap-2 h-8 rounded-lg text-xs font-semibold text-white transition hover:opacity-90"
-          style={{ background: 'var(--grad-primary)' }}
-        >
-          <Plus size={13} />
-          <span>Create</span>
-        </Link>
-      </div>
+      {(!collapsed || isMobile) ? (
+        <div className="px-3 pb-3">
+          <Link
+            href="/dashboard/tasks?new=1"
+            className="w-full flex items-center justify-center gap-2 h-8 rounded-lg text-xs font-semibold text-white transition hover:opacity-90"
+            style={{ background: 'var(--grad-primary)' }}
+          >
+            <Plus size={13} />
+            <span>Create</span>
+          </Link>
+        </div>
+      ) : (
+        <div className="flex items-center justify-center pb-3">
+          <Link
+            href="/dashboard/tasks?new=1"
+            className="w-8 h-8 flex items-center justify-center rounded-lg text-white transition hover:opacity-90"
+            style={{ background: 'var(--grad-primary)' }}
+            title="Create"
+          >
+            <Plus size={14} />
+          </Link>
+        </div>
+      )}
 
       {/* Nav */}
-      <nav className="flex-1 overflow-y-auto py-1 px-2">
-        {NAV_SECTIONS.map((section) => (
-          <div key={section.label} className="mb-1">
-            <p className="text-[10px] font-bold tracking-widest uppercase px-2 py-1.5" style={{ color: 'var(--text-3)' }}>
-              {section.label}
-            </p>
+      <nav className="flex-1 overflow-y-auto py-1" style={{ paddingLeft: collapsed && !isMobile ? 0 : undefined }}>
+        {NAV_SECTIONS.map((section, sectionIdx) => (
+          <div key={section.label} className="mb-0.5">
+            {/* Section divider line */}
+            {sectionIdx > 0 && (
+              <div style={{ height: '1px', background: 'var(--border)', margin: '4px 8px 4px 8px', opacity: 0.6 }} />
+            )}
+            {/* Section label — hidden when collapsed */}
+            {(!collapsed || isMobile) && (
+              <p className="text-[10px] font-bold tracking-widest uppercase px-3 py-1" style={{ color: 'var(--text-3)' }}>
+                {section.label}
+              </p>
+            )}
+            {collapsed && !isMobile && <div style={{ height: 4 }} />}
             {section.items.map((item) => {
               const active = isActive(item.href);
+              if (collapsed && !isMobile) {
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setSidebarOpen(false)}
+                    title={item.label}
+                    className="flex items-center justify-center mb-0.5 transition-all"
+                    style={{
+                      height: 32,
+                      background: active ? `color-mix(in srgb, ${item.color} 12%, transparent)` : 'transparent',
+                      borderLeft: active ? `2px solid ${item.color}` : '2px solid transparent',
+                      color: active ? item.color : 'var(--text-3)',
+                      borderRadius: '0 8px 8px 0',
+                      marginLeft: 0,
+                      marginRight: 4,
+                      transition: 'width 0.2s ease, opacity 0.15s',
+                    }}
+                  >
+                    <item.Icon size={15} />
+                  </Link>
+                );
+              }
               return (
                 <Link
                   key={item.href}
                   href={item.href}
                   onClick={() => setSidebarOpen(false)}
-                  className={`flex items-center gap-2.5 px-2 py-1.5 text-sm font-medium transition-all mb-0.5 ${active ? 'nav-item-active' : 'nav-item-inactive'}`}
+                  title={item.label}
+                  className="flex items-center gap-2.5 py-1.5 text-sm font-medium transition-all mb-0.5"
+                  style={{
+                    paddingLeft: 10,
+                    paddingRight: 8,
+                    background: active ? `color-mix(in srgb, ${item.color} 12%, transparent)` : 'transparent',
+                    borderLeft: active ? `2px solid ${item.color}` : '2px solid transparent',
+                    color: active ? item.color : undefined,
+                    borderRadius: '0 8px 8px 0',
+                    marginLeft: 0,
+                    marginRight: 4,
+                    transition: 'width 0.2s ease, opacity 0.15s',
+                  }}
                 >
                   <span
                     className="w-5 h-5 flex-shrink-0 flex items-center justify-center rounded"
@@ -327,7 +468,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                       color: active ? item.color : 'var(--text-3)',
                     }}
                   >
-                    <item.Icon size={13} />
+                    <item.Icon size={15} />
                   </span>
                   <span style={{ color: active ? item.color : undefined }}>{item.label}</span>
                 </Link>
@@ -337,28 +478,52 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         ))}
       </nav>
 
-      {/* Storage bar */}
-      <StorageBar />
+      {/* Storage bar — hidden when collapsed */}
+      {(!collapsed || isMobile) && <StorageBar />}
+
+      {/* Collapse toggle button — desktop only */}
+      {!isMobile && (
+        <button
+          onClick={toggleCollapsed}
+          className="w-full flex items-center justify-center h-8 transition"
+          style={{ color: 'var(--text-3)', borderTop: '1px solid var(--border)' }}
+          title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        >
+          {collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+        </button>
+      )}
 
       {/* User footer */}
-      <div className="px-3 py-3" style={{ borderTop: '1px solid var(--border)' }}>
-        <div className="flex items-center gap-2.5">
-          <Avatar name={user?.name || '?'} size={28} />
-          <div className="flex-1 min-w-0">
-            <p className="text-xs font-semibold truncate" style={{ color: 'var(--text)' }}>{user?.name}</p>
-            <p className="text-[10px] truncate capitalize" style={{ color: 'var(--text-2)' }}>{user?.role}</p>
+      {(!collapsed || isMobile) ? (
+        <div className="px-3 py-3" style={{ borderTop: '1px solid var(--border)' }}>
+          <div className="flex items-center gap-2.5">
+            <Avatar name={user?.name || '?'} size={28} />
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-semibold truncate" style={{ color: 'var(--text)' }}>{user?.name}</p>
+              <p className="text-[10px] truncate capitalize" style={{ color: 'var(--text-2)' }}>{user?.role}</p>
+            </div>
+            <NotificationBell />
+            <button
+              onClick={handleLogout}
+              className="w-7 h-7 flex items-center justify-center rounded-lg transition hover:opacity-70 flex-shrink-0"
+              style={{ color: 'var(--text-2)', background: 'var(--border)' }}
+              title="Sign out"
+            >
+              <LogOut size={12} />
+            </button>
           </div>
-          <NotificationBell />
+        </div>
+      ) : (
+        <div className="flex items-center justify-center py-3" style={{ borderTop: '1px solid var(--border)' }}>
           <button
             onClick={handleLogout}
-            className="w-7 h-7 flex items-center justify-center rounded-lg transition hover:opacity-70 flex-shrink-0"
-            style={{ color: 'var(--text-2)', background: 'var(--border)' }}
             title="Sign out"
+            className="flex items-center justify-center"
           >
-            <LogOut size={12} />
+            <Avatar name={user?.name || '?'} size={28} />
           </button>
         </div>
-      </div>
+      )}
     </aside>
   );
 
@@ -375,7 +540,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {searchOpen && <GlobalSearch onClose={() => setSearchOpen(false)} />}
 
       {/* Desktop sidebar */}
-      <div className="hidden md:flex md:flex-col md:h-full">
+      <div
+        className="hidden md:flex md:flex-col md:h-full flex-shrink-0"
+        style={{
+          width: sidebarWidth,
+          transition: 'width 0.2s ease',
+        }}
+      >
         <SidebarContent />
       </div>
 
@@ -383,11 +554,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {sidebarOpen && (
         <div className="fixed inset-0 z-50 flex md:hidden">
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
-          <div className="relative z-10 flex flex-col h-full"><SidebarContent /></div>
+          <div className="relative z-10 flex flex-col h-full">
+            <SidebarContent isMobile />
+          </div>
         </div>
       )}
 
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden" style={{ transition: 'width 0.2s ease' }}>
         {/* Mobile topbar */}
         <header className="md:hidden flex items-center justify-between px-4 h-14 flex-shrink-0" style={{ background: 'var(--surface)', borderBottom: '1px solid var(--border)' }}>
           <button onClick={() => setSidebarOpen(true)} className="p-2 transition" style={{ color: 'var(--text-2)' }}>
@@ -399,6 +572,22 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <Search size={16} />
             </button>
             <NotificationBell />
+          </div>
+        </header>
+
+        {/* Desktop topbar */}
+        <header className="hidden md:flex items-center justify-between px-6 h-12 flex-shrink-0" style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface)' }}>
+          <h1 className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{pageTitle}</h1>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setSearchOpen(true)}
+              className="flex items-center gap-2 px-3 h-7 rounded-lg text-xs transition"
+              style={{ background: 'var(--card)', color: 'var(--text-2)', border: '1px solid var(--border)' }}
+            >
+              <Search size={12} /><span>Search</span><kbd className="text-[10px] px-1 rounded" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-3)' }}>⌘K</kbd>
+            </button>
+            <NotificationBell />
+            <Avatar name={user?.name || '?'} size={26} />
           </div>
         </header>
 

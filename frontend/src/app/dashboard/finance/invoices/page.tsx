@@ -64,7 +64,7 @@ export default function InvoicesPage() {
 
   async function markPaid(id: string) {
     try {
-      const r = await apiClient.patch(`/invoices/${id}/mark-paid`);
+      const r = await apiClient.post(`/invoices/${id}/mark-paid`, {});
       setInvoices(inv => inv.map(i => i.id === id ? { ...i, status: 'paid' } : i));
       toast.success('Marked as paid');
     } catch { toast.error('Failed'); }

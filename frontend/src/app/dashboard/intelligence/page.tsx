@@ -148,7 +148,7 @@ export default function IntelligencePage() {
             {result ? (
               <>
                 {/* Summary */}
-                <div className="rounded-xl p-4" style={{ background: 'var(--indigo-2)', border: '1px solid var(--indigo)', borderOpacity: 0.3 }}>
+                <div className="rounded-xl p-4" style={{ background: 'var(--indigo-2)', border: '1px solid var(--indigo)' }}>
                   <h3 className="text-sm font-semibold mb-2" style={{ color: 'var(--indigo)' }}>Executive Summary</h3>
                   <p className="text-sm leading-relaxed" style={{ color: 'var(--text)' }}>{result.summary}</p>
                 </div>
@@ -216,7 +216,7 @@ export default function IntelligencePage() {
 
                 {/* Quick Wins */}
                 {result.quick_wins?.length > 0 && (
-                  <div className="rounded-xl p-4" style={{ background: 'var(--emerald-2)', border: '1px solid var(--emerald)', borderOpacity: 0.3 }}>
+                  <div className="rounded-xl p-4" style={{ background: 'var(--emerald-2)', border: '1px solid var(--emerald)' }}>
                     <h3 className="text-sm font-semibold mb-3 flex items-center gap-2" style={{ color: 'var(--emerald)' }}>
                       <Zap size={14} /> Quick Wins
                     </h3>

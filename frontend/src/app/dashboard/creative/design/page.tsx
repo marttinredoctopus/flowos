@@ -300,21 +300,26 @@ function NewBriefModal({ onClose, onCreated }: { onClose: () => void; onCreated:
 function AssetLibraryTab() {
   const [assets, setAssets]       = useState<any[]>([]);
   const [clients, setClients]     = useState<any[]>([]);
+  const [tasks, setTasks]         = useState<any[]>([]);
   const [loading, setLoading]     = useState(true);
   const [filter, setFilter]       = useState('all');
   const [selected, setSelected]   = useState<any>(null);
   const [feedback, setFeedback]   = useState<any[]>([]);
   const [pinComment, setPinComment] = useState('');
   const [pendingPin, setPendingPin] = useState<{x: number; y: number} | null>(null);
+  const [uploadTaskId, setUploadTaskId] = useState('');
   const imgRef = useRef<HTMLImageElement>(null);
 
   useEffect(() => {
     Promise.all([
       apiClient.get('/design/assets'),
       apiClient.get('/clients'),
-    ]).then(([a, c]) => {
+      apiClient.get('/tasks'),
+    ]).then(([a, c, t]) => {
       setAssets(Array.isArray(a.data) ? a.data : []);
       setClients(Array.isArray(c.data) ? c.data : (c.data?.clients || []));
+      const taskList = Array.isArray(t.data) ? t.data : (t.data?.tasks || []);
+      setTasks(taskList);
     }).catch(() => {}).finally(() => setLoading(false));
   }, []);
 
@@ -374,6 +379,11 @@ function AssetLibraryTab() {
           {clients.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
         </select>
         <div style={{ flex: 1 }} />
+        <select value={uploadTaskId} onChange={e => setUploadTaskId(e.target.value)}
+          style={{ ...selectStyle, minWidth: 180, fontSize: 12 }}>
+          <option value="">Link to task (optional)</option>
+          {tasks.map((t: any) => <option key={t.id} value={t.id}>{t.title}</option>)}
+        </select>
         <FileUpload
           folder="designs"
           entityType="design_asset"
@@ -389,6 +399,7 @@ function AssetLibraryTab() {
                 r2Key:     uploaded.key,
                 mimeType:  uploaded.mimeType,
                 sizeBytes: uploaded.size,
+                taskId:    uploadTaskId || null,
               });
               setAssets(prev => [r.data, ...prev]);
               toast.success('Asset uploaded!');
@@ -476,6 +487,14 @@ function AssetLibraryTab() {
                       <span style={{ fontSize: 10, color: 'var(--text-3)' }}>{asset.uploaded_by_name.split(' ')[0]}</span>
                     )}
                   </div>
+                  {asset.task_id && (
+                    <div style={{ marginTop: 4, fontSize: 10, color: 'var(--indigo)', display: 'flex', alignItems: 'center', gap: 3 }}>
+                      <span>🔗</span>
+                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {tasks.find((t: any) => t.id === asset.task_id)?.title || 'Task'}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
             );
@@ -750,7 +769,7 @@ function BrandGuidelinesTab() {
               <button onClick={() => editing ? save() : setEditing(true)}
                 disabled={saving}
                 style={{
-                  padding: '7px 16px', borderRadius: 8, border: 'none', cursor: 'pointer',
+                  padding: '7px 16px', borderRadius: 8, cursor: 'pointer',
                   background: editing ? 'var(--grad-primary)' : 'var(--card)',
                   color: editing ? 'white' : 'var(--text-2)',
                   border: editing ? 'none' : '1px solid var(--border)',

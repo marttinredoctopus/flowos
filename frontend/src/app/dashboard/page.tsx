@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
 import apiClient from '@/lib/apiClient';
 import { Avatar } from '@/components/ui/Avatar';
@@ -11,33 +12,95 @@ function Greeting({ subtitle }: { subtitle?: string }) {
   const { user } = useAuthStore();
   const h = new Date().getHours();
   const msg = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
   return (
-    <div className="mb-8">
+    <div className="mb-6">
       <h1 className="text-2xl font-bold mb-1" style={{ color: 'var(--text)' }}>
         {msg}, <span className="gradient-text">{user?.name?.split(' ')[0]}</span> 👋
       </h1>
-      <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+      <p className="text-sm mb-1" style={{ color: 'var(--text-muted)' }}>
         {subtitle || "Here's your agency overview for today."}
       </p>
+      <p className="text-xs font-medium" style={{ color: 'var(--text-dim, var(--text-muted))' }}>
+        {dateStr} · TasksDone
+      </p>
+    </div>
+  );
+}
+
+function QuickActions() {
+  const router = useRouter();
+  const actions = [
+    { label: '+ New Task',     href: '/dashboard/tasks?new=1',  color: 'var(--indigo, #6366f1)' },
+    { label: '+ New Project',  href: '/dashboard/projects',     color: 'var(--cyan, #06b6d4)' },
+    { label: 'View Reports',   href: '/dashboard/reports',      color: 'var(--emerald, #10b981)' },
+    { label: 'Open Chat',      href: '/dashboard/chat',         color: 'var(--violet, #8b5cf6)' },
+  ];
+  return (
+    <div className="flex flex-wrap gap-2 mb-6">
+      {actions.map(a => (
+        <button
+          key={a.label}
+          onClick={() => router.push(a.href)}
+          className="px-3 h-8 rounded-lg text-xs font-semibold transition"
+          style={{ background: 'var(--card)', border: '1px solid var(--border)', color: a.color }}
+          onMouseEnter={e => {
+            e.currentTarget.style.borderColor = a.color;
+            e.currentTarget.style.background = a.color + '15';
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.borderColor = 'var(--border)';
+            e.currentTarget.style.background = 'var(--card)';
+          }}
+        >
+          {a.label}
+        </button>
+      ))}
     </div>
   );
 }
 
 function StatCards({ stats }: { stats: { icon: string; label: string; value: string | number; color: string; change?: string; isWarning?: boolean }[] }) {
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6 dash-stats">
       {stats.map((s, i) => (
-        <div key={i} className="p-5 rounded-2xl"
+        <div
+          key={i}
+          className="p-5 rounded-2xl card-hover-effect"
           style={{
             background: 'var(--card)',
-            border: `1px solid ${s.isWarning && Number(s.value) > 0 ? s.color + '44' : s.color + '22'}`,
-          }}>
-          <div className="flex items-center gap-2 mb-3">
-            <span className="text-2xl">{s.icon}</span>
+            border: `1px solid ${s.isWarning && Number(s.value) > 0 ? s.color + '44' : 'var(--border)'}`,
+            borderBottom: `3px solid ${s.color}`,
+            transition: 'border-color 0.2s, box-shadow 0.2s',
+          }}
+          onMouseEnter={e => {
+            (e.currentTarget as HTMLDivElement).style.borderColor = s.color + '88';
+            (e.currentTarget as HTMLDivElement).style.borderBottomColor = s.color;
+            (e.currentTarget as HTMLDivElement).style.boxShadow = `0 4px 20px ${s.color}18`;
+          }}
+          onMouseLeave={e => {
+            (e.currentTarget as HTMLDivElement).style.borderColor = s.isWarning && Number(s.value) > 0 ? s.color + '44' : 'var(--border)';
+            (e.currentTarget as HTMLDivElement).style.borderBottomColor = s.color;
+            (e.currentTarget as HTMLDivElement).style.boxShadow = 'none';
+          }}
+        >
+          <div className="mb-3" style={{ transition: 'transform 0.25s ease', display: 'inline-block' }}
+            onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.transform = 'scale(1.1) rotate(4deg)'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.transform = 'scale(1) rotate(0deg)'; }}
+          >
+            <img src={s.icon} alt="" width={40} height={40} loading="lazy" style={{ display: 'block' }} />
           </div>
-          <div className="text-3xl font-bold mb-1" style={{ color: s.color }}>{s.value}</div>
-          <div className="text-xs" style={{ color: 'var(--text-muted)' }}>{s.label}</div>
-          {s.change && <div className="text-xs mt-1" style={{ color: 'var(--text-dim)' }}>{s.change}</div>}
+          <div
+            className="text-3xl font-bold mb-1"
+            style={{ color: s.isWarning && Number(s.value) > 0 ? s.color : 'var(--text)' }}
+          >
+            {s.value}
+          </div>
+          <div className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>{s.label}</div>
+          {s.change && (
+            <div className="text-xs mt-1.5 font-semibold" style={{ color: s.color }}>{s.change}</div>
+          )}
         </div>
       ))}
     </div>
@@ -53,22 +116,46 @@ function ProjectsWidget({ projects, title = 'Recent Projects' }: { projects: any
       </div>
       {projects.length === 0 ? (
         <div className="text-center py-8">
-          <div className="text-3xl mb-2">📁</div>
+          <img src="/icons/3d/projects.svg" alt="" width={48} height={48} className="mx-auto mb-2" />
           <p className="text-sm mb-3" style={{ color: 'var(--text-muted)' }}>No projects yet</p>
           <Link href="/dashboard/projects" className="px-4 py-2 gradient-bg rounded-lg text-sm font-semibold text-white hover:opacity-90 transition inline-block">Create project</Link>
         </div>
       ) : (
         <div className="space-y-2">
           {projects.slice(0, 5).map((p: any) => (
-            <div key={p.id} className="flex items-center gap-3 p-3 rounded-xl" style={{ background: 'var(--surface)' }}>
+            <div
+              key={p.id}
+              className="flex items-center gap-3 p-3 rounded-xl"
+              style={{
+                background: 'var(--surface)',
+                transition: 'background 0.15s',
+              }}
+              onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = 'var(--card-hover, var(--border))'; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = 'var(--surface)'; }}
+            >
               <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: p.color || '#7c6fe0' }} />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium truncate" style={{ color: 'var(--text)' }}>{p.name}</p>
-                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{p.client_name || 'No client'}</p>
+                {p.client_name ? (
+                  <span
+                    className="text-xs px-1.5 py-0.5 rounded-full font-medium inline-block mt-0.5"
+                    style={{ background: 'var(--border)', color: 'var(--text-muted)' }}
+                  >
+                    {p.client_name}
+                  </span>
+                ) : (
+                  <span className="text-xs" style={{ color: 'var(--text-muted)' }}>No client</span>
+                )}
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
-                <div className="w-16 h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--border)' }}>
-                  <div className="h-full rounded-full gradient-bg" style={{ width: `${p.progress || 0}%` }} />
+                <div className="w-16 rounded-full overflow-hidden" style={{ height: 4, background: 'var(--border)' }}>
+                  <div
+                    className="h-full rounded-full"
+                    style={{
+                      width: `${p.progress || 0}%`,
+                      background: 'linear-gradient(90deg, #6366f1, #8b5cf6)',
+                    }}
+                  />
                 </div>
                 <span className="text-xs w-8 text-right" style={{ color: 'var(--text-muted)' }}>{p.progress || 0}%</span>
               </div>
@@ -82,6 +169,12 @@ function ProjectsWidget({ projects, title = 'Recent Projects' }: { projects: any
 
 function TasksWidget({ tasks, title = 'My Tasks', emptyMsg = 'No tasks assigned' }: { tasks: any[]; title?: string; emptyMsg?: string }) {
   const pc: Record<string, string> = { high: '#ef5350', medium: '#ffc107', low: '#4caf82' };
+  const statusColor: Record<string, { bg: string; text: string }> = {
+    done:        { bg: '#4caf8222', text: '#4caf82' },
+    in_progress: { bg: '#4a9eff22', text: '#4a9eff' },
+    review:      { bg: '#ffc10722', text: '#ffc107' },
+    todo:        { bg: 'var(--surface)', text: 'var(--text-muted)' },
+  };
   return (
     <div className="rounded-2xl p-5" style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
       <div className="flex items-center justify-between mb-4">
@@ -96,19 +189,38 @@ function TasksWidget({ tasks, title = 'My Tasks', emptyMsg = 'No tasks assigned'
         </div>
       ) : (
         <div className="space-y-2">
-          {tasks.slice(0, 6).map((t: any) => (
-            <div key={t.id} className="flex items-center gap-3 p-3 rounded-xl" style={{ background: 'var(--surface)' }}>
-              <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: pc[t.priority] || '#7b7fa8' }} />
-              <p className="flex-1 text-sm truncate" style={{ color: 'var(--text)' }}>{t.title}</p>
-              <span className="text-xs px-2 py-0.5 rounded-full font-medium flex-shrink-0"
+          {tasks.slice(0, 6).map((t: any) => {
+            const sc = statusColor[t.status] || statusColor.todo;
+            const borderColor = pc[t.priority] || '#7b7fa8';
+            return (
+              <div
+                key={t.id}
+                className="flex items-center gap-3 p-3 rounded-xl overflow-hidden"
                 style={{
-                  background: t.status === 'done' ? '#4caf8222' : t.status === 'in_progress' ? '#4a9eff22' : 'var(--surface)',
-                  color: t.status === 'done' ? '#4caf82' : t.status === 'in_progress' ? '#4a9eff' : 'var(--text-muted)',
-                }}>
-                {t.status?.replace('_', ' ')}
-              </span>
-            </div>
-          ))}
+                  background: 'var(--surface)',
+                  borderLeft: `3px solid ${borderColor}`,
+                  transition: 'background 0.15s',
+                }}
+                onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = 'var(--card-hover, var(--border))'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = 'var(--surface)'; }}
+              >
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm truncate" style={{ color: 'var(--text)' }}>{t.title}</p>
+                  {t.due_date && (
+                    <p className="text-xs mt-0.5" style={{ color: new Date(t.due_date) < new Date() && t.status !== 'done' ? '#ef5350' : 'var(--text-muted)' }}>
+                      Due {new Date(t.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    </p>
+                  )}
+                </div>
+                <span
+                  className="text-xs px-2 py-0.5 rounded-full font-medium flex-shrink-0 capitalize"
+                  style={{ background: sc.bg, color: sc.text }}
+                >
+                  {t.status?.replace('_', ' ')}
+                </span>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
@@ -175,16 +287,17 @@ function AdminDashboard() {
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <Greeting />
+      <QuickActions />
       {loading ? (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           {[1,2,3,4].map(i => <div key={i} className="h-24 rounded-2xl animate-pulse" style={{ background: 'var(--card)' }} />)}
         </div>
       ) : (
         <StatCards stats={[
-          { icon: '📁', label: 'Active Projects',   value: stats?.activeProjects ?? projects.filter(p => p.status !== 'completed').length, color: 'var(--blue)' },
-          { icon: '✅', label: 'Open Tasks',         value: stats?.openTasks ?? tasks.filter(t => t.status !== 'done').length,               color: 'var(--purple)' },
-          { icon: '⏰', label: 'Overdue',            value: stats?.overdueCount ?? overdue,                                                   color: 'var(--red)',    isWarning: true },
-          { icon: '👥', label: 'Team Members',       value: stats?.teamCount ?? team.length,                                                  color: 'var(--teal)' },
+          { icon: '/icons/3d/projects.svg',     label: 'Active Projects',   value: stats?.activeProjects ?? projects.filter(p => p.status !== 'completed').length, color: 'var(--blue)' },
+          { icon: '/icons/3d/tasks.svg',         label: 'Open Tasks',         value: stats?.openTasks ?? tasks.filter(t => t.status !== 'done').length,               color: 'var(--purple)' },
+          { icon: '/icons/3d/clock-broken.svg',  label: 'Overdue',            value: stats?.overdueCount ?? overdue,                                                   color: 'var(--red)',    isWarning: true },
+          { icon: '/icons/3d/clients.svg',       label: 'Team Members',       value: stats?.teamCount ?? team.length,                                                  color: 'var(--teal)' },
         ]} />
       )}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -225,16 +338,17 @@ function ManagerDashboard() {
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <Greeting subtitle="Here's what your team is working on." />
+      <QuickActions />
       {loading ? (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           {[1,2,3,4].map(i => <div key={i} className="h-24 rounded-2xl animate-pulse" style={{ background: 'var(--card)' }} />)}
         </div>
       ) : (
         <StatCards stats={[
-          { icon: '📁', label: 'My Projects',     value: myProjects.length,          color: 'var(--blue)' },
-          { icon: '👀', label: 'Needs Review',    value: pendingReviews.length,       color: 'var(--yellow)', isWarning: pendingReviews.length > 0 },
-          { icon: '✅', label: 'Team Open Tasks', value: teamTasks.filter(t => t.status !== 'done').length, color: 'var(--purple)' },
-          { icon: '⏰', label: 'Overdue Tasks',   value: overdue,                     color: 'var(--red)', isWarning: overdue > 0 },
+          { icon: '/icons/3d/projects.svg',    label: 'My Projects',     value: myProjects.length,          color: 'var(--blue)' },
+          { icon: '/icons/3d/review.svg',      label: 'Needs Review',    value: pendingReviews.length,       color: 'var(--yellow)', isWarning: pendingReviews.length > 0 },
+          { icon: '/icons/3d/tasks.svg',       label: 'Team Open Tasks', value: teamTasks.filter(t => t.status !== 'done').length, color: 'var(--purple)' },
+          { icon: '/icons/3d/clock-broken.svg',label: 'Overdue Tasks',   value: overdue,                     color: 'var(--red)', isWarning: overdue > 0 },
         ]} />
       )}
 
@@ -293,16 +407,17 @@ function MemberDashboard() {
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <Greeting subtitle="Here's what you're working on today." />
+      <QuickActions />
       {loading ? (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           {[1,2,3,4].map(i => <div key={i} className="h-24 rounded-2xl animate-pulse" style={{ background: 'var(--card)' }} />)}
         </div>
       ) : (
         <StatCards stats={[
-          { icon: '✅', label: 'My Open Tasks',  value: openTasks.length, color: 'var(--blue)' },
-          { icon: '⏰', label: 'Due Today',       value: dueToday.length,  color: 'var(--yellow)', isWarning: dueToday.length > 0 },
-          { icon: '🎯', label: 'Completed',       value: doneTasks.length, color: 'var(--green)' },
-          { icon: '📁', label: 'My Projects',     value: projects.length,  color: 'var(--purple)' },
+          { icon: '/icons/3d/tasks.svg',        label: 'My Open Tasks',  value: openTasks.length, color: 'var(--blue)' },
+          { icon: '/icons/3d/clock-broken.svg', label: 'Due Today',       value: dueToday.length,  color: 'var(--yellow)', isWarning: dueToday.length > 0 },
+          { icon: '/icons/3d/target.svg',       label: 'Completed',       value: doneTasks.length, color: 'var(--green)' },
+          { icon: '/icons/3d/projects.svg',     label: 'My Projects',     value: projects.length,  color: 'var(--purple)' },
         ]} />
       )}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

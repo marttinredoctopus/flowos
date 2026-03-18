@@ -5,8 +5,15 @@ import { AuthInit } from '@/components/AuthInit';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'TasksDone — Agency Management Platform',
-  description: 'The all-in-one platform that replaces 6 tools for marketing agencies. Manage tasks, clients, campaigns, and your team in one place.',
+  title: 'TasksDone — The Agency OS That Actually Ships',
+  description: 'Replace 6 tools with one platform built for real agencies. Tasks, clients, campaigns, invoices, AI, and more — all in one place.',
+  keywords: 'agency management, project management, client portal, task management, invoicing, AI tools',
+  openGraph: {
+    title: 'TasksDone — The Agency OS That Actually Ships',
+    description: 'Replace 6 tools with one platform built for real agencies.',
+    siteName: 'TasksDone',
+    type: 'website',
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

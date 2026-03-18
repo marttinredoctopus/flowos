@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { format } from 'date-fns';
 import { contentApi } from '@/lib/api';
-import FileUpload from '@/components/ui/FileUpload';
+import { FileUpload } from '@/components/ui/FileUpload';
 import type { ContentPost, CreatePostPayload, Platform, PostType, PostStatus } from '@/types/content';
 import toast from 'react-hot-toast';
 
@@ -175,8 +175,7 @@ export default function PostModal({ post, defaultDate, onClose, onSaved }: PostM
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Media</label>
             <FileUpload
-              value={form.media_urls ?? []}
-              onChange={(urls) => set('media_urls', urls)}
+              onUpload={(file) => set('media_urls', [...(form.media_urls ?? []), file.url])}
             />
           </div>
 

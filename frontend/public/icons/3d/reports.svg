@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" fill="none">
+  <defs>
+    <linearGradient id="repBg" x1="10" y1="10" x2="70" y2="70" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#818cf8"/>
+      <stop offset="100%" stop-color="#6366f1"/>
+    </linearGradient>
+    <linearGradient id="repFace" x1="14" y1="18" x2="66" y2="70" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#e0e7ff"/>
+      <stop offset="100%" stop-color="#c7d2fe"/>
+    </linearGradient>
+    <linearGradient id="lineA" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#a855f7"/>
+    </linearGradient>
+    <filter id="repShadow">
+      <feDropShadow dx="0" dy="6" stdDeviation="5" flood-color="#3730a3" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+
+  <ellipse cx="40" cy="74" rx="22" ry="4" fill="#6366f1" opacity="0.2"/>
+
+  <!-- Report page shadow -->
+  <rect x="18" y="18" width="48" height="58" rx="9" fill="#3730a3" opacity="0.4" filter="url(#repShadow)"/>
+
+  <!-- Report page back -->
+  <rect x="20" y="14" width="44" height="56" rx="8" fill="url(#repBg)" opacity="0.6"/>
+
+  <!-- Report page front -->
+  <rect x="14" y="10" width="44" height="56" rx="8" fill="url(#repBg)" filter="url(#repShadow)"/>
+  <rect x="18" y="14" width="36" height="48" rx="5" fill="url(#repFace)"/>
+
+  <!-- Shine -->
+  <rect x="14" y="10" width="44" height="7" rx="8" fill="white" opacity="0.15"/>
+
+  <!-- Title bar -->
+  <rect x="20" y="18" width="24" height="4" rx="2" fill="#818cf8" opacity="0.7"/>
+  <rect x="20" y="18" width="10" height="4" rx="2" fill="#6366f1"/>
+
+  <!-- Line chart -->
+  <polyline points="20,44 26,38 32,41 38,32 44,36 50,26" stroke="url(#lineA)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+
+  <!-- Area fill -->
+  <path d="M20 44 L26 38 L32 41 L38 32 L44 36 L50 26 L50 50 L20 50 Z" fill="#6366f1" opacity="0.12"/>
+
+  <!-- Data dots -->
+  <circle cx="26" cy="38" r="2.5" fill="#6366f1"/>
+  <circle cx="32" cy="41" r="2.5" fill="#6366f1"/>
+  <circle cx="38" cy="32" r="3" fill="#7c3aed"/>
+  <circle cx="44" cy="36" r="2.5" fill="#6366f1"/>
+  <circle cx="50" cy="26" r="3" fill="#7c3aed"/>
+  <circle cx="50" cy="26" r="1.5" fill="white"/>
+
+  <!-- Horizontal grid lines -->
+  <line x1="18" y1="50" x2="54" y2="50" stroke="#818cf8" stroke-width="0.8" opacity="0.4"/>
+  <line x1="18" y1="44" x2="54" y2="44" stroke="#818cf8" stroke-width="0.8" opacity="0.3"/>
+  <line x1="18" y1="38" x2="54" y2="38" stroke="#818cf8" stroke-width="0.8" opacity="0.2"/>
+
+  <!-- Bottom labels -->
+  <rect x="20" y="54" width="8" height="3" rx="1.5" fill="#818cf8" opacity="0.5"/>
+  <rect x="30" y="54" width="10" height="3" rx="1.5" fill="#818cf8" opacity="0.4"/>
+  <rect x="42" y="54" width="8" height="3" rx="1.5" fill="#818cf8" opacity="0.3"/>
+
+  <!-- Badge top right -->
+  <circle cx="56" cy="14" r="9" fill="#10b981"/>
+  <path d="M52 14 L55 17 L60 11" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

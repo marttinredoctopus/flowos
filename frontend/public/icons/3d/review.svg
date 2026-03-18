@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" fill="none">
+  <defs>
+    <linearGradient id="magBody" x1="10" y1="10" x2="50" y2="50" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#fde68a"/>
+      <stop offset="100%" stop-color="#f59e0b"/>
+    </linearGradient>
+    <linearGradient id="lens" cx="28" cy="28" r="20" gradientUnits="userSpaceOnUse" x1="14" y1="14" x2="42" y2="42">
+      <stop offset="0%" stop-color="#bfdbfe"/>
+      <stop offset="100%" stop-color="#93c5fd"/>
+    </linearGradient>
+    <filter id="magShadow">
+      <feDropShadow dx="2" dy="5" stdDeviation="4" flood-color="#78350f" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+
+  <ellipse cx="36" cy="73" rx="18" ry="4" fill="#f59e0b" opacity="0.2"/>
+
+  <!-- Magnifier lens -->
+  <circle cx="30" cy="30" r="20" fill="white" filter="url(#magShadow)"/>
+  <circle cx="30" cy="30" r="20" fill="url(#lens)" opacity="0.85"/>
+  <circle cx="30" cy="30" r="17" fill="white" opacity="0.5"/>
+
+  <!-- Lens details — a mini document inside -->
+  <rect x="22" y="24" width="16" height="13" rx="3" fill="white" opacity="0.9"/>
+  <rect x="24" y="26.5" width="12" height="1.8" rx="0.9" fill="#93c5fd"/>
+  <rect x="24" y="29.5" width="9" height="1.8" rx="0.9" fill="#93c5fd" opacity="0.7"/>
+  <rect x="24" y="32.5" width="11" height="1.8" rx="0.9" fill="#93c5fd" opacity="0.5"/>
+
+  <!-- Lens rim -->
+  <circle cx="30" cy="30" r="20" stroke="url(#magBody)" stroke-width="4" fill="none"/>
+
+  <!-- Handle -->
+  <rect x="44" y="44" width="22" height="9" rx="4.5" fill="url(#magBody)" transform="rotate(45 44 44)" filter="url(#magShadow)"/>
+  <rect x="45" y="45" width="20" height="7" rx="3.5" fill="#fde68a" opacity="0.6" transform="rotate(45 44 44)"/>
+
+  <!-- Lens shine -->
+  <circle cx="23" cy="22" r="5" fill="white" opacity="0.35"/>
+
+  <!-- Check badge -->
+  <circle cx="62" cy="18" r="10" fill="#8b5cf6"/>
+  <path d="M57 18 L60.5 21.5 L67 14" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

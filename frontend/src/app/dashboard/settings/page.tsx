@@ -1,24 +1,38 @@
 'use client';
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import { useThemeStore } from '@/store/themeStore';
 import { useRouter } from 'next/navigation';
 import apiClient from '@/lib/apiClient';
 import toast from 'react-hot-toast';
+import { FileUpload } from '@/components/ui/FileUpload';
 
 type Tab = 'general' | 'profile' | 'team' | 'notifications' | 'appearance' | 'finance' | 'billing' | 'api' | 'webhooks' | 'danger';
 
-const TABS: { id: Tab; label: string; icon: string }[] = [
-  { id: 'general', label: 'General', icon: '⚙️' },
-  { id: 'profile', label: 'Profile', icon: '👤' },
-  { id: 'team', label: 'Team & Roles', icon: '👥' },
-  { id: 'notifications', label: 'Notifications', icon: '🔔' },
-  { id: 'appearance', label: 'Appearance', icon: '🎨' },
-  { id: 'finance', label: 'Finance', icon: '💰' },
-  { id: 'billing', label: 'Billing', icon: '💳' },
-  { id: 'api', label: 'API Keys', icon: '🔑' },
-  { id: 'webhooks', label: 'Webhooks', icon: '🔗' },
-  { id: 'danger', label: 'Danger Zone', icon: '⚠️' },
+const TAB_ICONS: Record<Tab, React.ReactNode> = {
+  general: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>,
+  profile: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
+  team: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>,
+  notifications: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>,
+  appearance: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>,
+  finance: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>,
+  billing: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>,
+  api: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>,
+  webhooks: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>,
+  danger: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>,
+};
+
+const TABS: { id: Tab; label: string }[] = [
+  { id: 'general', label: 'General' },
+  { id: 'profile', label: 'Profile' },
+  { id: 'team', label: 'Team & Roles' },
+  { id: 'notifications', label: 'Notifications' },
+  { id: 'appearance', label: 'Appearance' },
+  { id: 'finance', label: 'Finance' },
+  { id: 'billing', label: 'Billing' },
+  { id: 'api', label: 'API Keys' },
+  { id: 'webhooks', label: 'Webhooks' },
+  { id: 'danger', label: 'Danger Zone' },
 ];
 
 const INPUT = 'w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:border-blue-500/50 transition';
@@ -49,7 +63,25 @@ function GeneralTab() {
         <h2 className="font-display font-semibold text-white mb-5">Organization</h2>
         <div className="space-y-4">
           <div><label className="text-sm text-slate-400 block mb-1.5">Name</label><input className={INPUT} value={org.name} onChange={e => setOrg(o => ({ ...o, name: e.target.value }))} /></div>
-          <div><label className="text-sm text-slate-400 block mb-1.5">Logo URL</label><input className={INPUT} value={org.logoUrl || ''} onChange={e => setOrg(o => ({ ...o, logoUrl: e.target.value }))} placeholder="https://..." /></div>
+          <div>
+            <label className="text-sm text-slate-400 block mb-1.5">Company Logo</label>
+            <div className="flex items-center gap-4">
+              {org.logoUrl && (
+                <img src={org.logoUrl} alt="logo" className="w-16 h-16 rounded-xl object-cover border border-white/10" />
+              )}
+              <div className="flex-1">
+                <FileUpload
+                  folder="logos"
+                  accept="image/*"
+                  maxFiles={1}
+                  compact
+                  label={org.logoUrl ? 'Change Logo' : 'Upload Logo'}
+                  onUpload={(f) => setOrg(o => ({ ...o, logoUrl: f.url }))}
+                  onError={(e) => toast.error(e)}
+                />
+              </div>
+            </div>
+          </div>
           <div className="grid grid-cols-2 gap-4">
             <div><label className="text-sm text-slate-400 block mb-1.5">Timezone</label>
               <select className={INPUT} value={org.timezone} onChange={e => setOrg(o => ({ ...o, timezone: e.target.value }))}>
@@ -580,8 +612,8 @@ export default function SettingsPage() {
           <nav className="space-y-0.5">
             {TABS.map(t => (
               <button key={t.id} onClick={() => setTab(t.id)}
-                className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-left transition ${tab === t.id ? 'bg-white/10 text-white' : 'text-slate-400 hover:bg-white/5 hover:text-white'}`}>
-                <span>{t.icon}</span><span>{t.label}</span>
+                className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-left transition ${tab === t.id ? 'bg-white/10 text-white' : 'text-slate-400 hover:bg-white/5 hover:text-white'} ${t.id === 'danger' && tab !== 'danger' ? 'text-red-400/70 hover:text-red-400' : ''}`}>
+                <span className="flex-shrink-0">{TAB_ICONS[t.id]}</span><span>{t.label}</span>
               </button>
             ))}
           </nav>

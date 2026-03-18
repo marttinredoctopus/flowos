@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" fill="none">
+  <defs>
+    <linearGradient id="bubble1" x1="8" y1="8" x2="56" y2="50" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#67e8f9"/>
+      <stop offset="100%" stop-color="#06b6d4"/>
+    </linearGradient>
+    <linearGradient id="bubble2" x1="24" y1="30" x2="72" y2="68" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#a78bfa"/>
+      <stop offset="100%" stop-color="#7c3aed"/>
+    </linearGradient>
+    <filter id="bShadow1">
+      <feDropShadow dx="0" dy="5" stdDeviation="4" flood-color="#0891b2" flood-opacity="0.45"/>
+    </filter>
+    <filter id="bShadow2">
+      <feDropShadow dx="0" dy="4" stdDeviation="3" flood-color="#5b21b6" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+
+  <!-- Shadow -->
+  <ellipse cx="40" cy="73" rx="20" ry="4" fill="#06b6d4" opacity="0.2"/>
+
+  <!-- Back bubble (purple) -->
+  <path d="M26 32 C26 24 32 18 44 18 C56 18 66 24 66 34 C66 44 58 50 46 50 L40 56 L42 50 C32 50 26 42 26 32 Z" fill="url(#bubble2)" filter="url(#bShadow2)"/>
+
+  <!-- Back bubble shine -->
+  <path d="M30 26 C34 20 42 18 50 19" stroke="white" stroke-width="2" stroke-linecap="round" opacity="0.25"/>
+
+  <!-- Back bubble dots -->
+  <circle cx="40" cy="34" r="2.5" fill="white" opacity="0.8"/>
+  <circle cx="47" cy="34" r="2.5" fill="white" opacity="0.8"/>
+  <circle cx="54" cy="34" r="2.5" fill="white" opacity="0.8"/>
+
+  <!-- Front bubble (cyan) -->
+  <path d="M8 28 C8 18 16 10 30 10 C44 10 52 18 52 28 C52 38 44 46 30 46 L22 54 L26 46 C16 46 8 38 8 28 Z" fill="url(#bubble1)" filter="url(#bShadow1)"/>
+
+  <!-- Front bubble shine -->
+  <path d="M12 20 C16 14 24 10 32 11" stroke="white" stroke-width="2.5" stroke-linecap="round" opacity="0.3"/>
+
+  <!-- Front bubble dots -->
+  <circle cx="22" cy="28" r="3" fill="white" opacity="0.9"/>
+  <circle cx="30" cy="28" r="3" fill="white" opacity="0.9"/>
+  <circle cx="38" cy="28" r="3" fill="white" opacity="0.9"/>
+</svg>

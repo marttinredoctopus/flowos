@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" fill="none">
+  <defs>
+    <linearGradient id="coinGrad" x1="20" y1="20" x2="60" y2="60" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#fde68a"/>
+      <stop offset="50%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </linearGradient>
+    <linearGradient id="coinEdge" x1="20" y1="60" x2="60" y2="20" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#92400e"/>
+      <stop offset="100%" stop-color="#b45309"/>
+    </linearGradient>
+    <linearGradient id="coinFace" x1="18" y1="18" x2="52" y2="52" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#fef3c7"/>
+      <stop offset="60%" stop-color="#fde68a"/>
+      <stop offset="100%" stop-color="#fbbf24"/>
+    </linearGradient>
+    <filter id="coinShadow">
+      <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#92400e" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+
+  <!-- Shadow -->
+  <ellipse cx="40" cy="74" rx="20" ry="4" fill="#92400e" opacity="0.2"/>
+
+  <!-- Coin stack back -->
+  <ellipse cx="40" cy="52" rx="22" ry="7" fill="url(#coinEdge)"/>
+  <rect x="18" y="30" width="44" height="22" fill="url(#coinEdge)"/>
+  <ellipse cx="40" cy="30" rx="22" ry="7" fill="url(#coinGrad)"/>
+
+  <!-- Middle coin -->
+  <ellipse cx="40" cy="46" rx="22" ry="7" fill="url(#coinEdge)" opacity="0.6"/>
+  <rect x="18" y="26" width="44" height="20" fill="#b45309" opacity="0.3"/>
+  <ellipse cx="40" cy="26" rx="22" ry="7" fill="#fbbf24" opacity="0.8"/>
+
+  <!-- Top coin (main) - shadow -->
+  <ellipse cx="40" cy="28" rx="22" ry="7" fill="#92400e" opacity="0.3" filter="url(#coinShadow)"/>
+
+  <!-- Top coin edge -->
+  <ellipse cx="40" cy="27" rx="22" ry="7" fill="url(#coinEdge)"/>
+  <rect x="18" y="14" width="44" height="13" fill="url(#coinEdge)"/>
+
+  <!-- Top coin face -->
+  <ellipse cx="40" cy="14" rx="22" ry="7" fill="url(#coinFace)"/>
+
+  <!-- $ symbol -->
+  <text x="40" y="18" text-anchor="middle" font-family="Arial Black, sans-serif" font-size="10" font-weight="900" fill="#92400e" opacity="0.9">$</text>
+
+  <!-- Top coin shine -->
+  <ellipse cx="35" cy="12" rx="8" ry="3" fill="white" opacity="0.3" transform="rotate(-20 35 12)"/>
+
+  <!-- Sparkle top right -->
+  <path d="M64 8 L65.5 11.5 L69 8 L65.5 11 L69 14 L65.5 11.5 L64 15 L62.5 11.5 L59 14 L62.5 11 L59 8 L62.5 11.5 Z" fill="#fde68a" opacity="0.9"/>
+</svg>

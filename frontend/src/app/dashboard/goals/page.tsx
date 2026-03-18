@@ -13,16 +13,24 @@ const STATUS_COLOR: Record<string,string> = {
 };
 
 function ProgressRing({ progress, size = 60 }: { progress: number; size?: number }) {
-  const r = (size - 8) / 2;
+  const strokeW = size < 70 ? 5 : 6;
+  const r = (size - strokeW * 2) / 2;
   const circ = 2 * Math.PI * r;
-  const offset = circ - (Math.min(100, progress) / 100) * circ;
+  const offset = circ - (Math.min(100, Math.max(0, progress)) / 100) * circ;
+  const id = `ring-grad-${size}`;
   return (
     <svg width={size} height={size}>
-      <circle cx={size/2} cy={size/2} r={r} stroke="#1e293b" strokeWidth="6" fill="none" />
-      <circle cx={size/2} cy={size/2} r={r} stroke="#4f8cff" strokeWidth="6" fill="none"
+      <defs>
+        <linearGradient id={id} x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#6366f1" />
+          <stop offset="100%" stopColor="#8b5cf6" />
+        </linearGradient>
+      </defs>
+      <circle cx={size/2} cy={size/2} r={r} stroke="rgba(255,255,255,0.06)" strokeWidth={strokeW} fill="none" />
+      <circle cx={size/2} cy={size/2} r={r} stroke={`url(#${id})`} strokeWidth={strokeW} fill="none"
         strokeDasharray={circ} strokeDashoffset={offset} strokeLinecap="round"
         transform={`rotate(-90 ${size/2} ${size/2})`} />
-      <text x={size/2} y={size/2} textAnchor="middle" dy="4" fill="white" fontSize="11" fontWeight="700">
+      <text x={size/2} y={size/2} textAnchor="middle" dy="4" fill="white" fontSize={size < 70 ? 11 : 14} fontWeight="700">
         {Math.round(progress)}%
       </text>
     </svg>
@@ -120,10 +128,10 @@ export default function GoalsPage() {
           </div>
         ) : goals.length === 0 ? (
           <div className="max-w-4xl text-center py-20 border-2 border-dashed border-white/10 rounded-2xl">
-            <div className="text-5xl mb-4">🎯</div>
+            <img src="/icons/3d/target.svg" alt="" className="w-20 h-20 mx-auto mb-4 opacity-90" />
             <p className="text-white font-semibold mb-2">Set your first goal</p>
             <p className="text-slate-400 text-sm mb-6">Define clear objectives and track progress with key results</p>
-            <button onClick={() => setShowCreate(true)} className="px-6 py-3 gradient-bg rounded-xl font-semibold text-white">+ Create Goal</button>
+            <button onClick={() => setShowCreate(true)} className="px-6 py-3 gradient-bg rounded-xl font-semibold text-white text-sm">+ Create Goal</button>
           </div>
         ) : (
           <div className="max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -161,7 +169,9 @@ export default function GoalsPage() {
         <div className="w-96 border-l border-white/5 flex flex-col overflow-hidden bg-[#0c0d11]">
           <div className="p-4 border-b border-white/5 flex items-center justify-between">
             <h2 className="font-semibold text-white text-sm">{activeGoal.title}</h2>
-            <button onClick={() => setActiveGoal(null)} className="text-slate-500 hover:text-white text-xl">✕</button>
+            <button onClick={() => setActiveGoal(null)} className="text-slate-500 hover:text-white transition">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
           </div>
           <div className="flex-1 overflow-y-auto p-4">
             <div className="text-center mb-6">
@@ -223,7 +233,9 @@ export default function GoalsPage() {
           <div className="w-full max-w-md bg-[#0f1117] border border-white/10 rounded-2xl p-6">
             <div className="flex items-center justify-between mb-5">
               <h2 className="font-display font-bold text-lg text-white">New Goal</h2>
-              <button onClick={() => setShowCreate(false)} className="text-slate-500 hover:text-white text-xl">✕</button>
+              <button onClick={() => setShowCreate(false)} className="text-slate-500 hover:text-white transition">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
             </div>
             <form onSubmit={handleCreate} className="space-y-4">
               <input required value={form.title} onChange={e => setForm({...form, title: e.target.value})}

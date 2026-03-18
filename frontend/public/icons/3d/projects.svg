@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" fill="none">
+  <defs>
+    <linearGradient id="folder" x1="8" y1="8" x2="72" y2="72" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </linearGradient>
+    <linearGradient id="folderFront" x1="8" y1="24" x2="72" y2="72" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#fde68a"/>
+      <stop offset="100%" stop-color="#fbbf24"/>
+    </linearGradient>
+    <linearGradient id="folderSide" x1="8" y1="72" x2="72" y2="24" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#92400e"/>
+      <stop offset="100%" stop-color="#b45309"/>
+    </linearGradient>
+    <filter id="fShadow">
+      <feDropShadow dx="0" dy="6" stdDeviation="5" flood-color="#78350f" flood-opacity="0.45"/>
+    </filter>
+  </defs>
+
+  <ellipse cx="40" cy="73" rx="22" ry="4" fill="#d97706" opacity="0.2"/>
+
+  <!-- Folder back -->
+  <path d="M10 26 L10 64 C10 67 12 68 15 68 L65 68 C68 68 70 66 70 63 L70 26 Z" fill="url(#folder)" filter="url(#fShadow)"/>
+
+  <!-- Folder tab -->
+  <path d="M10 26 L10 20 C10 17 12 15 15 15 L30 15 C33 15 34 16 36 19 L40 24 L10 26 Z" fill="url(#folder)"/>
+  <path d="M10 26 L10 20 C10 17 12 15 15 15 L30 15 C33 15 34 16 36 19 L40 24 L10 26 Z" fill="white" opacity="0.08"/>
+
+  <!-- Folder front face -->
+  <rect x="10" y="26" width="60" height="42" rx="4" fill="url(#folderFront)"/>
+
+  <!-- Folder lines (documents inside) -->
+  <rect x="20" y="36" width="40" height="4" rx="2" fill="#d97706" opacity="0.5"/>
+  <rect x="20" y="44" width="32" height="4" rx="2" fill="#d97706" opacity="0.4"/>
+  <rect x="20" y="52" width="36" height="4" rx="2" fill="#d97706" opacity="0.35"/>
+
+  <!-- Progress pill -->
+  <rect x="20" y="58" width="40" height="5" rx="2.5" fill="#d97706" opacity="0.2"/>
+  <rect x="20" y="58" width="28" height="5" rx="2.5" fill="#d97706" opacity="0.7"/>
+
+  <!-- Star badge -->
+  <circle cx="60" cy="18" r="10" fill="#6366f1"/>
+  <path d="M60 12 L61.5 16.5 L66 16.5 L62.5 19.5 L64 24 L60 21 L56 24 L57.5 19.5 L54 16.5 L58.5 16.5 Z" fill="#fde68a"/>
+
+  <!-- Folder shine -->
+  <rect x="10" y="26" width="60" height="7" rx="4" fill="white" opacity="0.15"/>
+</svg>

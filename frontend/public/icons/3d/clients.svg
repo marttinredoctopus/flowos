@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" fill="none">
+  <defs>
+    <linearGradient id="avatar1" x1="10" y1="10" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#a78bfa"/>
+      <stop offset="100%" stop-color="#7c3aed"/>
+    </linearGradient>
+    <linearGradient id="avatar2" x1="30" y1="20" x2="60" y2="50" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#f9a8d4"/>
+      <stop offset="100%" stop-color="#ec4899"/>
+    </linearGradient>
+    <linearGradient id="avatar3" x1="40" y1="10" x2="70" y2="40" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#6ee7b7"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+    <filter id="avShadow">
+      <feDropShadow dx="0" dy="5" stdDeviation="4" flood-color="#1e1b4b" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+
+  <ellipse cx="40" cy="73" rx="22" ry="4" fill="#7c3aed" opacity="0.2"/>
+
+  <!-- Avatar 3 (back right) -->
+  <circle cx="56" cy="34" r="16" fill="url(#avatar3)" filter="url(#avShadow)"/>
+  <circle cx="56" cy="30" r="7" fill="#d1fae5" opacity="0.9"/>
+  <path d="M42 46 C44 38 48 34 56 34 C64 34 68 38 70 46 Z" fill="#6ee7b7" opacity="0.8"/>
+  <circle cx="52.5" cy="28.5" r="2.5" fill="white" opacity="0.4"/>
+
+  <!-- Avatar 2 (back left) -->
+  <circle cx="24" cy="34" r="16" fill="url(#avatar2)" filter="url(#avShadow)"/>
+  <circle cx="24" cy="30" r="7" fill="#fce7f3" opacity="0.9"/>
+  <path d="M10 46 C12 38 16 34 24 34 C32 34 36 38 38 46 Z" fill="#f9a8d4" opacity="0.8"/>
+  <circle cx="20.5" cy="28.5" r="2.5" fill="white" opacity="0.4"/>
+
+  <!-- Avatar 1 (front center) -->
+  <circle cx="40" cy="38" r="20" fill="url(#avatar1)" filter="url(#avShadow)"/>
+  <circle cx="40" cy="33" r="9" fill="#ede9fe" opacity="0.95"/>
+  <path d="M22 54 C24 44 30 38 40 38 C50 38 56 44 58 54 Z" fill="#a78bfa" opacity="0.9"/>
+
+  <!-- Face details on front avatar -->
+  <circle cx="36" cy="31" r="1.5" fill="#7c3aed" opacity="0.6"/>
+  <circle cx="44" cy="31" r="1.5" fill="#7c3aed" opacity="0.6"/>
+  <path d="M37 35 Q40 37 43 35" stroke="#7c3aed" stroke-width="1.2" stroke-linecap="round" fill="none" opacity="0.5"/>
+
+  <!-- Shine on front -->
+  <circle cx="34" cy="26" r="5" fill="white" opacity="0.15"/>
+
+  <!-- Badge (notification) -->
+  <circle cx="56" cy="20" r="8" fill="#ef4444"/>
+  <text x="56" y="23.5" text-anchor="middle" font-size="7" font-weight="800" fill="white" font-family="Arial">3</text>
+</svg>

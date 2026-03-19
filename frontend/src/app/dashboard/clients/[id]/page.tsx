@@ -788,8 +788,12 @@ export default function ClientProfilePage() {
             </p>
           )}
         </div>
+        <button onClick={() => router.push(`/dashboard/clients/${client.id}/report`)}
+          style={{ ...btnPrimary, padding: '9px 16px', fontSize: 12 }}>
+          <TrendingUp size={13} /> View Report
+        </button>
         <button onClick={() => router.push(`/dashboard/clients?edit=${client.id}`)} style={btnGhost}>
-          Edit Client
+          Edit
         </button>
       </div>
 

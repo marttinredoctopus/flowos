@@ -46,8 +46,9 @@ const ALL_NAV_SECTIONS = [
   {
     label: 'Marketing',
     items: [
-      { label: 'Content Planner', href: '/dashboard/content',   Icon: CalendarDays, color: 'var(--cyan)',    roles: ['admin','manager','member','team'] },
-      { label: 'Idea Bank',       href: '/dashboard/ideas',     Icon: Lightbulb,    color: 'var(--amber)',   roles: ['admin','manager','member','team'] },
+      { label: 'Content Planner', href: '/dashboard/content',          Icon: CalendarDays, color: 'var(--cyan)',    roles: ['admin','manager','member','team'] },
+      { label: 'Strategy Hub',   href: '/dashboard/content/sections', Icon: Lightbulb,    color: 'var(--violet)', roles: ['admin','manager','member','team'] },
+      { label: 'Idea Bank',      href: '/dashboard/ideas',            Icon: Lightbulb,    color: 'var(--amber)',  roles: ['admin','manager','member','team'] },
       { label: 'Ad Campaigns',    href: '/dashboard/campaigns', Icon: Megaphone,    color: 'var(--orange, #f97316)', roles: ['admin','manager','member','team'] },
     ],
   },

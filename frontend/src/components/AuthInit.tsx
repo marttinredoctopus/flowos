@@ -1,17 +1,18 @@
 'use client';
 import { useEffect } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
 import { connectSocket, disconnectSocket } from '@/lib/socket';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
-/**
- * Runs once on app mount. If the user was previously authenticated,
- * silently refreshes the access token using the HttpOnly refresh cookie.
- * After getting a fresh token, connects the global socket singleton.
- */
+// Public routes that don't require onboarding redirect
+const PUBLIC_PATHS = ['/', '/login', '/register', '/signup', '/forgot-password', '/reset-password', '/onboarding'];
+
 export function AuthInit() {
-  const { user, isAuthenticated, setToken, logout } = useAuthStore();
+  const { user, isAuthenticated, setToken, setAuth, logout } = useAuthStore();
+  const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     if (!isAuthenticated || !user) return;
@@ -27,15 +28,25 @@ export function AuthInit() {
         const token = data.accessToken || data.data?.accessToken;
         if (token && user) {
           setToken(token);
-          // Connect global socket with fresh token (only once)
           connectSocket(token, user.id);
           setTimeout(() => silentRefresh(user.id), 14 * 60 * 1000);
+        }
+
+        // Check onboarding status — only redirect from dashboard
+        if (pathname?.startsWith('/dashboard')) {
+          const meRes = await fetch(`${API}/auth/me`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (meRes.ok) {
+            const me = await meRes.json();
+            if (me.onboarding_completed === false) {
+              router.replace('/onboarding');
+            }
+          }
         }
       } catch {
         logout();
         disconnectSocket();
-        // Don't hard-redirect — stale localStorage will be cleared by logout()
-        // and the current page's useEffect will handle navigation if needed
       }
     }
 
@@ -57,11 +68,10 @@ async function silentRefresh(userId: string) {
     const token = data.accessToken || data.data?.accessToken;
     if (token) {
       useAuthStore.getState().setToken(token);
-      // Reconnect socket with fresh token
       connectSocket(token, userId);
       setTimeout(() => silentRefresh(userId), 14 * 60 * 1000);
     }
   } catch {
-    // silent — don't force logout on background refresh failure
+    // silent
   }
 }

@@ -22,14 +22,15 @@ import StorageBar from '@/components/ui/StorageBar';
 import apiClient from '@/lib/apiClient';
 import { disconnectSocket } from '@/lib/socket';
 
-const NAV_SECTIONS = [
+// roles: undefined = all, ['admin'] = admin only, ['admin','team'] = admin+team, ['client'] = client only
+const ALL_NAV_SECTIONS = [
   {
     label: 'Workspace',
     items: [
       { label: 'Dashboard',    href: '/dashboard',              Icon: LayoutDashboard, color: 'var(--indigo)' },
-      { label: 'Inbox',        href: '/dashboard/inbox',        Icon: Inbox,           color: 'var(--cyan)' },
-      { label: 'Chat',         href: '/dashboard/chat',         Icon: MessageSquare,   color: 'var(--emerald)' },
-      { label: 'Time Tracking',href: '/dashboard/time-tracking',Icon: Clock,           color: 'var(--amber)' },
+      { label: 'Inbox',        href: '/dashboard/inbox',        Icon: Inbox,           color: 'var(--cyan)',    roles: ['admin','manager','member','team'] },
+      { label: 'Chat',         href: '/dashboard/chat',         Icon: MessageSquare,   color: 'var(--emerald)', roles: ['admin','manager','member','team'] },
+      { label: 'Time Tracking',href: '/dashboard/time-tracking',Icon: Clock,           color: 'var(--amber)',   roles: ['admin','manager','member','team'] },
     ],
   },
   {
@@ -37,55 +38,57 @@ const NAV_SECTIONS = [
     items: [
       { label: 'Projects',   href: '/dashboard/projects', Icon: FolderKanban, color: 'var(--cyan)' },
       { label: 'Tasks',      href: '/dashboard/tasks',    Icon: CheckSquare,  color: 'var(--emerald)' },
-      { label: 'Clients',    href: '/dashboard/clients',  Icon: UserCircle,   color: 'var(--rose)' },
-      { label: 'Team',       href: '/dashboard/team',     Icon: Users,        color: 'var(--indigo)' },
-      { label: 'Goals & OKRs', href: '/dashboard/goals', Icon: Target,       color: 'var(--amber)' },
+      { label: 'Clients',    href: '/dashboard/clients',  Icon: UserCircle,   color: 'var(--rose)',    roles: ['admin','manager','member','team'] },
+      { label: 'Team',       href: '/dashboard/team',     Icon: Users,        color: 'var(--indigo)',  roles: ['admin','manager','member','team'] },
+      { label: 'Goals & OKRs', href: '/dashboard/goals', Icon: Target,       color: 'var(--amber)',   roles: ['admin','manager','member','team'] },
     ],
   },
   {
     label: 'Marketing',
     items: [
-      { label: 'Content Planner', href: '/dashboard/content',   Icon: CalendarDays, color: 'var(--cyan)' },
-      { label: 'Idea Bank',       href: '/dashboard/ideas',     Icon: Lightbulb,    color: 'var(--amber)' },
-      { label: 'Ad Campaigns',    href: '/dashboard/campaigns', Icon: Megaphone,    color: 'var(--orange, #f97316)' },
+      { label: 'Content Planner', href: '/dashboard/content',   Icon: CalendarDays, color: 'var(--cyan)',    roles: ['admin','manager','member','team'] },
+      { label: 'Idea Bank',       href: '/dashboard/ideas',     Icon: Lightbulb,    color: 'var(--amber)',   roles: ['admin','manager','member','team'] },
+      { label: 'Ad Campaigns',    href: '/dashboard/campaigns', Icon: Megaphone,    color: 'var(--orange, #f97316)', roles: ['admin','manager','member','team'] },
     ],
   },
   {
     label: 'Creative',
     items: [
-      { label: 'Design Hub',    href: '/dashboard/creative/design',  Icon: Palette,   color: 'var(--rose)' },
-      { label: 'Content Team',  href: '/dashboard/creative/content', Icon: FileText,  color: 'var(--cyan)' },
+      { label: 'Design Hub',    href: '/dashboard/creative/design',  Icon: Palette,   color: 'var(--rose)',  roles: ['admin','manager','member','team'] },
+      { label: 'Content Team',  href: '/dashboard/creative/content', Icon: FileText,  color: 'var(--cyan)',  roles: ['admin','manager','member','team'] },
     ],
   },
   {
     label: 'Intelligence',
     items: [
-      { label: 'AI Campaign Builder', href: '/dashboard/intelligence/campaign-builder', Icon: Sparkles,   color: 'var(--violet)' },
-      { label: 'AI Generator',        href: '/dashboard/intelligence/generate',         Icon: Sparkles,   color: 'var(--indigo)' },
-      { label: 'Competitor Analysis', href: '/dashboard/intelligence',                  Icon: TrendingUp, color: 'var(--emerald)' },
-      { label: 'Market Research',     href: '/dashboard/intelligence/research',         Icon: Search,     color: 'var(--cyan)' },
+      { label: 'AI Campaign Builder', href: '/dashboard/intelligence/campaign-builder', Icon: Sparkles,   color: 'var(--violet)',  roles: ['admin','manager','member','team'] },
+      { label: 'AI Generator',        href: '/dashboard/intelligence/generate',         Icon: Sparkles,   color: 'var(--indigo)',  roles: ['admin','manager','member','team'] },
+      { label: 'Competitor Analysis', href: '/dashboard/intelligence',                  Icon: TrendingUp, color: 'var(--emerald)', roles: ['admin','manager','member','team'] },
+      { label: 'Market Research',     href: '/dashboard/intelligence/research',         Icon: Search,     color: 'var(--cyan)',    roles: ['admin','manager','member','team'] },
     ],
   },
   {
     label: 'Finance',
+    // Finance section: admin/manager only
+    roles: ['admin', 'manager'],
     items: [
-      { label: 'Invoices',  href: '/dashboard/finance/invoices',  Icon: Receipt,    color: 'var(--emerald)' },
-      { label: 'Expenses',  href: '/dashboard/finance/expenses',  Icon: CreditCard, color: 'var(--rose)' },
-      { label: 'Reports',   href: '/dashboard/reports',           Icon: BarChart3,  color: 'var(--cyan)' },
+      { label: 'Invoices',  href: '/dashboard/finance/invoices',  Icon: Receipt,    color: 'var(--emerald)', roles: ['admin','manager'] },
+      { label: 'Expenses',  href: '/dashboard/finance/expenses',  Icon: CreditCard, color: 'var(--rose)',    roles: ['admin','manager'] },
+      { label: 'Reports',   href: '/dashboard/reports',           Icon: BarChart3,  color: 'var(--cyan)',    roles: ['admin','manager'] },
     ],
   },
   {
     label: 'Agency',
     items: [
-      { label: 'Automations',     href: '/dashboard/automations',     Icon: Zap,           color: 'var(--amber)' },
-      { label: 'Templates',       href: '/dashboard/templates',       Icon: LayoutTemplate,color: 'var(--cyan)' },
+      { label: 'Automations',     href: '/dashboard/automations',     Icon: Zap,           color: 'var(--amber)',   roles: ['admin','manager'] },
+      { label: 'Templates',       href: '/dashboard/templates',       Icon: LayoutTemplate,color: 'var(--cyan)',    roles: ['admin','manager','member','team'] },
       { label: 'Client Portal',   href: '/dashboard/clients/portal',  Icon: Globe,         color: 'var(--emerald)' },
       { label: 'Docs & Wiki',     href: '/dashboard/docs',            Icon: BookOpen,      color: 'var(--indigo)' },
-      { label: 'Forms',           href: '/dashboard/forms',           Icon: ClipboardList, color: 'var(--violet)' },
-      { label: 'Meetings',        href: '/dashboard/meetings',        Icon: Video,         color: 'var(--rose)' },
-      { label: 'Shoot Sessions',  href: '/dashboard/shoots',          Icon: Camera,        color: 'var(--indigo)' },
+      { label: 'Forms',           href: '/dashboard/forms',           Icon: ClipboardList, color: 'var(--violet)',  roles: ['admin','manager','member','team'] },
+      { label: 'Meetings',        href: '/dashboard/meetings',        Icon: Video,         color: 'var(--rose)',    roles: ['admin','manager','member','team'] },
+      { label: 'Shoot Sessions',  href: '/dashboard/shoots',          Icon: Camera,        color: 'var(--indigo)',  roles: ['admin','manager','member','team'] },
       { label: 'Files',           href: '/dashboard/files',           Icon: HardDrive,     color: 'var(--cyan)' },
-      { label: 'Settings',        href: '/dashboard/settings',        Icon: Settings,      color: 'var(--text-2)' },
+      { label: 'Settings',        href: '/dashboard/settings',        Icon: Settings,      color: 'var(--text-2)', roles: ['admin','manager'] },
     ],
   },
 ];
@@ -244,6 +247,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const { user, isAuthenticated, logout } = useAuthStore();
   const { theme, toggle: toggleTheme } = useThemeStore();
   const [hydrated, setHydrated] = useState(false);
+
+  // RBAC: filter nav based on user role
+  const userRole = user?.role || 'member';
+  const NAV_SECTIONS = ALL_NAV_SECTIONS
+    .filter(section => !('roles' in section) || (section as any).roles?.includes(userRole))
+    .map(section => ({
+      ...section,
+      items: section.items.filter((item: any) => !item.roles || item.roles.includes(userRole)),
+    }))
+    .filter(section => section.items.length > 0);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [gPressed, setGPressed] = useState(false);

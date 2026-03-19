@@ -35,7 +35,7 @@ export default function RegisterPage() {
 
   // Only redirect if we have a live in-memory token (not just a stale persisted flag)
   useEffect(() => {
-    if (isAuthenticated && accessToken) router.push('/dashboard');
+    if (isAuthenticated && accessToken) router.push("/onboarding");
   }, [isAuthenticated, accessToken, router]);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -46,7 +46,7 @@ export default function RegisterPage() {
       const { data } = await api.post('/auth/register', { name, email, password, orgName });
       setAuth(data.user, data.accessToken);
       (window as any).__TASKSDONE_AUTH_TOKEN__ = data.accessToken;
-      router.push('/dashboard');
+      router.push("/onboarding");
     } catch (err: any) {
       setError(err.response?.data?.message || 'Registration failed. Please try again.');
     } finally {

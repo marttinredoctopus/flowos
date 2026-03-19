@@ -2,10 +2,11 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import {
-  ArrowLeft, Building2, Mail, Phone, Globe, Users, FolderKanban,
+  ArrowLeft, Building2, Mail, Phone, Globe, FolderKanban,
   CheckSquare, Palette, CalendarDays, FileText, KeyRound, Plus,
   ExternalLink, Copy, Check, RefreshCw, Lock, Unlock,
-  TrendingUp, Clock, AlertCircle,
+  TrendingUp, Clock, AlertCircle, ThumbsUp, ThumbsDown,
+  MessageCircle, Send, ChevronDown, ChevronRight, Activity,
 } from 'lucide-react';
 import api from '@/lib/api';
 
@@ -263,10 +264,89 @@ function TasksTab({ tasks }: { tasks: Task[] }) {
   );
 }
 
-function DesignsTab({ designs }: { designs: Design[] }) {
+// ─── Inline Comments ──────────────────────────────────────────────────────────
+function InlineComments({ entityType, entityId }: { entityType: string; entityId: string }) {
+  const [comments, setComments] = useState<any[]>([]);
+  const [text, setText] = useState('');
+  const [open, setOpen] = useState(false);
+  const [sending, setSending] = useState(false);
+
+  const load = useCallback(async () => {
+    const { data } = await api.get(`/comments?entityType=${entityType}&entityId=${entityId}`);
+    setComments(data);
+  }, [entityType, entityId]);
+
+  useEffect(() => { if (open) load(); }, [open, load]);
+
+  const send = async () => {
+    if (!text.trim()) return;
+    setSending(true);
+    try {
+      const { data } = await api.post('/comments', { entityType, entityId, body: text.trim() });
+      setComments(c => [...c, data]);
+      setText('');
+    } finally { setSending(false); }
+  };
+
+  const total = comments.reduce((n, c) => n + 1 + (c.replies?.length || 0), 0);
+
+  return (
+    <div style={{ marginTop: 12, borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 10 }}>
+      <button onClick={() => setOpen(!open)} style={{
+        background: 'none', border: 'none', color: '#8b949e', cursor: 'pointer',
+        display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, padding: 0,
+      }}>
+        <MessageCircle size={13} />
+        {total > 0 ? `${total} comment${total !== 1 ? 's' : ''}` : 'Add comment'}
+        {open ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+      </button>
+      {open && (
+        <div style={{ marginTop: 10 }}>
+          {comments.map(c => (
+            <div key={c.id} style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+              <div style={{
+                width: 26, height: 26, borderRadius: '50%', flexShrink: 0,
+                background: 'linear-gradient(135deg,#6366f1,#8b5cf6)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 11, fontWeight: 700, color: '#fff',
+              }}>{(c.author_name || 'U')[0].toUpperCase()}</div>
+              <div style={{ flex: 1, background: 'rgba(255,255,255,0.03)', borderRadius: '0 8px 8px 8px', padding: '6px 10px' }}>
+                <div style={{ fontSize: 11, fontWeight: 600, color: '#f1f2f9', marginBottom: 2 }}>{c.author_name || 'Team'}</div>
+                <div style={{ fontSize: 13, color: '#c9d1d9' }}>{c.body}</div>
+              </div>
+            </div>
+          ))}
+          <div style={{ display: 'flex', gap: 8 }}>
+            <input value={text} onChange={e => setText(e.target.value)} placeholder="Add a comment..."
+              onKeyDown={e => { if (e.key === 'Enter') send(); }}
+              style={{ ...inputSt, flex: 1 }} />
+            <button onClick={send} disabled={!text.trim() || sending}
+              style={{ padding: '8px 12px', borderRadius: 8, background: '#6366f1', border: 'none', color: '#fff', cursor: 'pointer' }}>
+              <Send size={12} />
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function DesignsTab({ designs, onStatusChange }: { designs: Design[]; onStatusChange?: (id: string, status: string) => void }) {
+  const [approving, setApproving] = useState<string | null>(null);
+  const [note, setNote] = useState('');
+
+  const handleApproval = async (id: string, approved: boolean) => {
+    setApproving(id);
+    try {
+      await api.post(`/design/briefs/${id}/approve`, { approved, note });
+      onStatusChange?.(id, approved ? 'client_approved' : 'revision_required');
+      setNote('');
+    } finally { setApproving(null); }
+  };
+
   if (!designs.length) return <Empty icon={<Palette size={32} />} label="No design briefs yet" />;
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 }}>
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 12 }}>
       {designs.map(d => (
         <div key={d.id} style={card}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
@@ -285,31 +365,108 @@ function DesignsTab({ designs }: { designs: Design[] }) {
               {d.brief_content}
             </p>
           )}
+
+          {/* Approve / Reject actions */}
+          {d.status === 'review' && (
+            <div style={{ marginTop: 12 }}>
+              <input value={note} onChange={e => setNote(e.target.value)}
+                placeholder="Add feedback note (optional)..."
+                style={{ ...inputSt, width: '100%', marginBottom: 8, fontSize: 12 }} />
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                <button onClick={() => handleApproval(d.id, false)} disabled={approving === d.id}
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
+                    padding: '8px', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer',
+                    background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.25)', color: '#f59e0b' }}>
+                  <ThumbsDown size={12} /> Request Changes
+                </button>
+                <button onClick={() => handleApproval(d.id, true)} disabled={approving === d.id}
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
+                    padding: '8px', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer',
+                    background: 'linear-gradient(135deg,#22c55e,#16a34a)', border: 'none', color: '#fff' }}>
+                  <ThumbsUp size={12} /> {approving === d.id ? '...' : 'Approve'}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {['client_approved', 'approved'].includes(d.status) && (
+            <div style={{ marginTop: 10, padding: '6px 10px', borderRadius: 8,
+              background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.2)',
+              fontSize: 12, color: '#22c55e', textAlign: 'center' }}>✓ Approved</div>
+          )}
+
+          <InlineComments entityType="design" entityId={d.id} />
         </div>
       ))}
     </div>
   );
 }
 
-function ContentTab({ content }: { content: ContentPiece[] }) {
+function ContentTab({ content, onStatusChange }: { content: ContentPiece[]; onStatusChange?: (id: string, status: string) => void }) {
+  const [approving, setApproving] = useState<string | null>(null);
+  const [note, setNote] = useState('');
+
+  const handleApproval = async (id: string, approved: boolean) => {
+    setApproving(id);
+    try {
+      await api.post(`/content-pieces/${id}/approve`, { approved, note });
+      onStatusChange?.(id, approved ? 'approved' : 'revision_required');
+      setNote('');
+    } finally { setApproving(null); }
+  };
+
   if (!content.length) return <Empty icon={<CalendarDays size={32} />} label="No content pieces yet" />;
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
       {content.map(c => (
-        <div key={c.id} style={{ ...card, display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 14, color: '#f1f2f9', marginBottom: 4 }}>{c.title}</div>
-            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-              {badge(c.status)}
-              <span style={{ fontSize: 11, color: '#8b949e' }}>{c.platform} · {c.content_type}</span>
+        <div key={c.id} style={card}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 14, color: '#f1f2f9', marginBottom: 4 }}>{c.title}</div>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                {badge(c.status)}
+                <span style={{ fontSize: 11, color: '#8b949e' }}>{c.platform} · {c.content_type}</span>
+              </div>
             </div>
+            {c.publish_at && (
+              <span style={{ fontSize: 12, color: '#8b949e', flexShrink: 0 }}>
+                <CalendarDays size={11} style={{ display: 'inline', marginRight: 4 }} />
+                {new Date(c.publish_at).toLocaleDateString()}
+              </span>
+            )}
           </div>
-          {c.publish_at && (
-            <span style={{ fontSize: 12, color: '#8b949e' }}>
-              <CalendarDays size={11} style={{ display: 'inline', marginRight: 4 }} />
-              {new Date(c.publish_at).toLocaleDateString()}
-            </span>
+
+          {c.status === 'review' && (
+            <div style={{ marginTop: 4 }}>
+              <input value={note} onChange={e => setNote(e.target.value)}
+                placeholder="Feedback (optional)..."
+                style={{ ...inputSt, width: '100%', marginBottom: 8, fontSize: 12 }} />
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button onClick={() => handleApproval(c.id, false)} disabled={approving === c.id}
+                  style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 12px',
+                    borderRadius: 7, fontSize: 12, fontWeight: 600, cursor: 'pointer',
+                    background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.25)', color: '#f59e0b' }}>
+                  <ThumbsDown size={11} /> Request Changes
+                </button>
+                <button onClick={() => handleApproval(c.id, true)} disabled={approving === c.id}
+                  style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 14px',
+                    borderRadius: 7, fontSize: 12, fontWeight: 600, cursor: 'pointer',
+                    background: 'linear-gradient(135deg,#22c55e,#16a34a)', border: 'none', color: '#fff' }}>
+                  <ThumbsUp size={11} /> {approving === c.id ? '...' : 'Approve'}
+                </button>
+              </div>
+            </div>
           )}
+
+          {['approved', 'published'].includes(c.status) && (
+            <div style={{ marginTop: 8, padding: '5px 10px', borderRadius: 8,
+              background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.2)',
+              fontSize: 12, color: '#22c55e', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+              ✓ Approved
+            </div>
+          )}
+
+          <InlineComments entityType="content" entityId={c.id} />
         </div>
       ))}
     </div>
@@ -679,8 +836,26 @@ export default function ClientProfilePage() {
           {tab === 'overview' && <OverviewTab client={client} />}
           {tab === 'projects' && <ProjectsTab projects={client.projects} clientId={client.id} />}
           {tab === 'tasks' && <TasksTab tasks={client.tasks} />}
-          {tab === 'designs' && <DesignsTab designs={client.designs} />}
-          {tab === 'content' && <ContentTab content={client.content} />}
+          {tab === 'designs' && (
+            <DesignsTab
+              designs={client.designs}
+              onStatusChange={(id, status) =>
+                setClient(c => c ? {
+                  ...c, designs: c.designs.map(d => d.id === id ? { ...d, status } : d)
+                } : c)
+              }
+            />
+          )}
+          {tab === 'content' && (
+            <ContentTab
+              content={client.content}
+              onStatusChange={(id, status) =>
+                setClient(c => c ? {
+                  ...c, content: c.content.map(p => p.id === id ? { ...p, status } : p)
+                } : c)
+              }
+            />
+          )}
           {tab === 'files' && <FilesTab files={client.files} clientId={client.id} />}
           {tab === 'credentials' && (
             <CredentialsTab

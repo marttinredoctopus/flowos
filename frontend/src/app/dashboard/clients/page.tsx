@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import apiClient from '@/lib/apiClient';
 import toast from 'react-hot-toast';
 
@@ -117,9 +118,11 @@ function ClientModal({ client, onClose, onSaved }: { client?: any; onClose: () =
 function ClientCard({ client, onEdit, onDelete }: { client: any; onEdit: () => void; onDelete: () => void }) {
   const [expanded, setExpanded] = useState(false);
   const accounts: Account[] = client.accounts || [];
+  const router = useRouter();
 
   return (
-    <div className="bg-[#0f1117] border border-white/5 rounded-2xl p-5 hover:border-white/10 transition-all group">
+    <div className="bg-[#0f1117] border border-white/5 rounded-2xl p-5 hover:border-white/10 transition-all group cursor-pointer"
+      onClick={() => router.push(`/dashboard/clients/${client.id}`)}>
       <div className="flex items-start gap-3 mb-3">
         <AvatarCircle name={client.name} size={11} />
         <div className="flex-1 min-w-0">
@@ -127,10 +130,10 @@ function ClientCard({ client, onEdit, onDelete }: { client: any; onEdit: () => v
           {client.company && <p className="text-xs text-slate-500 truncate">{client.company}</p>}
         </div>
         <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition">
-          <button onClick={onEdit} className="p-1.5 rounded-lg hover:bg-white/8 text-slate-400 hover:text-white transition">
+          <button onClick={e => { e.stopPropagation(); onEdit(); }} className="p-1.5 rounded-lg hover:bg-white/8 text-slate-400 hover:text-white transition">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
           </button>
-          <button onClick={onDelete} className="p-1.5 rounded-lg hover:bg-red-500/10 text-slate-400 hover:text-red-400 transition">
+          <button onClick={e => { e.stopPropagation(); onDelete(); }} className="p-1.5 rounded-lg hover:bg-red-500/10 text-slate-400 hover:text-red-400 transition">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
           </button>
         </div>
@@ -191,8 +194,18 @@ export default function ClientsPage() {
   const [showModal, setShowModal] = useState(false);
   const [editClient, setEditClient] = useState<any>(null);
   const [search, setSearch] = useState('');
+  const searchParams = useSearchParams();
 
   useEffect(() => { load(); }, []);
+
+  // Support ?edit=clientId from the profile page
+  useEffect(() => {
+    const editId = searchParams.get('edit');
+    if (editId && clients.length) {
+      const c = clients.find(x => x.id === editId);
+      if (c) { setEditClient(c); setShowModal(true); }
+    }
+  }, [searchParams, clients]);
   async function load() {
     try { const r = await apiClient.get('/clients'); setClients(r.data || []); }
     catch { toast.error('Failed to load clients'); } finally { setLoading(false); }

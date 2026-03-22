@@ -5,7 +5,12 @@ const PUBLIC_PATHS = [
   '/',
   '/login',
   '/register',
+  '/signup',
   '/onboarding',
+  '/forgot-password',
+  '/reset-password',
+  '/auth',
+  '/client-portal',
   '/features',
   '/pricing',
   '/about',
@@ -36,9 +41,9 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Protect /dashboard routes - check for auth cookie
+  // Protect /dashboard routes — cookie name is refresh_token (underscore, not camelCase)
   if (pathname.startsWith('/dashboard')) {
-    const refreshToken = request.cookies.get('refreshToken')?.value;
+    const refreshToken = request.cookies.get('refresh_token')?.value;
     if (!refreshToken) {
       return NextResponse.redirect(new URL('/login', request.url));
     }

@@ -1,437 +1,760 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
 import apiClient from '@/lib/apiClient';
 import { Avatar } from '@/components/ui/Avatar';
 
-// ── Shared sub-components ────────────────────────────────────────────────────
+// ── Utility ──────────────────────────────────────────────────────────────────
 
-function Greeting({ subtitle }: { subtitle?: string }) {
-  const { user } = useAuthStore();
+function timeAgo(ts: string) {
+  const diff = Date.now() - new Date(ts).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  return `${Math.floor(hrs / 24)}d ago`;
+}
+
+function greeting() {
   const h = new Date().getHours();
-  const msg = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
-  const now = new Date();
-  const dateStr = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
-  return (
-    <div className="mb-6">
-      <h1 className="text-2xl font-bold mb-1" style={{ color: 'var(--text)' }}>
-        {msg}, <span className="gradient-text">{user?.name?.split(' ')[0]}</span> 👋
-      </h1>
-      <p className="text-sm mb-1" style={{ color: 'var(--text-muted)' }}>
-        {subtitle || "Here's your agency overview for today."}
-      </p>
-      <p className="text-xs font-medium" style={{ color: 'var(--text-dim, var(--text-muted))' }}>
-        {dateStr} · TasksDone
-      </p>
-    </div>
-  );
+  return h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
 }
 
-function QuickActions() {
-  const router = useRouter();
-  const actions = [
-    { label: '+ New Task',     href: '/dashboard/tasks?new=1',  color: 'var(--indigo, #6366f1)' },
-    { label: '+ New Project',  href: '/dashboard/projects',     color: 'var(--cyan, #06b6d4)' },
-    { label: 'View Reports',   href: '/dashboard/reports',      color: 'var(--emerald, #10b981)' },
-    { label: 'Open Chat',      href: '/dashboard/chat',         color: 'var(--violet, #8b5cf6)' },
-  ];
-  return (
-    <div className="flex flex-wrap gap-2 mb-6">
-      {actions.map(a => (
-        <button
-          key={a.label}
-          onClick={() => router.push(a.href)}
-          className="px-3 h-8 rounded-lg text-xs font-semibold transition"
-          style={{ background: 'var(--card)', border: '1px solid var(--border)', color: a.color }}
-          onMouseEnter={e => {
-            e.currentTarget.style.borderColor = a.color;
-            e.currentTarget.style.background = a.color + '15';
-          }}
-          onMouseLeave={e => {
-            e.currentTarget.style.borderColor = 'var(--border)';
-            e.currentTarget.style.background = 'var(--card)';
-          }}
-        >
-          {a.label}
-        </button>
-      ))}
-    </div>
-  );
-}
+// ── Sub-components ────────────────────────────────────────────────────────────
 
-function StatCards({ stats }: { stats: { icon: string; label: string; value: string | number; color: string; change?: string; isWarning?: boolean }[] }) {
-  return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6 dash-stats">
-      {stats.map((s, i) => (
-        <div
-          key={i}
-          className="p-5 rounded-2xl card-hover-effect"
-          style={{
-            background: 'var(--card)',
-            border: `1px solid ${s.isWarning && Number(s.value) > 0 ? s.color + '44' : 'var(--border)'}`,
-            borderBottom: `3px solid ${s.color}`,
-            transition: 'border-color 0.2s, box-shadow 0.2s',
-          }}
-          onMouseEnter={e => {
-            (e.currentTarget as HTMLDivElement).style.borderColor = s.color + '88';
-            (e.currentTarget as HTMLDivElement).style.borderBottomColor = s.color;
-            (e.currentTarget as HTMLDivElement).style.boxShadow = `0 4px 20px ${s.color}18`;
-          }}
-          onMouseLeave={e => {
-            (e.currentTarget as HTMLDivElement).style.borderColor = s.isWarning && Number(s.value) > 0 ? s.color + '44' : 'var(--border)';
-            (e.currentTarget as HTMLDivElement).style.borderBottomColor = s.color;
-            (e.currentTarget as HTMLDivElement).style.boxShadow = 'none';
-          }}
-        >
-          <div className="mb-3" style={{ transition: 'transform 0.25s ease', display: 'inline-block' }}
-            onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.transform = 'scale(1.1) rotate(4deg)'; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.transform = 'scale(1) rotate(0deg)'; }}
-          >
-            <img src={s.icon} alt="" width={40} height={40} loading="lazy" style={{ display: 'block' }} />
-          </div>
-          <div
-            className="text-3xl font-bold mb-1"
-            style={{ color: s.isWarning && Number(s.value) > 0 ? s.color : 'var(--text)' }}
-          >
-            {s.value}
-          </div>
-          <div className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>{s.label}</div>
-          {s.change && (
-            <div className="text-xs mt-1.5 font-semibold" style={{ color: s.color }}>{s.change}</div>
-          )}
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function ProjectsWidget({ projects, title = 'Recent Projects' }: { projects: any[]; title?: string }) {
-  return (
-    <div className="rounded-2xl p-5" style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="font-bold text-sm" style={{ color: 'var(--text)' }}>{title}</h2>
-        <Link href="/dashboard/projects" className="text-xs" style={{ color: 'var(--blue)' }}>View all →</Link>
+function StatCard({
+  icon, label, value, color, sub, warning, href,
+}: {
+  icon: string; label: string; value: number | string;
+  color: string; sub?: string; warning?: boolean; href?: string;
+}) {
+  const [hovered, setHovered] = useState(false);
+  const border = warning && Number(value) > 0 ? color + '50' : 'var(--border)';
+  const card = (
+    <div
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        background: hovered ? 'var(--card-hover, #1e1e2e)' : 'var(--card)',
+        border: `1px solid ${hovered ? color + '70' : border}`,
+        borderBottom: `3px solid ${color}`,
+        borderRadius: 16,
+        padding: '20px 20px 18px',
+        cursor: href ? 'pointer' : 'default',
+        transition: 'all 0.2s ease',
+        boxShadow: hovered ? `0 8px 32px ${color}18` : 'none',
+        position: 'relative',
+        overflow: 'hidden',
+      }}
+    >
+      {/* background glow */}
+      <div style={{
+        position: 'absolute', top: -20, right: -20, width: 80, height: 80,
+        borderRadius: '50%', background: color + '12',
+        transition: 'opacity 0.2s', opacity: hovered ? 1 : 0,
+      }} />
+      <div style={{ fontSize: 28, marginBottom: 10 }}>{icon}</div>
+      <div style={{
+        fontSize: 32, fontWeight: 800, color: warning && Number(value) > 0 ? color : 'var(--text)',
+        lineHeight: 1, marginBottom: 4,
+      }}>
+        {value}
       </div>
-      {projects.length === 0 ? (
-        <div className="text-center py-8">
-          <img src="/icons/3d/projects.svg" alt="" width={48} height={48} className="mx-auto mb-2" />
-          <p className="text-sm mb-3" style={{ color: 'var(--text-muted)' }}>No projects yet</p>
-          <Link href="/dashboard/projects" className="px-4 py-2 gradient-bg rounded-lg text-sm font-semibold text-white hover:opacity-90 transition inline-block">Create project</Link>
+      <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: sub ? 6 : 0 }}>
+        {label}
+      </div>
+      {sub && (
+        <div style={{ fontSize: 11, color: color, fontWeight: 600 }}>{sub}</div>
+      )}
+    </div>
+  );
+  if (href) return <Link href={href} style={{ textDecoration: 'none' }}>{card}</Link>;
+  return card;
+}
+
+function PriorityItem({
+  icon, text, sub, color, href, badge,
+}: {
+  icon: string; text: string; sub?: string; color: string; href?: string; badge?: string;
+}) {
+  const [hov, setHov] = useState(false);
+  const inner = (
+    <div
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+      style={{
+        display: 'flex', alignItems: 'center', gap: 12,
+        padding: '12px 14px', borderRadius: 12,
+        background: hov ? 'var(--card-hover, #1c1c2a)' : 'var(--surface)',
+        border: `1px solid ${hov ? color + '44' : 'transparent'}`,
+        transition: 'all 0.15s', cursor: href ? 'pointer' : 'default',
+      }}
+    >
+      <div style={{
+        width: 36, height: 36, borderRadius: 10, background: color + '18',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontSize: 16, flexShrink: 0,
+      }}>{icon}</div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 13, color: 'var(--text)', fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          {text}
+        </div>
+        {sub && <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>{sub}</div>}
+      </div>
+      {badge && (
+        <span style={{
+          fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 20,
+          background: color + '22', color, flexShrink: 0, textTransform: 'uppercase',
+        }}>{badge}</span>
+      )}
+      {href && (
+        <span style={{ fontSize: 16, color: 'var(--text-muted)', flexShrink: 0 }}>›</span>
+      )}
+    </div>
+  );
+  if (href) return <Link href={href} style={{ textDecoration: 'none', display: 'block' }}>{inner}</Link>;
+  return inner;
+}
+
+function SectionHeader({ title, sub, href, hrefLabel = 'View all →' }: {
+  title: string; sub?: string; href?: string; hrefLabel?: string;
+}) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 14 }}>
+      <div>
+        <h2 style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)', margin: 0 }}>{title}</h2>
+        {sub && <p style={{ fontSize: 11, color: 'var(--text-muted)', margin: '3px 0 0' }}>{sub}</p>}
+      </div>
+      {href && (
+        <Link href={href} style={{ fontSize: 12, color: '#6366f1', textDecoration: 'none', fontWeight: 500 }}>
+          {hrefLabel}
+        </Link>
+      )}
+    </div>
+  );
+}
+
+function Card({ children, style = {} }: { children: React.ReactNode; style?: React.CSSProperties }) {
+  return (
+    <div style={{
+      background: 'var(--card)', border: '1px solid var(--border)',
+      borderRadius: 16, padding: 20, ...style,
+    }}>
+      {children}
+    </div>
+  );
+}
+
+// ── Admin / Owner Dashboard ───────────────────────────────────────────────────
+
+function AdminDashboard() {
+  const { user } = useAuthStore();
+  const router = useRouter();
+  const [stats, setStats]       = useState<any>(null);
+  const [tasks, setTasks]       = useState<any[]>([]);
+  const [projects, setProjects] = useState<any[]>([]);
+  const [clients, setClients]   = useState<any[]>([]);
+  const [activity, setActivity] = useState<any[]>([]);
+  const [loading, setLoading]   = useState(true);
+
+  useEffect(() => {
+    Promise.all([
+      apiClient.get('/dashboard/stats').then(r => r.data).catch(() => ({})),
+      apiClient.get('/tasks').then(r => r.data).catch(() => []),
+      apiClient.get('/projects').then(r => r.data).catch(() => []),
+      apiClient.get('/clients').then(r => r.data).catch(() => []),
+      apiClient.get('/dashboard/activity?limit=15').then(r => r.data?.activities || []).catch(() => []),
+    ]).then(([s, t, p, c, a]) => {
+      setStats(s);
+      setTasks(Array.isArray(t) ? t : []);
+      setProjects(Array.isArray(p) ? p : []);
+      setClients(Array.isArray(c) ? c : []);
+      setActivity(Array.isArray(a) ? a : []);
+    }).finally(() => setLoading(false));
+  }, []);
+
+  const now = new Date();
+  const overdueTasks = tasks.filter(t => t.status !== 'done' && t.due_date && new Date(t.due_date) < now);
+  const dueSoonTasks = tasks.filter(t => {
+    if (t.status === 'done' || !t.due_date) return false;
+    const d = new Date(t.due_date);
+    const diff = (d.getTime() - now.getTime()) / 86400000;
+    return diff >= 0 && diff <= 3;
+  });
+  const reviewTasks = tasks.filter(t => t.status === 'review');
+  const inProgressTasks = tasks.filter(t => t.status === 'in_progress');
+
+  const priorityItems = [
+    ...overdueTasks.slice(0, 3).map(t => ({
+      icon: '⏰', text: t.title, sub: `Overdue · ${new Date(t.due_date).toLocaleDateString('en', { month: 'short', day: 'numeric' })}`,
+      color: '#ef5350', href: '/dashboard/tasks', badge: 'Overdue',
+    })),
+    ...reviewTasks.slice(0, 2).map(t => ({
+      icon: '👀', text: t.title, sub: 'Waiting for your review',
+      color: '#ffc107', href: '/dashboard/tasks', badge: 'Review',
+    })),
+    ...dueSoonTasks.slice(0, 2).map(t => ({
+      icon: '📅', text: t.title, sub: `Due ${new Date(t.due_date).toLocaleDateString('en', { month: 'short', day: 'numeric' })}`,
+      color: '#4a9eff', href: '/dashboard/tasks', badge: 'Soon',
+    })),
+  ].slice(0, 6);
+
+  const dateStr = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+
+  return (
+    <div style={{ padding: '28px 28px 60px', maxWidth: 1300, margin: '0 auto' }}>
+      {/* ── Header ── */}
+      <div style={{
+        display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
+        marginBottom: 28, flexWrap: 'wrap', gap: 16,
+      }}>
+        <div>
+          <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '0 0 4px', fontWeight: 500 }}>
+            {dateStr} · TasksDone
+          </p>
+          <h1 style={{ fontSize: 26, fontWeight: 800, color: 'var(--text)', margin: 0, lineHeight: 1.2 }}>
+            {greeting()},{' '}
+            <span style={{ background: 'linear-gradient(135deg, #6366f1, #a855f7)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+              {user?.name?.split(' ')[0]}
+            </span>{' '}
+            👋
+          </h1>
+          <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '6px 0 0' }}>
+            {loading ? 'Loading your workspace…' :
+              overdueTasks.length > 0
+                ? `⚠️ ${overdueTasks.length} overdue task${overdueTasks.length > 1 ? 's' : ''} need attention`
+                : `You have ${inProgressTasks.length} task${inProgressTasks.length !== 1 ? 's' : ''} in progress today`}
+          </p>
+        </div>
+
+        {/* Quick Actions */}
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          {[
+            { label: '+ New Task',     href: '/dashboard/tasks?new=1',   color: '#6366f1' },
+            { label: '+ New Client',   href: '/dashboard/clients?new=1', color: '#06b6d4' },
+            { label: '+ New Project',  href: '/dashboard/projects',      color: '#10b981' },
+            { label: '⚡ Strategy Hub', href: '/dashboard/content/sections', color: '#a855f7' },
+          ].map(a => (
+            <QuickActionBtn key={a.label} label={a.label} href={a.href} color={a.color} />
+          ))}
+        </div>
+      </div>
+
+      {/* ── Stat Cards ── */}
+      {loading ? (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 28 }}>
+          {[1,2,3,4].map(i => (
+            <div key={i} style={{ height: 120, borderRadius: 16, background: 'var(--card)', animation: 'pulse 1.5s infinite' }} />
+          ))}
         </div>
       ) : (
-        <div className="space-y-2">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 28 }}>
+          <StatCard
+            icon="👥" label="Active Clients" value={stats?.activeClients ?? clients.length}
+            color="#06b6d4" sub={clients.length > 0 ? `${clients.length} total` : undefined}
+            href="/dashboard/clients"
+          />
+          <StatCard
+            icon="🚀" label="Active Projects" value={stats?.activeProjects ?? projects.filter(p => p.status !== 'completed').length}
+            color="#6366f1" href="/dashboard/projects"
+          />
+          <StatCard
+            icon="⚡" label="Tasks in Progress" value={inProgressTasks.length}
+            color="#a855f7"
+            sub={stats?.openTasks ? `${stats.openTasks} open total` : undefined}
+            href="/dashboard/tasks"
+          />
+          <StatCard
+            icon="⏳" label="Pending Approvals" value={stats?.pendingApprovals ?? reviewTasks.length}
+            color="#ffc107" warning
+            sub={stats?.overdueCount > 0 ? `${stats.overdueCount} overdue` : undefined}
+            href="/dashboard/tasks"
+          />
+        </div>
+      )}
+
+      {/* ── Main Grid ── */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 20, alignItems: 'start' }}>
+        {/* Left column */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+
+          {/* Priority: What needs your attention */}
+          {!loading && priorityItems.length > 0 && (
+            <Card>
+              <SectionHeader
+                title="⚡ What needs your attention"
+                sub={`${priorityItems.length} item${priorityItems.length !== 1 ? 's' : ''} require action`}
+                href="/dashboard/tasks"
+              />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                {priorityItems.map((item, i) => (
+                  <PriorityItem key={i} {...item} />
+                ))}
+              </div>
+            </Card>
+          )}
+
+          {/* Client Overview */}
+          <Card>
+            <SectionHeader title="👥 Client Overview" href="/dashboard/clients" />
+            {clients.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '32px 0' }}>
+                <div style={{ fontSize: 36, marginBottom: 8 }}>👤</div>
+                <p style={{ color: 'var(--text-muted)', fontSize: 13, marginBottom: 12 }}>No clients yet</p>
+                <Link href="/dashboard/clients?new=1" style={{
+                  display: 'inline-block', padding: '8px 20px', borderRadius: 10,
+                  background: 'linear-gradient(135deg, #6366f1, #a855f7)', color: '#fff',
+                  fontSize: 13, fontWeight: 600, textDecoration: 'none',
+                }}>Add first client</Link>
+              </div>
+            ) : (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 10 }}>
+                {clients.slice(0, 8).map((c: any) => (
+                  <ClientCard key={c.id} client={c} projects={projects} />
+                ))}
+              </div>
+            )}
+          </Card>
+
+          {/* Projects + Tasks */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+            <ProjectsWidget projects={projects} />
+            <TasksWidget tasks={tasks.filter(t => t.assignee_id === user?.id).length > 0 ? tasks.filter(t => t.assignee_id === user?.id) : inProgressTasks} title="Tasks in Progress" />
+          </div>
+        </div>
+
+        {/* Right column */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {/* Quick Actions Panel */}
+          <QuickActionsPanel />
+
+          {/* Activity Feed */}
+          <Card>
+            <SectionHeader title="🕐 Recent Activity" sub="Last 14 days" />
+            {activity.length === 0 ? (
+              <p style={{ fontSize: 12, color: 'var(--text-muted)', textAlign: 'center', padding: '20px 0' }}>
+                No recent activity
+              </p>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+                {activity.slice(0, 10).map((a: any, i: number) => (
+                  <div key={i} style={{
+                    display: 'flex', gap: 10, padding: '9px 0',
+                    borderBottom: i < activity.slice(0, 10).length - 1 ? '1px solid var(--border)' : 'none',
+                  }}>
+                    <div style={{
+                      width: 28, height: 28, borderRadius: 8, background: 'var(--surface)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: 14, flexShrink: 0,
+                    }}>{a.icon}</div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ fontSize: 12, color: 'var(--text)', margin: 0, lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {a.text}
+                      </p>
+                      <p style={{ fontSize: 10, color: 'var(--text-muted)', margin: '2px 0 0' }}>
+                        {a.ts ? timeAgo(a.ts) : a.time}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Card>
+
+          {/* Team snapshot */}
+          <TeamSnapshot />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function QuickActionBtn({ label, href, color }: { label: string; href: string; color: string }) {
+  const [hov, setHov] = useState(false);
+  return (
+    <Link
+      href={href}
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+      style={{
+        display: 'inline-flex', alignItems: 'center', height: 34, padding: '0 14px',
+        borderRadius: 10, fontSize: 12, fontWeight: 600,
+        background: hov ? color + '18' : 'var(--card)',
+        border: `1px solid ${hov ? color + '80' : 'var(--border)'}`,
+        color: hov ? color : 'var(--text-muted)',
+        textDecoration: 'none', transition: 'all 0.15s',
+      }}
+    >
+      {label}
+    </Link>
+  );
+}
+
+function ClientCard({ client, projects }: { client: any; projects: any[] }) {
+  const [hov, setHov] = useState(false);
+  const clientProjects = projects.filter(p => p.client_id === client.id || p.client_name === client.name);
+  const active = clientProjects.filter(p => p.status !== 'completed').length;
+  const avgProgress = clientProjects.length
+    ? Math.round(clientProjects.reduce((s, p) => s + (p.progress || 0), 0) / clientProjects.length)
+    : 0;
+
+  return (
+    <Link href={`/dashboard/clients/${client.id}`} style={{ textDecoration: 'none' }}>
+      <div
+        onMouseEnter={() => setHov(true)}
+        onMouseLeave={() => setHov(false)}
+        style={{
+          padding: '12px 14px', borderRadius: 12,
+          background: hov ? 'var(--card-hover, #1c1c2a)' : 'var(--surface)',
+          border: `1px solid ${hov ? '#6366f144' : 'transparent'}`,
+          transition: 'all 0.15s',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+          <Avatar name={client.name} size={26} />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--text)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {client.name}
+            </p>
+            <p style={{ fontSize: 10, color: 'var(--text-muted)', margin: 0 }}>
+              {active} active project{active !== 1 ? 's' : ''}
+            </p>
+          </div>
+        </div>
+        {clientProjects.length > 0 && (
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
+              <span style={{ fontSize: 9, color: 'var(--text-muted)' }}>Progress</span>
+              <span style={{ fontSize: 9, color: 'var(--text-muted)' }}>{avgProgress}%</span>
+            </div>
+            <div style={{ height: 3, borderRadius: 2, background: 'var(--border)', overflow: 'hidden' }}>
+              <div style={{
+                height: '100%', borderRadius: 2, width: `${avgProgress}%`,
+                background: 'linear-gradient(90deg, #6366f1, #a855f7)',
+                transition: 'width 0.5s ease',
+              }} />
+            </div>
+          </div>
+        )}
+      </div>
+    </Link>
+  );
+}
+
+function QuickActionsPanel() {
+  const router = useRouter();
+  const actions = [
+    { icon: '📋', label: 'Create Task',   sub: 'Add a new task',     href: '/dashboard/tasks?new=1',          color: '#6366f1' },
+    { icon: '👤', label: 'Add Client',    sub: 'Onboard a client',   href: '/dashboard/clients?new=1',        color: '#06b6d4' },
+    { icon: '🎨', label: 'Upload Design', sub: 'Share with client',  href: '/dashboard/design',               color: '#ec4899' },
+    { icon: '✍️', label: 'AI Content',   sub: 'Generate strategy',   href: '/dashboard/content/sections',     color: '#a855f7' },
+    { icon: '📊', label: 'View Reports',  sub: 'Business insights',   href: '/dashboard/reports',              color: '#10b981' },
+    { icon: '🚀', label: 'New Project',   sub: 'Start something new', href: '/dashboard/projects',             color: '#f59e0b' },
+  ];
+  return (
+    <Card>
+      <SectionHeader title="⚡ Quick Actions" />
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+        {actions.map(a => (
+          <QuickActionCard key={a.label} {...a} onClick={() => router.push(a.href)} />
+        ))}
+      </div>
+    </Card>
+  );
+}
+
+function QuickActionCard({ icon, label, sub, color, onClick }: {
+  icon: string; label: string; sub: string; color: string; onClick: () => void;
+}) {
+  const [hov, setHov] = useState(false);
+  return (
+    <button
+      onClick={onClick}
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+      style={{
+        display: 'flex', flexDirection: 'column', alignItems: 'flex-start',
+        padding: '10px 12px', borderRadius: 10, textAlign: 'left',
+        background: hov ? color + '12' : 'var(--surface)',
+        border: `1px solid ${hov ? color + '50' : 'transparent'}`,
+        cursor: 'pointer', transition: 'all 0.15s', width: '100%',
+      }}
+    >
+      <span style={{ fontSize: 18, marginBottom: 4 }}>{icon}</span>
+      <span style={{ fontSize: 12, fontWeight: 600, color: hov ? color : 'var(--text)' }}>{label}</span>
+      <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>{sub}</span>
+    </button>
+  );
+}
+
+function TeamSnapshot() {
+  const [team, setTeam] = useState<any[]>([]);
+  useEffect(() => {
+    apiClient.get('/team').then(r => setTeam(Array.isArray(r.data) ? r.data.slice(0, 5) : [])).catch(() => {});
+  }, []);
+  if (team.length === 0) return null;
+  return (
+    <Card>
+      <SectionHeader title="👋 Team" href="/dashboard/team" />
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        {team.map((m: any) => (
+          <div key={m.user_id || m.id} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <Avatar name={m.name} size={28} />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--text)', margin: 0 }}>{m.name}</p>
+              <p style={{ fontSize: 10, color: 'var(--text-muted)', margin: 0 }}>{m.role}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </Card>
+  );
+}
+
+function ProjectsWidget({ projects }: { projects: any[] }) {
+  return (
+    <Card>
+      <SectionHeader title="🚀 Projects" href="/dashboard/projects" />
+      {projects.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: '20px 0' }}>
+          <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 10 }}>No projects yet</p>
+          <Link href="/dashboard/projects" style={{
+            display: 'inline-block', padding: '7px 16px', borderRadius: 8,
+            background: 'linear-gradient(135deg, #6366f1, #a855f7)', color: '#fff',
+            fontSize: 12, fontWeight: 600, textDecoration: 'none',
+          }}>Create project</Link>
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           {projects.slice(0, 5).map((p: any) => (
-            <div
-              key={p.id}
-              className="flex items-center gap-3 p-3 rounded-xl"
-              style={{
-                background: 'var(--surface)',
-                transition: 'background 0.15s',
-              }}
-              onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = 'var(--card-hover, var(--border))'; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = 'var(--surface)'; }}
-            >
-              <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: p.color || '#7c6fe0' }} />
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate" style={{ color: 'var(--text)' }}>{p.name}</p>
-                {p.client_name ? (
-                  <span
-                    className="text-xs px-1.5 py-0.5 rounded-full font-medium inline-block mt-0.5"
-                    style={{ background: 'var(--border)', color: 'var(--text-muted)' }}
-                  >
-                    {p.client_name}
-                  </span>
-                ) : (
-                  <span className="text-xs" style={{ color: 'var(--text-muted)' }}>No client</span>
+            <div key={p.id} style={{
+              display: 'flex', alignItems: 'center', gap: 10,
+              padding: '9px 10px', borderRadius: 10, background: 'var(--surface)',
+            }}>
+              <div style={{ width: 8, height: 8, borderRadius: '50%', background: p.color || '#6366f1', flexShrink: 0 }} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{ fontSize: 12, fontWeight: 500, color: 'var(--text)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {p.name}
+                </p>
+                {p.client_name && (
+                  <p style={{ fontSize: 10, color: 'var(--text-muted)', margin: 0 }}>{p.client_name}</p>
                 )}
               </div>
-              <div className="flex items-center gap-2 flex-shrink-0">
-                <div className="w-16 rounded-full overflow-hidden" style={{ height: 4, background: 'var(--border)' }}>
-                  <div
-                    className="h-full rounded-full"
-                    style={{
-                      width: `${p.progress || 0}%`,
-                      background: 'linear-gradient(90deg, #6366f1, #8b5cf6)',
-                    }}
-                  />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <div style={{ width: 50, height: 3, borderRadius: 2, background: 'var(--border)', overflow: 'hidden' }}>
+                  <div style={{
+                    height: '100%', width: `${p.progress || 0}%`,
+                    background: 'linear-gradient(90deg, #6366f1, #a855f7)', borderRadius: 2,
+                  }} />
                 </div>
-                <span className="text-xs w-8 text-right" style={{ color: 'var(--text-muted)' }}>{p.progress || 0}%</span>
+                <span style={{ fontSize: 10, color: 'var(--text-muted)', width: 28, textAlign: 'right' }}>
+                  {p.progress || 0}%
+                </span>
               </div>
             </div>
           ))}
         </div>
       )}
-    </div>
+    </Card>
   );
 }
 
-function TasksWidget({ tasks, title = 'My Tasks', emptyMsg = 'No tasks assigned' }: { tasks: any[]; title?: string; emptyMsg?: string }) {
+function TasksWidget({ tasks, title = 'Tasks' }: { tasks: any[]; title?: string }) {
   const pc: Record<string, string> = { high: '#ef5350', medium: '#ffc107', low: '#4caf82' };
-  const statusColor: Record<string, { bg: string; text: string }> = {
-    done:        { bg: '#4caf8222', text: '#4caf82' },
-    in_progress: { bg: '#4a9eff22', text: '#4a9eff' },
-    review:      { bg: '#ffc10722', text: '#ffc107' },
-    todo:        { bg: 'var(--surface)', text: 'var(--text-muted)' },
-  };
+  const sc: Record<string, string> = { done: '#4caf82', in_progress: '#4a9eff', review: '#ffc107', todo: '#7b7fa8' };
   return (
-    <div className="rounded-2xl p-5" style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="font-bold text-sm" style={{ color: 'var(--text)' }}>{title}</h2>
-        <Link href="/dashboard/tasks" className="text-xs" style={{ color: 'var(--blue)' }}>View all →</Link>
-      </div>
+    <Card>
+      <SectionHeader title={title} href="/dashboard/tasks" />
       {tasks.length === 0 ? (
-        <div className="text-center py-8">
-          <div className="text-3xl mb-2">✅</div>
-          <p className="text-sm mb-3" style={{ color: 'var(--text-muted)' }}>{emptyMsg}</p>
-          <Link href="/dashboard/tasks" className="px-4 py-2 gradient-bg rounded-lg text-sm font-semibold text-white hover:opacity-90 transition inline-block">Browse tasks</Link>
+        <div style={{ textAlign: 'center', padding: '20px 0' }}>
+          <p style={{ fontSize: 32, margin: '0 0 8px' }}>✅</p>
+          <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>All clear!</p>
         </div>
       ) : (
-        <div className="space-y-2">
-          {tasks.slice(0, 6).map((t: any) => {
-            const sc = statusColor[t.status] || statusColor.todo;
-            const borderColor = pc[t.priority] || '#7b7fa8';
-            return (
-              <div
-                key={t.id}
-                className="flex items-center gap-3 p-3 rounded-xl overflow-hidden"
-                style={{
-                  background: 'var(--surface)',
-                  borderLeft: `3px solid ${borderColor}`,
-                  transition: 'background 0.15s',
-                }}
-                onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = 'var(--card-hover, var(--border))'; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = 'var(--surface)'; }}
-              >
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm truncate" style={{ color: 'var(--text)' }}>{t.title}</p>
-                  {t.due_date && (
-                    <p className="text-xs mt-0.5" style={{ color: new Date(t.due_date) < new Date() && t.status !== 'done' ? '#ef5350' : 'var(--text-muted)' }}>
-                      Due {new Date(t.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                    </p>
-                  )}
-                </div>
-                <span
-                  className="text-xs px-2 py-0.5 rounded-full font-medium flex-shrink-0 capitalize"
-                  style={{ background: sc.bg, color: sc.text }}
-                >
-                  {t.status?.replace('_', ' ')}
-                </span>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+          {tasks.slice(0, 6).map((t: any) => (
+            <div key={t.id} style={{
+              display: 'flex', alignItems: 'center', gap: 8,
+              padding: '8px 10px', borderRadius: 10, background: 'var(--surface)',
+              borderLeft: `3px solid ${pc[t.priority] || '#7b7fa8'}`,
+            }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{ fontSize: 12, color: 'var(--text)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {t.title}
+                </p>
+                {t.due_date && (
+                  <p style={{ fontSize: 10, margin: '2px 0 0', color: new Date(t.due_date) < new Date() && t.status !== 'done' ? '#ef5350' : 'var(--text-muted)' }}>
+                    Due {new Date(t.due_date).toLocaleDateString('en', { month: 'short', day: 'numeric' })}
+                  </p>
+                )}
               </div>
-            );
-          })}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function TeamWidget({ team }: { team: any[] }) {
-  const ROLE_COLOR: Record<string, string> = { admin: '#ef5350', manager: '#ffc107', member: '#4a9eff', viewer: '#7b7fa8' };
-  return (
-    <div className="rounded-2xl p-5" style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="font-bold text-sm" style={{ color: 'var(--text)' }}>Team</h2>
-        <Link href="/dashboard/team" className="text-xs" style={{ color: 'var(--blue)' }}>View all →</Link>
-      </div>
-      <div className="space-y-2">
-        {team.slice(0, 6).map((m: any) => (
-          <div key={m.user_id || m.id} className="flex items-center gap-3 p-2 rounded-xl" style={{ background: 'var(--surface)' }}>
-            <Avatar name={m.name} size={28} />
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate" style={{ color: 'var(--text)' }}>{m.name}</p>
-              <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{m.email}</p>
+              <span style={{
+                fontSize: 10, fontWeight: 600, padding: '2px 7px', borderRadius: 20,
+                background: (sc[t.status] || '#7b7fa8') + '22',
+                color: sc[t.status] || '#7b7fa8', flexShrink: 0, textTransform: 'capitalize',
+              }}>
+                {t.status?.replace('_', ' ')}
+              </span>
             </div>
-            <span className="text-xs px-2 py-0.5 rounded-full font-semibold capitalize flex-shrink-0"
-              style={{ background: (ROLE_COLOR[m.role] || '#7b7fa8') + '22', color: ROLE_COLOR[m.role] || '#7b7fa8' }}>
-              {m.role}
-            </span>
-          </div>
-        ))}
-        {team.length === 0 && <p className="text-sm text-center py-4" style={{ color: 'var(--text-muted)' }}>No team members yet</p>}
-      </div>
-    </div>
-  );
-}
-
-// ── Role dashboards ──────────────────────────────────────────────────────────
-
-function AdminDashboard() {
-  const { user } = useAuthStore();
-  const [projects, setProjects] = useState<any[]>([]);
-  const [tasks, setTasks]       = useState<any[]>([]);
-  const [team, setTeam]         = useState<any[]>([]);
-  const [stats, setStats]       = useState<any>(null);
-  const [loading, setLoading]   = useState(true);
-
-  useEffect(() => {
-    Promise.all([
-      apiClient.get('/projects').then(r => r.data).catch(() => []),
-      apiClient.get('/tasks').then(r => r.data).catch(() => []),
-      apiClient.get('/team').then(r => r.data).catch(() => []),
-      apiClient.get('/dashboard/stats').then(r => r.data).catch(() => null),
-    ]).then(([p, t, tm, s]) => {
-      setProjects(Array.isArray(p) ? p : []);
-      setTasks(Array.isArray(t) ? t : []);
-      setTeam(Array.isArray(tm) ? tm : []);
-      setStats(s);
-    }).finally(() => setLoading(false));
-  }, []);
-
-  const myTasks    = tasks.filter(t => t.assignee_id === user?.id);
-  const inProgress = tasks.filter(t => t.status === 'in_progress');
-  const doneCount  = tasks.filter(t => t.status === 'done').length;
-  const overdue    = tasks.filter(t => t.status !== 'done' && t.due_date && new Date(t.due_date) < new Date()).length;
-
-  return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <Greeting />
-      <QuickActions />
-      {loading ? (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          {[1,2,3,4].map(i => <div key={i} className="h-24 rounded-2xl animate-pulse" style={{ background: 'var(--card)' }} />)}
+          ))}
         </div>
-      ) : (
-        <StatCards stats={[
-          { icon: '/icons/3d/projects.svg',     label: 'Active Projects',   value: stats?.activeProjects ?? projects.filter(p => p.status !== 'completed').length, color: 'var(--blue)' },
-          { icon: '/icons/3d/tasks.svg',         label: 'Open Tasks',         value: stats?.openTasks ?? tasks.filter(t => t.status !== 'done').length,               color: 'var(--purple)' },
-          { icon: '/icons/3d/clock-broken.svg',  label: 'Overdue',            value: stats?.overdueCount ?? overdue,                                                   color: 'var(--red)',    isWarning: true },
-          { icon: '/icons/3d/clients.svg',       label: 'Team Members',       value: stats?.teamCount ?? team.length,                                                  color: 'var(--teal)' },
-        ]} />
       )}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="flex flex-col gap-6">
-          <ProjectsWidget projects={projects} />
-        </div>
-        <div className="flex flex-col gap-6">
-          <TasksWidget tasks={myTasks.length > 0 ? myTasks : tasks} title={myTasks.length > 0 ? 'My Tasks' : 'All Tasks'} />
-          <TeamWidget team={team} />
-        </div>
-      </div>
-    </div>
+    </Card>
   );
 }
+
+// ── Manager Dashboard ─────────────────────────────────────────────────────────
 
 function ManagerDashboard() {
   const { user } = useAuthStore();
-  const [projects, setProjects]         = useState<any[]>([]);
-  const [pendingReviews, setPendingReviews] = useState<any[]>([]);
-  const [teamTasks, setTeamTasks]       = useState<any[]>([]);
-  const [loading, setLoading]           = useState(true);
+  const [projects, setProjects]       = useState<any[]>([]);
+  const [tasks, setTasks]             = useState<any[]>([]);
+  const [activity, setActivity]       = useState<any[]>([]);
+  const [loading, setLoading]         = useState(true);
 
   useEffect(() => {
     Promise.all([
+      apiClient.get('/dashboard/manager-stats').then(r => r.data).catch(() => ({})),
       apiClient.get('/projects').then(r => r.data).catch(() => []),
-      apiClient.get('/tasks?status=review').then(r => r.data).catch(() => []),
       apiClient.get('/tasks').then(r => r.data).catch(() => []),
-    ]).then(([p, rev, t]) => {
+      apiClient.get('/dashboard/activity?limit=10').then(r => r.data?.activities || []).catch(() => []),
+    ]).then(([_s, p, t, a]) => {
       setProjects(Array.isArray(p) ? p : []);
-      setPendingReviews(Array.isArray(rev) ? rev : []);
-      setTeamTasks(Array.isArray(t) ? t : []);
+      setTasks(Array.isArray(t) ? t : []);
+      setActivity(Array.isArray(a) ? a : []);
     }).finally(() => setLoading(false));
   }, []);
 
-  const overdue = teamTasks.filter(t => t.status !== 'done' && t.due_date && new Date(t.due_date) < new Date()).length;
-  const myProjects = projects.filter(p => p.manager_id === user?.id || p.manager_name === user?.name);
+  const reviewTasks = tasks.filter(t => t.status === 'review');
+  const overdue     = tasks.filter(t => t.status !== 'done' && t.due_date && new Date(t.due_date) < new Date());
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <Greeting subtitle="Here's what your team is working on." />
-      <QuickActions />
+    <div style={{ padding: '28px 28px 60px', maxWidth: 1200, margin: '0 auto' }}>
+      <div style={{ marginBottom: 24 }}>
+        <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '0 0 4px' }}>{dateStr}</p>
+        <h1 style={{ fontSize: 24, fontWeight: 800, color: 'var(--text)', margin: 0 }}>
+          {greeting()},{' '}
+          <span style={{ background: 'linear-gradient(135deg, #06b6d4, #6366f1)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+            {user?.name?.split(' ')[0]}
+          </span>
+        </h1>
+        <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '6px 0 0' }}>
+          Here's what your team is working on.
+        </p>
+      </div>
+
       {loading ? (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          {[1,2,3,4].map(i => <div key={i} className="h-24 rounded-2xl animate-pulse" style={{ background: 'var(--card)' }} />)}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16, marginBottom: 24 }}>
+          {[1,2,3,4].map(i => <div key={i} style={{ height: 110, borderRadius: 16, background: 'var(--card)', animation: 'pulse 1.5s infinite' }} />)}
         </div>
       ) : (
-        <StatCards stats={[
-          { icon: '/icons/3d/projects.svg',    label: 'My Projects',     value: myProjects.length,          color: 'var(--blue)' },
-          { icon: '/icons/3d/review.svg',      label: 'Needs Review',    value: pendingReviews.length,       color: 'var(--yellow)', isWarning: pendingReviews.length > 0 },
-          { icon: '/icons/3d/tasks.svg',       label: 'Team Open Tasks', value: teamTasks.filter(t => t.status !== 'done').length, color: 'var(--purple)' },
-          { icon: '/icons/3d/clock-broken.svg',label: 'Overdue Tasks',   value: overdue,                     color: 'var(--red)', isWarning: overdue > 0 },
-        ]} />
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16, marginBottom: 24 }}>
+          <StatCard icon="🚀" label="Active Projects" value={projects.filter(p => p.status !== 'completed').length} color="#6366f1" />
+          <StatCard icon="👀" label="Needs Review" value={reviewTasks.length} color="#ffc107" warning href="/dashboard/tasks" />
+          <StatCard icon="⚡" label="Open Tasks" value={tasks.filter(t => t.status !== 'done').length} color="#a855f7" />
+          <StatCard icon="⏰" label="Overdue" value={overdue.length} color="#ef5350" warning />
+        </div>
       )}
 
-      {pendingReviews.length > 0 && (
-        <div className="rounded-2xl p-5 mb-6" style={{ background: 'rgba(255,193,7,0.06)', border: '1px solid rgba(255,193,7,0.2)' }}>
-          <div className="text-sm font-semibold mb-3" style={{ color: 'var(--yellow)' }}>
-            👀 {pendingReviews.length} task{pendingReviews.length !== 1 ? 's' : ''} waiting for your review
+      {reviewTasks.length > 0 && (
+        <Card style={{ marginBottom: 20, background: 'rgba(255,193,7,0.05)', borderColor: 'rgba(255,193,7,0.2)' }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: '#ffc107', marginBottom: 10 }}>
+            👀 {reviewTasks.length} task{reviewTasks.length !== 1 ? 's' : ''} waiting for your review
           </div>
-          <div className="space-y-2">
-            {pendingReviews.slice(0, 4).map((t: any) => (
-              <div key={t.id} className="flex items-center gap-3 p-3 rounded-xl" style={{ background: 'var(--card)' }}>
-                <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: '#ffc107' }} />
-                <p className="flex-1 text-sm" style={{ color: 'var(--text)' }}>{t.title}</p>
-                <Link href="/dashboard/tasks" className="text-xs px-3 py-1 rounded-lg" style={{ background: 'var(--yellow-dim)', color: 'var(--yellow)' }}>Review</Link>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {reviewTasks.slice(0, 4).map((t: any) => (
+              <div key={t.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 10, background: 'var(--card)' }}>
+                <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#ffc107', flexShrink: 0 }} />
+                <p style={{ flex: 1, fontSize: 13, color: 'var(--text)', margin: 0 }}>{t.title}</p>
+                <Link href="/dashboard/tasks" style={{ fontSize: 11, padding: '4px 10px', borderRadius: 8, background: '#ffc10722', color: '#ffc107', textDecoration: 'none', fontWeight: 600 }}>
+                  Review
+                </Link>
               </div>
             ))}
           </div>
-        </div>
+        </Card>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <ProjectsWidget projects={myProjects.length ? myProjects : projects} title="My Projects" />
-        <TasksWidget tasks={teamTasks} title="Team Tasks" emptyMsg="No open tasks" />
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+        <ProjectsWidget projects={projects} />
+        <TasksWidget tasks={tasks} title="Team Tasks" />
       </div>
     </div>
   );
 }
 
+// ── Member Dashboard ──────────────────────────────────────────────────────────
+
 function MemberDashboard() {
   const { user } = useAuthStore();
-  const [myTasks, setMyTasks]     = useState<any[]>([]);
-  const [projects, setProjects]   = useState<any[]>([]);
-  const [loading, setLoading]     = useState(true);
+  const [tasks, setTasks]       = useState<any[]>([]);
+  const [projects, setProjects] = useState<any[]>([]);
+  const [loading, setLoading]   = useState(true);
 
   useEffect(() => {
     Promise.all([
       apiClient.get('/tasks').then(r => r.data).catch(() => []),
       apiClient.get('/projects').then(r => r.data).catch(() => []),
     ]).then(([t, p]) => {
-      const allTasks = Array.isArray(t) ? t : [];
-      const mine = allTasks.filter((task: any) => task.assignee_id === user?.id);
-      setMyTasks(mine.length > 0 ? mine : allTasks);
+      const all = Array.isArray(t) ? t : [];
+      const mine = all.filter((task: any) => task.assignee_id === user?.id);
+      setTasks(mine.length > 0 ? mine : all);
       setProjects(Array.isArray(p) ? p : []);
     }).finally(() => setLoading(false));
   }, []);
 
-  const openTasks = myTasks.filter(t => t.status !== 'done');
-  const dueToday  = myTasks.filter(t => {
+  const now = new Date();
+  const open     = tasks.filter(t => t.status !== 'done');
+  const dueToday = tasks.filter(t => {
     if (!t.due_date) return false;
-    const d = new Date(t.due_date);
-    const now = new Date();
-    return d.toDateString() === now.toDateString();
+    return new Date(t.due_date).toDateString() === now.toDateString();
   });
-  const doneTasks = myTasks.filter(t => t.status === 'done');
+  const done     = tasks.filter(t => t.status === 'done');
+  const dateStr  = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <Greeting subtitle="Here's what you're working on today." />
-      <QuickActions />
-      {loading ? (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          {[1,2,3,4].map(i => <div key={i} className="h-24 rounded-2xl animate-pulse" style={{ background: 'var(--card)' }} />)}
+    <div style={{ padding: '28px 28px 60px', maxWidth: 1100, margin: '0 auto' }}>
+      <div style={{ marginBottom: 24 }}>
+        <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '0 0 4px' }}>{dateStr}</p>
+        <h1 style={{ fontSize: 24, fontWeight: 800, color: 'var(--text)', margin: 0 }}>
+          {greeting()},{' '}
+          <span style={{ background: 'linear-gradient(135deg, #10b981, #06b6d4)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+            {user?.name?.split(' ')[0]}
+          </span>{' '}👋
+        </h1>
+        <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '6px 0 0' }}>
+          {dueToday.length > 0 ? `📅 ${dueToday.length} task${dueToday.length > 1 ? 's' : ''} due today` : "Here's what you're working on."}
+        </p>
+      </div>
+
+      {!loading && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16, marginBottom: 24 }}>
+          <StatCard icon="⚡" label="Open Tasks" value={open.length} color="#6366f1" />
+          <StatCard icon="📅" label="Due Today" value={dueToday.length} color="#ffc107" warning href="/dashboard/tasks" />
+          <StatCard icon="✅" label="Completed" value={done.length} color="#10b981" />
+          <StatCard icon="🚀" label="Projects" value={projects.length} color="#a855f7" />
         </div>
-      ) : (
-        <StatCards stats={[
-          { icon: '/icons/3d/tasks.svg',        label: 'My Open Tasks',  value: openTasks.length, color: 'var(--blue)' },
-          { icon: '/icons/3d/clock-broken.svg', label: 'Due Today',       value: dueToday.length,  color: 'var(--yellow)', isWarning: dueToday.length > 0 },
-          { icon: '/icons/3d/target.svg',       label: 'Completed',       value: doneTasks.length, color: 'var(--green)' },
-          { icon: '/icons/3d/projects.svg',     label: 'My Projects',     value: projects.length,  color: 'var(--purple)' },
-        ]} />
       )}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <TasksWidget tasks={openTasks} title="My Tasks" emptyMsg="All caught up! 🎉" />
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+        <TasksWidget tasks={open} title="My Open Tasks" />
         <ProjectsWidget projects={projects} />
       </div>
     </div>
   );
 }
 
+// ── Client Dashboard ──────────────────────────────────────────────────────────
+
 function ClientDashboard() {
-  const [projects, setProjects]            = useState<any[]>([]);
+  const { user } = useAuthStore();
+  const [projects, setProjects]             = useState<any[]>([]);
   const [pendingApprovals, setPendingApprovals] = useState<any[]>([]);
-  const [loading, setLoading]              = useState(true);
+  const [loading, setLoading]               = useState(true);
 
   useEffect(() => {
     Promise.all([
@@ -443,32 +766,44 @@ function ClientDashboard() {
     }).finally(() => setLoading(false));
   }, []);
 
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <Greeting subtitle="Here's how your projects are going." />
+    <div style={{ padding: '28px 28px 60px', maxWidth: 960, margin: '0 auto' }}>
+      <div style={{ marginBottom: 24 }}>
+        <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '0 0 4px' }}>{dateStr}</p>
+        <h1 style={{ fontSize: 24, fontWeight: 800, color: 'var(--text)', margin: 0 }}>
+          {greeting()},{' '}
+          <span style={{ background: 'linear-gradient(135deg, #6366f1, #a855f7)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+            {user?.name?.split(' ')[0]}
+          </span>{' '}👋
+        </h1>
+        <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '6px 0 0' }}>Here's how your projects are going.</p>
+      </div>
 
       {pendingApprovals.length > 0 && (
-        <div className="rounded-2xl p-5 mb-6" style={{ background: 'rgba(74,158,255,0.06)', border: '1px solid rgba(74,158,255,0.2)' }}>
-          <div className="text-sm font-semibold mb-3" style={{ color: 'var(--blue)' }}>
+        <Card style={{ marginBottom: 20, background: 'rgba(74,158,255,0.05)', borderColor: 'rgba(74,158,255,0.2)' }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: '#4a9eff', marginBottom: 10 }}>
             🔔 {pendingApprovals.length} item{pendingApprovals.length !== 1 ? 's' : ''} waiting for your approval
           </div>
-          <div className="space-y-2">
-            {pendingApprovals.map((item: any) => (
-              <div key={item.id} className="flex items-center gap-3 p-3 rounded-xl" style={{ background: 'var(--card)' }}>
-                <p className="flex-1 text-sm" style={{ color: 'var(--text)' }}>{item.title}</p>
-                <Link href="/dashboard/tasks" className="text-xs px-3 py-1 rounded-lg" style={{ background: 'var(--blue-dim)', color: 'var(--blue)' }}>Review</Link>
-              </div>
-            ))}
-          </div>
-        </div>
+          {pendingApprovals.map((item: any) => (
+            <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 10, background: 'var(--card)', marginBottom: 6 }}>
+              <p style={{ flex: 1, fontSize: 13, color: 'var(--text)', margin: 0 }}>{item.title}</p>
+              <Link href="/dashboard/tasks" style={{ fontSize: 11, padding: '4px 10px', borderRadius: 8, background: '#4a9eff22', color: '#4a9eff', textDecoration: 'none', fontWeight: 600 }}>
+                Review
+              </Link>
+            </div>
+          ))}
+        </Card>
       )}
 
-      <ProjectsWidget projects={projects} title="Your Projects" />
+      <ProjectsWidget projects={projects} />
     </div>
   );
 }
 
-// ── Main export ──────────────────────────────────────────────────────────────
+// ── Main export ───────────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
   const { user } = useAuthStore();
@@ -476,5 +811,5 @@ export default function DashboardPage() {
   if (user?.role === 'manager') return <ManagerDashboard />;
   if (user?.role === 'member')  return <MemberDashboard />;
   if (user?.role === 'client')  return <ClientDashboard />;
-  return <AdminDashboard />;   // admin + default
+  return <AdminDashboard />;
 }

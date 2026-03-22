@@ -1,3 +1,5 @@
+'use client';
+export const dynamic = 'force-dynamic';
 import { LandingNav } from '@/components/landing/LandingNav';
 import { LandingFooter } from '@/components/landing/LandingFooter';
 import { CheckCircle2, Target, Users, Megaphone, CreditCard, Brain, Clock, FileText, Shield, BarChart3, Zap, Globe } from 'lucide-react';

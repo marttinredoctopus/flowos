@@ -25,11 +25,12 @@ function EyeIcon({ open }: { open: boolean }) {
 export default function LoginPage() {
   const router = useRouter();
   const { setAuth, isAuthenticated, accessToken } = useAuthStore();
+  const params = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState(params?.get('error') || '');
 
   // Only redirect if we have a live in-memory token (not just a stale persisted flag)
   useEffect(() => {
@@ -44,9 +45,21 @@ export default function LoginPage() {
       const { data } = await api.post('/auth/login', { email, password });
       setAuth(data.user, data.accessToken);
       (window as any).__TASKSDONE_AUTH_TOKEN__ = data.accessToken;
-      router.push('/dashboard');
+      // Check onboarding status
+      try {
+        const meRes = await api.get('/auth/me', {
+          headers: { Authorization: `Bearer ${data.accessToken}` }
+        });
+        if (meRes.data.onboarding_completed === false) {
+          router.push('/onboarding');
+        } else {
+          router.push('/dashboard');
+        }
+      } catch {
+        router.push('/dashboard');
+      }
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Invalid email or password.');
+      setError(err.response?.data?.message || err.response?.data?.error || 'Invalid email or password.');
     } finally {
       setLoading(false);
     }
@@ -96,6 +109,35 @@ export default function LoginPage() {
             </a>
           </p>
 
+          {/* Google Sign In */}
+          <a
+            href={`${process.env.NEXT_PUBLIC_API_URL || 'https://api.tasksdone.cloud/api'}/auth/google`}
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+              width: '100%', padding: '0.75rem', boxSizing: 'border-box',
+              background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)',
+              borderRadius: 10, color: '#fff', fontSize: '0.95rem', fontWeight: 600,
+              textDecoration: 'none', cursor: 'pointer', transition: 'background 0.2s',
+              marginBottom: '1.25rem',
+            }}
+            onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.09)')}
+            onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.05)')}
+          >
+            <svg width="18" height="18" viewBox="0 0 48 48">
+              <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+              <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+              <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+              <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+            </svg>
+            Continue with Google
+          </a>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: '0.25rem' }}>
+            <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.08)' }} />
+            <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.3)' }}>or</span>
+            <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.08)' }} />
+          </div>
+
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             <div>
               <label style={{ display: 'block', marginBottom: 6, fontSize: '0.82rem', color: 'rgba(255,255,255,0.6)', fontWeight: 500 }}>
@@ -114,9 +156,10 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <label style={{ display: 'block', marginBottom: 6, fontSize: '0.82rem', color: 'rgba(255,255,255,0.6)', fontWeight: 500 }}>
-                Password
-              </label>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                <label style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.6)', fontWeight: 500 }}>Password</label>
+                <a href="/forgot-password" style={{ fontSize: '0.78rem', color: '#818cf8', textDecoration: 'none' }}>Forgot password?</a>
+              </div>
               <div style={{ position: 'relative' }}>
                 <input
                   type={showPass ? 'text' : 'password'} required placeholder="••••••••"

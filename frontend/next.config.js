@@ -3,6 +3,7 @@ const nextConfig = {
   output: 'standalone',
   eslint: { ignoreDuringBuilds: true },
   typescript: { ignoreBuildErrors: true },
+  staticPageGenerationTimeout: 180,
   images: {
     remotePatterns: [
       { protocol: 'http', hostname: 'localhost', port: '3001', pathname: '/uploads/**' },

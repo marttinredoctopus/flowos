@@ -432,11 +432,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <div key={section.label} className="mb-0.5">
             {/* Section divider line */}
             {sectionIdx > 0 && (
-              <div style={{ height: '1px', background: 'var(--border)', margin: '4px 8px 4px 8px', opacity: 0.6 }} />
+              <div style={{ height: '1px', background: 'var(--border)', margin: '6px 14px 2px', opacity: 0.5 }} />
             )}
             {/* Section label — hidden when collapsed */}
             {(!collapsed || isMobile) && (
-              <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--sidebar-section-text, var(--text-3))', padding: '12px 12px 4px' }}>
+              <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--sidebar-section-text, var(--text-3))', padding: '10px 14px 3px' }}>
                 {section.label}
               </p>
             )}
@@ -452,13 +452,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     title={item.label}
                     className="flex items-center justify-center mb-0.5 transition-all"
                     style={{
-                      height: 32,
-                      background: active ? `color-mix(in srgb, ${item.color} 12%, transparent)` : 'transparent',
-                      borderLeft: active ? `2px solid ${item.color}` : '2px solid transparent',
-                      color: active ? item.color : 'var(--sidebar-icon, var(--text-3))',
-                      borderRadius: '0 6px 6px 0',
-                      marginLeft: 0,
-                      marginRight: 4,
+                      height: 30,
+                      width: 36,
+                      margin: '0 auto 2px',
+                      background: active ? 'var(--sidebar-active-bg)' : 'transparent',
+                      color: active ? 'var(--sidebar-active-text)' : 'var(--sidebar-icon, var(--text-3))',
+                      borderRadius: 8,
                     }}
                   >
                     <item.Icon size={15} />
@@ -471,30 +470,30 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   href={item.href}
                   onClick={() => setSidebarOpen(false)}
                   title={item.label}
-                  className="flex items-center gap-2 transition-all mb-0.5"
+                  className="flex items-center gap-2 transition-all"
                   style={{
-                    height: 32,
-                    paddingLeft: 10,
+                    height: 30,
+                    paddingLeft: 8,
                     paddingRight: 8,
-                    fontSize: 13.5,
-                    fontWeight: active ? 600 : 500,
-                    background: active ? `color-mix(in srgb, ${item.color} 12%, transparent)` : 'transparent',
-                    borderLeft: active ? `2px solid ${item.color}` : '2px solid transparent',
-                    color: active ? item.color : 'var(--sidebar-text, var(--text-2))',
-                    borderRadius: '0 6px 6px 0',
-                    marginLeft: 0,
-                    marginRight: 4,
+                    marginLeft: 6,
+                    marginRight: 6,
+                    marginBottom: 1,
+                    fontSize: 13,
+                    fontWeight: active ? 600 : 400,
+                    background: active ? 'var(--sidebar-active-bg)' : 'transparent',
+                    color: active ? 'var(--sidebar-active-text)' : 'var(--sidebar-text, var(--text-2))',
+                    borderRadius: 8,
                   }}
                 >
                   <span
-                    className="flex-shrink-0 flex items-center justify-center rounded"
+                    className="flex-shrink-0 flex items-center justify-center"
                     style={{
-                      width: 18,
-                      height: 18,
-                      color: active ? item.color : 'var(--sidebar-icon, var(--text-3))',
+                      width: 16,
+                      height: 16,
+                      color: active ? 'var(--sidebar-active-text)' : 'var(--sidebar-icon, var(--text-3))',
                     }}
                   >
-                    <item.Icon size={15} />
+                    <item.Icon size={14} />
                   </span>
                   <span>{item.label}</span>
                 </Link>

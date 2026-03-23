@@ -4,27 +4,27 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ── Design System Variables (Dark default) ─────────────────── */
+/* ── Design System Variables (Dark default — ClickUp style) ─── */
 :root {
-  /* Backgrounds */
-  --bg: #070810;
-  --surface: #0c0d1a;
-  --card: #111228;
-  --card-hover: #161830;
-  --overlay: rgba(7,8,16,0.85);
+  /* Backgrounds — ClickUp dark palette */
+  --bg: #151521;
+  --surface: #1B1B2A;
+  --card: #1E1E2D;
+  --card-hover: #242436;
+  --overlay: rgba(21,21,33,0.88);
 
-  /* Borders */
-  --border: rgba(255,255,255,0.06);
-  --border-hover: rgba(255,255,255,0.12);
-  --border-focus: rgba(123,104,238,0.6);
+  /* Borders — ClickUp subtle */
+  --border: rgba(255,255,255,0.07);
+  --border-hover: rgba(255,255,255,0.14);
+  --border-focus: rgba(123,104,238,0.65);
 
-  /* Text */
-  --text: #f1f2f9;
-  --text-2: #a0a3be;
-  --text-3: #4a4d6a;
+  /* Text — ClickUp palette */
+  --text: #EDEDF0;
+  --text-2: #9B9BB4;
+  --text-3: #5C5C7A;
   /* legacy aliases */
-  --text-muted: #a0a3be;
-  --text-dim: #4a4d6a;
+  --text-muted: #9B9BB4;
+  --text-dim: #5C5C7A;
 
   /* Brand palette — Purple primary */
   --indigo: #7B68EE;
@@ -93,57 +93,70 @@
   /* Inputs */
   --input-bg: rgba(255,255,255,0.04);
 
+  /* Sidebar — ClickUp dark */
+  --sidebar-bg: #1B1B2A;
+  --sidebar-border: rgba(255,255,255,0.07);
+  --sidebar-text: #9B9BB4;
+  --sidebar-icon: #6B6B8A;
+  --sidebar-section-text: #5C5C7A;
+  --sidebar-active-bg: rgba(123,104,238,0.14);
+  --sidebar-active-text: #A89FF0;
+
+  /* Topbar — ClickUp */
+  --topbar-bg: #1B1B2A;
+  --topbar-border: rgba(255,255,255,0.07);
+
   /* Utility */
-  --glass-bg: rgba(7,8,16,0.85);
-  --nav-hover-bg: rgba(255,255,255,0.04);
+  --glass-bg: rgba(21,21,33,0.88);
+  --nav-hover-bg: rgba(255,255,255,0.05);
 }
 
-/* ── Light mode (Linear/ClickUp style) ───────────────────────── */
+/* ── Light mode (ClickUp style) ──────────────────────────────── */
 html.light {
-  /* Backgrounds */
-  --bg: #f5f5f7;
-  --bg-secondary: #ffffff;
-  --bg-tertiary: #ebebed;
-  --surface: #ffffff;
-  --surface-hover: #f5f5f7;
-  --surface-active: #ede9fe;
+  /* Backgrounds — ClickUp light */
+  --bg: #F7F8FA;
+  --bg-secondary: #FFFFFF;
+  --bg-tertiary: #F0F1F3;
+  --surface: #FFFFFF;
+  --surface-hover: #F7F8FA;
+  --surface-active: #EEF2FF;
 
   /* Cards */
-  --card: #ffffff;
-  --card-bg: #ffffff;
-  --card-border: #e5e7eb;
-  --card-hover: #f5f5f7;
+  --card: #FFFFFF;
+  --card-bg: #FFFFFF;
+  --card-border: #E8E8EE;
+  --card-hover: #F7F8FA;
   --card-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
   --card-shadow-hover: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
-  --overlay: rgba(245,245,247,0.92);
+  --overlay: rgba(247,248,250,0.92);
 
-  /* Sidebar */
-  --sidebar-bg: #FAFBFC;
-  --sidebar-border: #E5E7EB;
-  --sidebar-text: #6B7280;
-  --sidebar-text-hover: #111827;
-  --sidebar-active-bg: #EEF2FF;
+  /* Sidebar — ClickUp light */
+  --sidebar-bg: #F3F2EF;
+  --sidebar-border: #E3E2DE;
+  --sidebar-text: #5C5C7A;
+  --sidebar-text-hover: #292D34;
+  --sidebar-active-bg: rgba(123,104,238,0.1);
   --sidebar-active-text: #7B68EE;
-  --sidebar-section-text: #9CA3AF;
-  --sidebar-icon: #6B7280;
+  --sidebar-section-text: #9B9BB4;
+  --sidebar-icon: #8B8FA4;
 
-  /* Topbar */
-  --topbar-bg: #ffffff;
-  --topbar-border: #F0F1F3;
+  /* Topbar — ClickUp light */
+  --topbar-bg: #FFFFFF;
+  --topbar-border: #EEEDF0;
 
   /* Borders */
-  --border: #E5E7EB;
-  --border-hover: #D1D5DB;
-  --border-subtle: #F0F1F3;
+  --border: #E8E8EE;
+  --border-hover: #D4D4E0;
+  --border-subtle: #F0F0F5;
   --border-focus: #7B68EE;
 
-  /* Text */
-  --text: #111827;
-  --text-2: #374151;
-  --text-3: #6b7280;
-  --text-secondary: #4b5563;
-  --text-muted: #9ca3af;
-  --text-dim: #9ca3af;
+  /* Text — ClickUp light */
+  --text: #292D34;
+  --text-2: #4A4D6A;
+  --text-3: #8B8FA4;
+  --text-secondary: #5C5C7A;
+  --text-muted: #9B9BB4;
+  --text-dim: #9B9BB4;
   --text-inverse: #ffffff;
 
   /* Primary */
@@ -825,9 +838,9 @@ html.light .bg-white\/5  { background-color: var(--surface) !important; }
 html.light .bg-white\/10 { background-color: rgba(0,0,0,0.04) !important; }
 
 /* Light mode text in main content */
-html.light main .text-slate-400 { color: var(--text-muted) !important; }
-html.light main .text-slate-500 { color: var(--text-muted) !important; }
-html.light main .text-slate-300 { color: var(--text-2)    !important; }
+html.light main .text-slate-400 { color: var(--text-3) !important; }
+html.light main .text-slate-500 { color: var(--text-3) !important; }
+html.light main .text-slate-300 { color: var(--text-2) !important; }
 
 /* text-white on content (not buttons/icons) */
 html.light main p.text-white,
@@ -884,10 +897,10 @@ html.light .rounded-xl {
   box-shadow: var(--card-shadow, 0 1px 3px rgba(0,0,0,0.06));
 }
 
-/* Sidebar in light mode: no dark bg, proper contrast */
+/* Sidebar in light mode: ClickUp warm gray */
 html.light aside {
-  background: var(--sidebar-bg, #FAFBFC) !important;
-  border-right-color: var(--sidebar-border, #E5E7EB) !important;
+  background: var(--sidebar-bg, #F3F2EF) !important;
+  border-right-color: var(--sidebar-border, #E3E2DE) !important;
 }
 
 /* Input focus in light mode */

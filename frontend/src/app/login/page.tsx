@@ -121,9 +121,9 @@ export default function LoginPage() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#060B18', display: 'flex', fontFamily: 'var(--font-inter, Inter), -apple-system, sans-serif' }}>
+    <div id="auth-layout" style={{ minHeight: '100vh', background: '#060B18', display: 'flex', fontFamily: 'var(--font-inter, Inter), -apple-system, sans-serif' }}>
       {/* Left panel */}
-      <div ref={leftPanelRef} style={{ flex: '0 0 52%', background: 'linear-gradient(135deg, #0A1628 0%, #060B18 100%)', position: 'relative', overflow: 'hidden', padding: '48px', display: 'flex', flexDirection: 'column', borderRight: '1px solid rgba(255,255,255,0.05)' }}
+      <div ref={leftPanelRef} className="auth-left-panel" style={{ flex: '0 0 52%', background: 'linear-gradient(135deg, #0A1628 0%, #060B18 100%)', position: 'relative', overflow: 'hidden', padding: '48px', display: 'flex', flexDirection: 'column', borderRight: '1px solid rgba(255,255,255,0.05)' }}
         onMouseMove={e => { const rect = leftPanelRef.current?.getBoundingClientRect(); if (rect) setMousePos({ x: e.clientX - rect.left, y: e.clientY - rect.top }); }}
       >
         {/* Grid bg */}
@@ -178,7 +178,7 @@ export default function LoginPage() {
       </div>
 
       {/* Right panel — form */}
-      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 24px' }}>
+      <div className="auth-right-panel" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 24px' }}>
         <div style={{ width: '100%', maxWidth: 400 }}>
           <h1 style={{ fontFamily: 'var(--font-outfit, Outfit)', fontSize: 26, fontWeight: 800, color: 'white', marginBottom: 6, letterSpacing: '-0.02em' }}>Sign in</h1>
           <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.4)', marginBottom: 28 }}>

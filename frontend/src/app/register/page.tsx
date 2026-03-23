@@ -124,9 +124,9 @@ export default function RegisterPage() {
   const pwStrength = getPasswordStrength(password);
 
   return (
-    <div style={{ minHeight: '100vh', background: '#060B18', display: 'flex', fontFamily: 'var(--font-inter, Inter), -apple-system, sans-serif' }}>
+    <div id="auth-layout" style={{ minHeight: '100vh', background: '#060B18', display: 'flex', fontFamily: 'var(--font-inter, Inter), -apple-system, sans-serif' }}>
       {/* Left panel — features */}
-      <div style={{ flex: '0 0 44%', background: 'linear-gradient(135deg, #0A1628 0%, #060B18 100%)', position: 'relative', overflow: 'hidden', padding: '48px', display: 'flex', flexDirection: 'column', borderRight: '1px solid rgba(255,255,255,0.05)' }}>
+      <div className="auth-left-panel" style={{ flex: '0 0 44%', background: 'linear-gradient(135deg, #0A1628 0%, #060B18 100%)', position: 'relative', overflow: 'hidden', padding: '48px', display: 'flex', flexDirection: 'column', borderRight: '1px solid rgba(255,255,255,0.05)' }}>
         {/* Grid bg */}
         <div style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(rgba(37,99,235,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(37,99,235,0.04) 1px, transparent 1px)', backgroundSize: '40px 40px', pointerEvents: 'none' }} />
         <div style={{ position: 'absolute', width: 500, height: 500, borderRadius: '50%', background: 'radial-gradient(circle, rgba(14,165,233,0.07) 0%, transparent 70%)', top: '40%', left: '50%', transform: 'translate(-50%,-50%)', pointerEvents: 'none' }} />
@@ -167,7 +167,7 @@ export default function RegisterPage() {
       </div>
 
       {/* Right panel — form */}
-      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 24px', overflowY: 'auto' }}>
+      <div className="auth-right-panel" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 24px', overflowY: 'auto' }}>
         <div style={{ width: '100%', maxWidth: 400 }}>
           <h1 style={{ fontFamily: 'var(--font-outfit, Outfit)', fontSize: 24, fontWeight: 800, color: 'white', marginBottom: 6, letterSpacing: '-0.02em' }}>Start your free trial</h1>
           <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.4)', marginBottom: 28 }}>

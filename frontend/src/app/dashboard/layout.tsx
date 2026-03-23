@@ -270,7 +270,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   useEffect(() => {
     if (!hydrated) return;
-    if (!isAuthenticated) router.replace('/login');
+    if (!isAuthenticated) { window.location.href = '/'; }
   }, [hydrated, isAuthenticated, router]);
 
   useEffect(() => {
@@ -309,7 +309,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       });
     } catch { /* ignore */ }
     logout();
-    router.replace('/login');
+    window.location.href = '/';
   }
 
   function isActive(href: string) {
@@ -585,7 +585,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden" style={{ transition: 'width 0.2s ease' }}>
         {/* Mobile topbar */}
-        <header className="md:hidden flex items-center justify-between px-4 h-14 flex-shrink-0" style={{ background: 'var(--topbar-bg, var(--surface))', borderBottom: '1px solid var(--topbar-border, var(--border))', boxShadow: 'var(--shadow-sm)' }}>
+        <header className="topbar-dashboard md:hidden flex items-center justify-between px-4 h-14 flex-shrink-0" style={{ background: 'var(--topbar-bg, var(--surface))', borderBottom: '1px solid var(--topbar-border, var(--border))', boxShadow: 'var(--shadow-sm)' }}>
           <button onClick={() => setSidebarOpen(true)} className="p-2 transition" style={{ color: 'var(--text-2)' }}>
             <List size={20} />
           </button>
@@ -599,7 +599,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </header>
 
         {/* Desktop topbar */}
-        <header className="hidden md:flex items-center justify-between px-6 h-12 flex-shrink-0" style={{ borderBottom: '1px solid var(--topbar-border, var(--border))', background: 'var(--topbar-bg, var(--surface))', boxShadow: 'var(--shadow-sm)' }}>
+        <header className="topbar-dashboard hidden md:flex items-center justify-between px-6 h-12 flex-shrink-0" style={{ borderBottom: '1px solid var(--topbar-border, var(--border))', background: 'var(--topbar-bg, var(--surface))', boxShadow: 'var(--shadow-sm)' }}>
           <h1 className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{pageTitle}</h1>
           <div className="flex items-center gap-2">
             <button

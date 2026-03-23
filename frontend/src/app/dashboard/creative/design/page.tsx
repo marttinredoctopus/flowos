@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
-import { Palette, Layers, BookOpen, Plus, ExternalLink, X, Trash2, Check, ChevronLeft } from 'lucide-react';
+import { PaintBrush, Stack, BookOpen, Plus, ArrowSquareOut, X, TrashSimple, Check, CaretLeft } from '@phosphor-icons/react';
 import apiClient from '@/lib/apiClient';
 import toast from 'react-hot-toast';
 import { FileUpload } from '@/components/ui/FileUpload';
@@ -516,7 +516,7 @@ function AssetLibraryTab() {
             {/* Header */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px', borderBottom: '1px solid var(--border)' }}>
               <button onClick={() => setSelected(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-3)' }}>
-                <ChevronLeft size={18} />
+                <CaretLeft size={18} />
               </button>
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)' }}>{selected.name}</div>
@@ -524,7 +524,7 @@ function AssetLibraryTab() {
               </div>
               <a href={selected.file_url} target="_blank" rel="noreferrer"
                 style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: 'var(--indigo)', textDecoration: 'none' }}>
-                <ExternalLink size={13} /> Open
+                <ArrowSquareOut size={13} /> Open
               </a>
               <button onClick={() => setSelected(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-3)' }}>
                 <X size={16} />
@@ -971,8 +971,8 @@ export default function DesignHubPage() {
   }
 
   const TABS = [
-    { key: 'briefs', label: 'Briefs',          icon: <Layers size={14} /> },
-    { key: 'assets', label: 'Asset Library',   icon: <Palette size={14} /> },
+    { key: 'briefs', label: 'Briefs',          icon: <Stack size={14} /> },
+    { key: 'assets', label: 'Asset Library',   icon: <PaintBrush size={14} /> },
     { key: 'brand',  label: 'Brand Guidelines',icon: <BookOpen size={14} /> },
   ] as const;
 
@@ -982,7 +982,7 @@ export default function DesignHubPage() {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <div style={{ width: 40, height: 40, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--violet-2)' }}>
-            <Palette size={18} style={{ color: 'var(--violet)' }} />
+            <PaintBrush size={18} style={{ color: 'var(--violet)' }} />
           </div>
           <div>
             <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text)' }}>Design Hub</h1>

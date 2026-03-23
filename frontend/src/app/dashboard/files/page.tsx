@@ -1,13 +1,13 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { HardDrive, Image, FileText, Film, Archive, File, ExternalLink, Trash2 } from 'lucide-react';
+import { HardDrive, Image, FileText, FilmSlate, Archive, File, ArrowSquareOut, TrashSimple } from '@phosphor-icons/react';
 import { FileUpload } from '@/components/ui/FileUpload';
 import apiClient from '@/lib/apiClient';
 import toast from 'react-hot-toast';
 
 function FileIcon({ mimeType }: { mimeType: string }) {
   if (mimeType?.startsWith('image/')) return <Image size={28} />;
-  if (mimeType?.startsWith('video/')) return <Film size={28} />;
+  if (mimeType?.startsWith('video/')) return <FilmSlate size={28} />;
   if (mimeType?.includes('pdf'))      return <FileText size={28} />;
   if (mimeType?.includes('zip'))      return <Archive size={28} />;
   return <File size={28} />;
@@ -113,13 +113,13 @@ export default function FilesPage() {
                 <a href={f.url} target="_blank" rel="noopener noreferrer"
                   className="flex-1 flex items-center justify-center h-8 transition hover:opacity-70"
                   style={{ color: 'var(--text-2)' }}>
-                  <ExternalLink size={12} />
+                  <ArrowSquareOut size={12} />
                 </a>
                 {f.r2_key && (
                   <button onClick={() => deleteFile(f.r2_key)}
                     className="flex-1 flex items-center justify-center h-8 transition hover:opacity-70"
                     style={{ color: 'var(--rose)' }}>
-                    <Trash2 size={12} />
+                    <TrashSimple size={12} />
                   </button>
                 )}
               </div>

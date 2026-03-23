@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { Sparkles, Copy, Check, AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react';
+import { Sparkle, Copy, Check, Warning, CaretDown, CaretUp } from '@phosphor-icons/react';
 import apiClient from '@/lib/apiClient';
 import toast from 'react-hot-toast';
 
@@ -71,7 +71,7 @@ export default function AIGeneratorPage() {
       <div style={{ marginBottom: 24 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
           <div style={{ width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(135deg,var(--indigo),var(--violet))', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Sparkles size={18} color="white" />
+            <Sparkle size={18} color="white" />
           </div>
           <h1 style={{ fontSize: 20, fontWeight: 800, color: 'var(--text)' }}>AI Content Generator</h1>
         </div>
@@ -85,7 +85,7 @@ export default function AIGeneratorPage() {
           borderRadius: 12, padding: '14px 18px', marginBottom: 20,
           display: 'flex', alignItems: 'flex-start', gap: 12,
         }}>
-          <AlertTriangle size={18} style={{ color: 'var(--amber)', flexShrink: 0, marginTop: 1 }} />
+          <Warning size={18} style={{ color: 'var(--amber)', flexShrink: 0, marginTop: 1 }} />
           <div>
             <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--amber)', marginBottom: 4 }}>AI not configured</p>
             <p style={{ fontSize: 12, color: 'var(--text-2)' }}>
@@ -159,7 +159,7 @@ export default function AIGeneratorPage() {
               {loading ? (
                 <><div style={{ width: 16, height: 16, border: '2px solid rgba(255,255,255,0.4)', borderTopColor: 'white', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />Generating…</>
               ) : (
-                <><Sparkles size={15} /> Generate {TYPES.find(t => t.id === type)?.label}</>
+                <><Sparkle size={15} /> Generate {TYPES.find(t => t.id === type)?.label}</>
               )}
             </button>
           </form>
@@ -174,7 +174,7 @@ export default function AIGeneratorPage() {
               display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
               gap: 10, color: 'var(--text-3)',
             }}>
-              <Sparkles size={32} />
+              <Sparkle size={32} />
               <p style={{ fontSize: 13 }}>Your generated content will appear here</p>
             </div>
           )}
@@ -207,7 +207,7 @@ export default function AIGeneratorPage() {
                         <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>{item.headline || `Option ${i + 1}`}</span>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                           <CopyBtn text={[item.headline, item.primary_text, item.cta].filter(Boolean).join('\n')} />
-                          {expandedItem === i ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                          {expandedItem === i ? <CaretUp size={14} /> : <CaretDown size={14} />}
                         </div>
                       </div>
                       {expandedItem === i && (

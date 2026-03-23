@@ -3,11 +3,11 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import axios from 'axios';
 import {
-  CheckCircle2, Clock, AlertCircle, ThumbsUp, ThumbsDown,
-  MessageCircle, Send, X, Play, Image as ImageIcon, FileText,
-  FolderKanban, CalendarDays, Palette, TrendingUp, Bell,
-  ChevronDown, ChevronRight, Star, Zap, Activity,
-} from 'lucide-react';
+  CheckCircle, Timer, WarningCircle, ThumbsUp, ThumbsDown,
+  ChatCircle, PaperPlaneTilt, X, Play, Image as ImageIcon, FileText,
+  Kanban, CalendarDots, PaintBrush, TrendUp, Bell,
+  CaretDown, CaretRight, Star, Lightning, 
+} from '@phosphor-icons/react';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'https://tasksdone.cloud/api';
 
@@ -120,16 +120,16 @@ const PLATFORM_ICON: Record<string, string> = {
 };
 
 const ACTION_ICON: Record<string, { icon: React.ReactNode; color: string }> = {
-  task_created:     { icon: <FolderKanban size={14} />, color: '#6366f1' },
-  task_completed:   { icon: <CheckCircle2 size={14} />, color: '#22c55e' },
-  design_uploaded:  { icon: <Palette size={14} />, color: '#8b5cf6' },
+  task_created:     { icon: <Kanban size={14} />, color: '#6366f1' },
+  task_completed:   { icon: <CheckCircle size={14} />, color: '#22c55e' },
+  design_uploaded:  { icon: <PaintBrush size={14} />, color: '#8b5cf6' },
   design_approved:  { icon: <ThumbsUp size={14} />, color: '#22c55e' },
   design_rejected:  { icon: <ThumbsDown size={14} />, color: '#f59e0b' },
   content_approved: { icon: <ThumbsUp size={14} />, color: '#22c55e' },
   content_rejected: { icon: <ThumbsDown size={14} />, color: '#f59e0b' },
-  comment_added:    { icon: <MessageCircle size={14} />, color: '#6366f1' },
+  comment_added:    { icon: <ChatCircle size={14} />, color: '#6366f1' },
   file_uploaded:    { icon: <FileText size={14} />, color: '#0ea5e9' },
-  project_created:  { icon: <FolderKanban size={14} />, color: '#6366f1' },
+  project_created:  { icon: <Kanban size={14} />, color: '#6366f1' },
 };
 
 // ─── Approval Modal ───────────────────────────────────────────────────────────
@@ -231,7 +231,7 @@ function CommentThread({ entityType, entityId, token }: {
   const [comments, setComments] = useState<Comment[]>([]);
   const [text, setText] = useState('');
   const [replyTo, setReplyTo] = useState<Comment | null>(null);
-  const [sending, setSending] = useState(false);
+  const [sending, setPaperPlaneTilting] = useState(false);
   const [open, setOpen] = useState(false);
 
   const load = useCallback(async () => {
@@ -247,7 +247,7 @@ function CommentThread({ entityType, entityId, token }: {
 
   const send = async () => {
     if (!text.trim()) return;
-    setSending(true);
+    setPaperPlaneTilting(true);
     try {
       const { data } = await axios.post(`${API}/comments`, {
         entityType, entityId, body: text.trim(),
@@ -259,7 +259,7 @@ function CommentThread({ entityType, entityId, token }: {
       );
       setText('');
       setReplyTo(null);
-    } finally { setSending(false); }
+    } finally { setPaperPlaneTilting(false); }
   };
 
   const total = comments.reduce((n, c) => n + 1 + (c.replies?.length || 0), 0);
@@ -270,9 +270,9 @@ function CommentThread({ entityType, entityId, token }: {
         background: 'none', border: 'none', color: '#8b949e', cursor: 'pointer',
         display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, padding: 0,
       }}>
-        <MessageCircle size={13} />
+        <ChatCircle size={13} />
         {total > 0 ? `${total} comment${total !== 1 ? 's' : ''}` : 'Add comment'}
-        {open ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+        {open ? <CaretDown size={12} /> : <CaretRight size={12} />}
       </button>
 
       {open && (
@@ -313,7 +313,7 @@ function CommentThread({ entityType, entityId, token }: {
               border: 'none', color: '#fff', cursor: 'pointer', flexShrink: 0,
               opacity: !text.trim() || sending ? 0.5 : 1,
             }}>
-              <Send size={13} />
+              <PaperPlaneTilt size={13} />
             </button>
           </div>
         </div>
@@ -557,10 +557,10 @@ export default function ClientPortalPage() {
           {/* Stat cards */}
           <div className="grid-stats" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12 }}>
             {[
-              { label: 'Active Projects', value: stats.activeProjects, icon: <FolderKanban size={16} />, color: '#6366f1' },
-              { label: 'Tasks Done', value: stats.completedTasks, icon: <CheckCircle2 size={16} />, color: '#22c55e' },
-              { label: 'In Progress', value: stats.pendingTasks, icon: <Clock size={16} />, color: '#f59e0b' },
-              { label: 'Awaiting Approval', value: needsApproval.length, icon: <AlertCircle size={16} />, color: needsApproval.length > 0 ? '#f59e0b' : '#8b949e' },
+              { label: 'Active Projects', value: stats.activeProjects, icon: <Kanban size={16} />, color: '#6366f1' },
+              { label: 'Tasks Done', value: stats.completedTasks, icon: <CheckCircle size={16} />, color: '#22c55e' },
+              { label: 'In Progress', value: stats.pendingTasks, icon: <Timer size={16} />, color: '#f59e0b' },
+              { label: 'Awaiting Approval', value: needsApproval.length, icon: <WarningCircle size={16} />, color: needsApproval.length > 0 ? '#f59e0b' : '#8b949e' },
             ].map(s => (
               <div key={s.label} style={{
                 background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)',
@@ -581,7 +581,7 @@ export default function ClientPortalPage() {
             borderRadius: 14, padding: '18px 20px', marginBottom: 24,
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-              <Zap size={16} color="#8b5cf6" />
+              <Lightning size={16} color="#8b5cf6" />
               <span style={{ fontSize: 13, fontWeight: 600, color: '#8b5cf6' }}>AI Insights</span>
             </div>
             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
@@ -591,7 +591,7 @@ export default function ClientPortalPage() {
                   background: 'rgba(139,92,246,0.08)', color: '#c4b5fd',
                   border: '1px solid rgba(139,92,246,0.15)',
                 }}>
-                  <TrendingUp size={11} style={{ display: 'inline', marginRight: 6 }} />
+                  <TrendUp size={11} style={{ display: 'inline', marginRight: 6 }} />
                   {ins}
                 </div>
               ))}
@@ -606,7 +606,7 @@ export default function ClientPortalPage() {
             borderRadius: 14, padding: '16px 20px', marginBottom: 24,
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-              <AlertCircle size={15} color="#f59e0b" />
+              <WarningCircle size={15} color="#f59e0b" />
               <span style={{ fontSize: 13, fontWeight: 700, color: '#f59e0b' }}>Action Required — {needsApproval.length} item{needsApproval.length > 1 ? 's' : ''} need your review</span>
             </div>
             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
@@ -618,7 +618,7 @@ export default function ClientPortalPage() {
                     background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.3)',
                     color: '#f59e0b', display: 'flex', alignItems: 'center', gap: 6,
                   }}>
-                    {type === 'design' ? <Palette size={12} /> : <CalendarDays size={12} />}
+                    {type === 'design' ? <PaintBrush size={12} /> : <CalendarDots size={12} />}
                     {item.title}
                   </button>
                 );
@@ -630,10 +630,10 @@ export default function ClientPortalPage() {
         {/* ─── TABS ───────────────────────────────────────────────── */}
         <div style={{ display: 'flex', gap: 4, marginBottom: 24, borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
           {([
-            { id: 'overview', label: 'Overview', icon: <Activity size={13} /> },
-            { id: 'designs', label: `Designs (${designs.length})`, icon: <Palette size={13} /> },
-            { id: 'content', label: `Content (${content.length})`, icon: <CalendarDays size={13} /> },
-            { id: 'timeline', label: 'Timeline', icon: <Clock size={13} /> },
+            { id: 'overview', label: 'Overview', icon: <TrendUp size={13} /> },
+            { id: 'designs', label: `Designs (${designs.length})`, icon: <PaintBrush size={13} /> },
+            { id: 'content', label: `Content (${content.length})`, icon: <CalendarDots size={13} /> },
+            { id: 'timeline', label: 'Timeline', icon: <Timer size={13} /> },
           ] as const).map(t => (
             <button key={t.id} onClick={() => setTab(t.id)} style={{
               display: 'flex', alignItems: 'center', gap: 6, padding: '10px 16px',
@@ -652,7 +652,7 @@ export default function ClientPortalPage() {
           <div className="grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
             {/* Projects */}
             <div style={panelStyle}>
-              <h3 style={panelTitle}><FolderKanban size={14} /> Projects</h3>
+              <h3 style={panelTitle}><Kanban size={14} /> Projects</h3>
               {projects.length === 0 ? <EmptyState label="No projects yet" /> : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                   {projects.map(p => (
@@ -676,7 +676,7 @@ export default function ClientPortalPage() {
 
             {/* Tasks */}
             <div style={panelStyle}>
-              <h3 style={panelTitle}><CheckCircle2 size={14} /> Recent Tasks</h3>
+              <h3 style={panelTitle}><CheckCircle size={14} /> Recent Tasks</h3>
               {tasks.length === 0 ? <EmptyState label="No tasks" /> : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {tasks.slice(0, 8).map(t => (
@@ -687,7 +687,7 @@ export default function ClientPortalPage() {
                         border: `1px solid ${t.status === 'done' ? '#22c55e' : 'rgba(255,255,255,0.1)'}`,
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                       }}>
-                        {t.status === 'done' && <CheckCircle2 size={10} color="#22c55e" />}
+                        {t.status === 'done' && <CheckCircle size={10} color="#22c55e" />}
                       </div>
                       <span style={{ fontSize: 13, color: t.status === 'done' ? '#8b949e' : '#f1f2f9',
                         textDecoration: t.status === 'done' ? 'line-through' : 'none', flex: 1 }}>
@@ -731,7 +731,7 @@ export default function ClientPortalPage() {
                   )}
                   {d.deadline && (
                     <div style={{ fontSize: 12, color: '#8b949e', marginBottom: 12 }}>
-                      <Clock size={11} style={{ display: 'inline', marginRight: 4 }} />Due {formatDate(d.deadline)}
+                      <Timer size={11} style={{ display: 'inline', marginRight: 4 }} />Due {formatDate(d.deadline)}
                     </div>
                   )}
 
@@ -818,7 +818,7 @@ export default function ClientPortalPage() {
           <div style={{ maxWidth: 680 }}>
             {activity.length === 0 ? <EmptyState label="No activity yet" /> :
               activity.map((a, i) => {
-                const meta = ACTION_ICON[a.action] || { icon: <Activity size={14} />, color: '#8b949e' };
+                const meta = ACTION_ICON[a.action] || { icon: <TrendUp size={14} />, color: '#8b949e' };
                 return (
                   <div key={a.id} style={{ display: 'flex', gap: 14, marginBottom: 16 }}>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -859,7 +859,7 @@ export default function ClientPortalPage() {
           token={token}
           onClose={() => setApprovalItem(null)}
           onDone={(id, approved) => {
-            if (approved) setApprovedIds(s => new Set([...s, id]));
+            if (approved) setApprovedIds(s => new Set(Array.from(s).concat(id)));
             setApprovalItem(null);
           }}
         />

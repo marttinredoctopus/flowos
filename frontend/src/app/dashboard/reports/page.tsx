@@ -93,7 +93,7 @@ export default function ReportsPage() {
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
                     <XAxis dataKey="week" tick={{ fontSize: 11, fill: '#64748b' }} />
                     <YAxis tick={{ fontSize: 11, fill: '#64748b' }} />
-                    <Tooltip contentStyle={{ background: '#0f1117', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12 }} />
+                    <Tooltip contentStyle={{ background: '#0f1117', border: '1px solid var(--border)', borderRadius: 12 }} />
                     <Legend />
                     <Line type="monotone" dataKey="created" stroke="#4f8cff" strokeWidth={2} dot={false} name="Created" />
                     <Line type="monotone" dataKey="completed" stroke="#34d399" strokeWidth={2} dot={false} name="Completed" />
@@ -111,7 +111,7 @@ export default function ReportsPage() {
                     <Pie data={projStatus} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label={({ name, value }) => `${name}: ${value}`} labelLine={false}>
                       {projStatus.map((_: any, i: number) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
                     </Pie>
-                    <Tooltip contentStyle={{ background: '#0f1117', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12 }} />
+                    <Tooltip contentStyle={{ background: '#0f1117', border: '1px solid var(--border)', borderRadius: 12 }} />
                   </PieChart>
                 </ResponsiveContainer>
               )}
@@ -174,7 +174,7 @@ export default function ReportsPage() {
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
                   <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#64748b' }} />
                   <YAxis tick={{ fontSize: 11, fill: '#64748b' }} />
-                  <Tooltip contentStyle={{ background: '#0f1117', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12 }} />
+                  <Tooltip contentStyle={{ background: '#0f1117', border: '1px solid var(--border)', borderRadius: 12 }} />
                   <Legend />
                   <Bar dataKey="active_tasks" name="Active Tasks" fill="#4f8cff" radius={[4,4,0,0]} />
                   <Bar dataKey="completed_tasks" name="Completed" fill="#34d399" radius={[4,4,0,0]} />
@@ -219,7 +219,7 @@ export default function ReportsPage() {
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
                   <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#64748b' }} />
                   <YAxis tick={{ fontSize: 11, fill: '#64748b' }} />
-                  <Tooltip contentStyle={{ background: '#0f1117', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12 }} formatter={(v: any) => `$${Number(v).toLocaleString()}`} />
+                  <Tooltip contentStyle={{ background: '#0f1117', border: '1px solid var(--border)', borderRadius: 12 }} formatter={(v: any) => `$${Number(v).toLocaleString()}`} />
                   <Legend />
                   <Line type="monotone" dataKey="invoiced" stroke="#4f8cff" strokeWidth={2} dot={false} name="Invoiced" />
                   <Line type="monotone" dataKey="collected" stroke="#34d399" strokeWidth={2} dot={false} name="Collected" />

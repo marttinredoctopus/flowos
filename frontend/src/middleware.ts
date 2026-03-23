@@ -31,7 +31,6 @@ const PUBLIC_PATHS = [
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Allow public paths and static assets
   if (
     PUBLIC_PATHS.some(p => pathname === p || pathname.startsWith(p + '/')) ||
     pathname.startsWith('/_next') ||
@@ -41,11 +40,12 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Protect /dashboard routes — cookie name is refresh_token (underscore, not camelCase)
   if (pathname.startsWith('/dashboard')) {
-    const refreshToken = request.cookies.get('refresh_token')?.value;
-    if (!refreshToken) {
-      return NextResponse.redirect(new URL('/login', request.url));
+    const hasSession = request.cookies.get('td_session')?.value;
+    if (!hasSession) {
+      const url = request.nextUrl.clone();
+      url.pathname = '/login';
+      return NextResponse.redirect(url);
     }
   }
 

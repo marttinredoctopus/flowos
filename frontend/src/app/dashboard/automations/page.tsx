@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { Plus, Zap, Play, Pause, Trash2, ChevronDown, Activity } from 'lucide-react';
+import { Plus, Lightning, Play, Pause, TrashSimple, CaretDown, ChartLineUp } from '@phosphor-icons/react';
 import apiClient from '@/lib/apiClient';
 import toast from 'react-hot-toast';
 
@@ -220,7 +220,7 @@ export default function AutomationsPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="font-display text-2xl font-bold flex items-center gap-2" style={{ color: 'var(--text)' }}>Automations <Zap size={20} className="text-violet-400" /></h1>
+          <h1 className="font-display text-2xl font-bold flex items-center gap-2" style={{ color: 'var(--text)' }}>Automations <Lightning size={20} className="text-violet-400" /></h1>
           <p className="text-sm mt-0.5" style={{ color: 'var(--text-muted)' }}>Build IF/THEN rules to automate your workflow</p>
         </div>
         <button onClick={() => setShowModal(true)} className={BTN + ' flex items-center gap-2'}>
@@ -260,7 +260,7 @@ export default function AutomationsPage() {
             return (
               <div key={rule.id} className="rounded-2xl p-5 flex items-center gap-4" style={{ background: 'var(--card)', border: `1px solid ${rule.is_active ? 'rgba(124,111,224,0.2)' : 'var(--border)'}` }}>
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: rule.is_active ? 'rgba(124,111,224,0.15)' : 'var(--surface)' }}>
-                  <Zap size={18} color={rule.is_active ? 'var(--violet)' : 'var(--text-3)'} />
+                  <Lightning size={18} color={rule.is_active ? 'var(--violet)' : 'var(--text-3)'} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
@@ -284,13 +284,13 @@ export default function AutomationsPage() {
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <button onClick={() => viewLogs(rule.id)} title="View logs" className="p-2 rounded-xl hover:bg-white/5 transition" style={{ color: 'var(--text-dim)' }}>
-                    <Activity size={15} />
+                    <ChartLineUp size={15} />
                   </button>
                   <button onClick={() => toggle(rule.id)} title={rule.is_active ? 'Pause' : 'Enable'} className="p-2 rounded-xl hover:bg-white/5 transition" style={{ color: rule.is_active ? 'var(--emerald)' : 'var(--text-dim)' }}>
                     {rule.is_active ? <Pause size={15} /> : <Play size={15} />}
                   </button>
                   <button onClick={() => remove(rule.id)} title="Delete" className="p-2 rounded-xl hover:bg-white/5 transition text-red-400 hover:text-red-300">
-                    <Trash2 size={15} />
+                    <TrashSimple size={15} />
                   </button>
                 </div>
               </div>

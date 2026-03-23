@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import { Sparkles, ChevronRight, ChevronLeft, Copy, Check, Zap, Target, Lightbulb, MessageSquare, Hash } from 'lucide-react';
+import { Sparkle, CaretRight, CaretLeft, Copy, Check, Lightning, Target, Lightbulb, ChatCircle, Hash } from '@phosphor-icons/react';
 import apiClient from '@/lib/apiClient';
 import toast from 'react-hot-toast';
 
@@ -132,7 +132,7 @@ export default function CampaignBuilderPage() {
             </button>
             <button onClick={() => { setResult(null); setStep(0); setForm({ brand:'', product:'', audience:'', tone:'Professional', platforms:[], budget:'' }); }}
               className={BTN}>
-              <span className="flex items-center gap-2"><Sparkles size={14} /> New Campaign</span>
+              <span className="flex items-center gap-2"><Sparkle size={14} /> New Campaign</span>
             </button>
           </div>
         </div>
@@ -140,7 +140,7 @@ export default function CampaignBuilderPage() {
         {/* Strategy Banner */}
         <div className="rounded-2xl p-5 mb-6" style={{ background: 'linear-gradient(135deg, rgba(124,111,224,0.12), rgba(74,158,255,0.12))', border: '1px solid rgba(124,111,224,0.2)' }}>
           <div className="flex items-start gap-3">
-            <Zap size={20} className="mt-0.5 flex-shrink-0" style={{ color: 'var(--violet)' }} />
+            <Lightning size={20} className="mt-0.5 flex-shrink-0" style={{ color: 'var(--violet)' }} />
             <div>
               <h3 className="font-semibold text-sm mb-1" style={{ color: 'var(--text)' }}>Campaign Strategy</h3>
               <p className="text-sm leading-relaxed" style={{ color: 'var(--text-muted)' }}>{result.strategy}</p>
@@ -150,8 +150,8 @@ export default function CampaignBuilderPage() {
 
         {/* Results Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
-          <ResultCard icon={MessageSquare} color="var(--blue)"   title="Ad Copies"     items={result.ads} />
-          <ResultCard icon={Zap}           color="var(--violet)" title="Scroll Hooks"  items={result.hooks} />
+          <ResultCard icon={ChatCircle} color="var(--blue)"   title="Ad Copies"     items={result.ads} />
+          <ResultCard icon={Lightning}           color="var(--violet)" title="Scroll Hooks"  items={result.hooks} />
           <ResultCard icon={Lightbulb}     color="var(--amber)"  title="Content Ideas" items={result.ideas} />
           <div className="rounded-2xl p-5 flex flex-col gap-4" style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
             <div>
@@ -209,7 +209,7 @@ export default function CampaignBuilderPage() {
       {/* Header */}
       <div className="text-center mb-8">
         <div className="w-14 h-14 rounded-2xl gradient-bg flex items-center justify-center mx-auto mb-4">
-          <Sparkles size={24} className="text-white" />
+          <Sparkle size={24} className="text-white" />
         </div>
         <h1 className="font-display text-2xl font-bold gradient-text mb-2">AI Campaign Builder</h1>
         <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
@@ -324,7 +324,7 @@ export default function CampaignBuilderPage() {
           {step > 0 && (
             <button onClick={() => setStep(s => s - 1)} className="flex items-center gap-2 px-5 py-3 rounded-xl text-sm border transition hover:bg-white/5"
               style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}>
-              <ChevronLeft size={16} /> Back
+              <CaretLeft size={16} /> Back
             </button>
           )}
           {step < 2 ? (
@@ -332,14 +332,14 @@ export default function CampaignBuilderPage() {
               if (step === 0 && (!form.brand.trim() || !form.product.trim())) { toast.error('Fill in brand and product'); return; }
               setStep(s => s + 1);
             }} className={BTN + ' flex-1 flex items-center justify-center gap-2'}>
-              Continue <ChevronRight size={16} />
+              Continue <CaretRight size={16} />
             </button>
           ) : (
             <button onClick={generate} disabled={loading || !form.audience.trim()} className={BTN + ' flex-1 flex items-center justify-center gap-2'}>
               {loading ? (
                 <><div className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" /> Generating...</>
               ) : (
-                <><Sparkles size={16} /> Generate Campaign</>
+                <><Sparkle size={16} /> Generate Campaign</>
               )}
             </button>
           )}

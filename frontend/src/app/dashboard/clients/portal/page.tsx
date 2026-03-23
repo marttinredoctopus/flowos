@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { CheckCircle, XCircle, FolderKanban, Receipt, Palette, TrendingUp, Copy } from 'lucide-react';
+import { CheckCircle, XCircle, Kanban, Receipt, PaintBrush, TrendUp, Copy } from '@phosphor-icons/react';
 import apiClient from '@/lib/apiClient';
 import toast from 'react-hot-toast';
 
@@ -115,8 +115,8 @@ export default function ClientPortalPage() {
               <button key={t} onClick={() => setTab(t)}
                 className={`px-4 py-2 rounded-lg text-sm font-medium capitalize transition ${tab === t ? 'text-white gradient-bg' : 'hover:bg-white/5'}`}
                 style={{ color: tab === t ? 'white' : 'var(--text-muted)' }}>
-                {t === 'overview' && <span className="flex items-center gap-1.5"><TrendingUp size={13} /> Overview</span>}
-                {t === 'designs'  && <span className="flex items-center gap-1.5"><Palette size={13} /> Designs ({data.designs.length})</span>}
+                {t === 'overview' && <span className="flex items-center gap-1.5"><TrendUp size={13} /> Overview</span>}
+                {t === 'designs'  && <span className="flex items-center gap-1.5"><PaintBrush size={13} /> Designs ({data.designs.length})</span>}
                 {t === 'invoices' && <span className="flex items-center gap-1.5"><Receipt size={13} /> Invoices ({data.invoices.length})</span>}
               </button>
             ))}
@@ -127,7 +127,7 @@ export default function ClientPortalPage() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
               {/* Projects */}
               <div className="rounded-2xl p-5" style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
-                <h3 className="font-bold text-sm mb-4 flex items-center gap-2" style={{ color: 'var(--text)' }}><FolderKanban size={15} /> Projects</h3>
+                <h3 className="font-bold text-sm mb-4 flex items-center gap-2" style={{ color: 'var(--text)' }}><Kanban size={15} /> Projects</h3>
                 {data.projects.length === 0 ? (
                   <p className="text-sm text-center py-8" style={{ color: 'var(--text-muted)' }}>No projects</p>
                 ) : data.projects.map((p: any) => {

@@ -2,12 +2,12 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import {
-  ArrowLeft, Building2, Mail, Phone, Globe, FolderKanban,
-  CheckSquare, Palette, CalendarDays, FileText, KeyRound, Plus,
-  ExternalLink, Copy, Check, RefreshCw, Lock, Unlock,
-  TrendingUp, Clock, AlertCircle, ThumbsUp, ThumbsDown,
-  MessageCircle, Send, ChevronDown, ChevronRight, Activity,
-} from 'lucide-react';
+  ArrowLeft, Buildings, Envelope, Phone, Globe, Kanban,
+  CheckSquare, PaintBrush, CalendarDots, FileText, Key, Plus,
+  ArrowSquareOut, Copy, Check, ArrowClockwise, Lock, LockOpen,
+  TrendUp, Timer, WarningCircle, ThumbsUp, ThumbsDown,
+  ChatCircle, PaperPlaneTilt, CaretDown, CaretRight, 
+} from '@phosphor-icons/react';
 import api from '@/lib/api';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -72,13 +72,13 @@ interface ClientDetail extends Client {
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const TABS = [
-  { id: 'overview',     label: 'Overview',     icon: Building2 },
-  { id: 'projects',     label: 'Projects',     icon: FolderKanban },
+  { id: 'overview',     label: 'Overview',     icon: Buildings },
+  { id: 'projects',     label: 'Projects',     icon: Kanban },
   { id: 'tasks',        label: 'Tasks',        icon: CheckSquare },
-  { id: 'designs',      label: 'Designs',      icon: Palette },
-  { id: 'content',      label: 'Content',      icon: CalendarDays },
+  { id: 'designs',      label: 'Designs',      icon: PaintBrush },
+  { id: 'content',      label: 'Content',      icon: CalendarDots },
   { id: 'files',        label: 'Files',        icon: FileText },
-  { id: 'credentials',  label: 'Credentials',  icon: KeyRound },
+  { id: 'credentials',  label: 'Credentials',  icon: Key },
 ] as const;
 type TabId = typeof TABS[number]['id'];
 
@@ -128,13 +128,13 @@ function OverviewTab({ client }: { client: ClientDetail }) {
       <div style={card}>
         <h3 style={cardTitle}>Contact Information</h3>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {client.email && <Row icon={<Mail size={14} />} label="Email" value={client.email} />}
+          {client.email && <Row icon={<Envelope size={14} />} label="Email" value={client.email} />}
           {client.phone && <Row icon={<Phone size={14} />} label="Phone" value={client.phone} />}
-          {client.company && <Row icon={<Building2 size={14} />} label="Company" value={client.company} />}
+          {client.company && <Row icon={<Buildings size={14} />} label="Company" value={client.company} />}
           {client.website && (
             <Row icon={<Globe size={14} />} label="Website" value={
               <a href={client.website} target="_blank" rel="noreferrer" style={{ color: '#6366f1', fontSize: 13 }}>
-                {client.website} <ExternalLink size={11} />
+                {client.website} <ArrowSquareOut size={11} />
               </a>
             } />
           )}
@@ -146,15 +146,15 @@ function OverviewTab({ client }: { client: ClientDetail }) {
         <h3 style={cardTitle}>At a Glance</h3>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
           {[
-            { label: 'Projects', value: client.projects.length, icon: <FolderKanban size={16} /> },
+            { label: 'Projects', value: client.projects.length, icon: <Kanban size={16} /> },
             { label: 'Tasks', value: client.tasks.length, icon: <CheckSquare size={16} /> },
-            { label: 'Designs', value: client.designs.length, icon: <Palette size={16} /> },
-            { label: 'Content', value: client.content.length, icon: <CalendarDays size={16} /> },
+            { label: 'Designs', value: client.designs.length, icon: <PaintBrush size={16} /> },
+            { label: 'Content', value: client.content.length, icon: <CalendarDots size={16} /> },
           ].map(s => (
-            <div key={s.label} style={{ background: 'rgba(255,255,255,0.03)', borderRadius: 10, padding: '12px 14px' }}>
+            <div key={s.label} style={{ background: 'var(--nav-hover-bg)', borderRadius: 10, padding: '12px 14px' }}>
               <div style={{ color: '#6366f1', marginBottom: 4 }}>{s.icon}</div>
-              <div style={{ fontSize: 22, fontWeight: 700, color: '#f1f2f9' }}>{s.value}</div>
-              <div style={{ fontSize: 12, color: '#8b949e' }}>{s.label}</div>
+              <div style={{ fontSize: 22, fontWeight: 700, color: 'var(--text)' }}>{s.value}</div>
+              <div style={{ fontSize: 12, color: 'var(--text-2)' }}>{s.label}</div>
             </div>
           ))}
         </div>
@@ -164,7 +164,7 @@ function OverviewTab({ client }: { client: ClientDetail }) {
       {client.brief && (
         <div style={{ ...card, gridColumn: '1 / -1' }}>
           <h3 style={cardTitle}>Client Brief</h3>
-          <p style={{ fontSize: 14, color: '#c9d1d9', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>{client.brief}</p>
+          <p style={{ fontSize: 14, color: 'var(--text-3)', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>{client.brief}</p>
         </div>
       )}
     </div>
@@ -175,15 +175,15 @@ function Row({ icon, label, value }: { icon: React.ReactNode; label: string; val
   return (
     <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
       <span style={{ color: '#6366f1', marginTop: 1 }}>{icon}</span>
-      <span style={{ fontSize: 12, color: '#8b949e', width: 70, flexShrink: 0 }}>{label}</span>
-      <span style={{ fontSize: 13, color: '#f1f2f9' }}>{value}</span>
+      <span style={{ fontSize: 12, color: 'var(--text-2)', width: 70, flexShrink: 0 }}>{label}</span>
+      <span style={{ fontSize: 13, color: 'var(--text)' }}>{value}</span>
     </div>
   );
 }
 
 function ProjectsTab({ projects, clientId }: { projects: Project[]; clientId: string }) {
   const router = useRouter();
-  if (!projects.length) return <Empty icon={<FolderKanban size={32} />} label="No projects yet" />;
+  if (!projects.length) return <Empty icon={<Kanban size={32} />} label="No projects yet" />;
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
       {projects.map(p => (
@@ -191,19 +191,19 @@ function ProjectsTab({ projects, clientId }: { projects: Project[]; clientId: st
           onClick={() => router.push(`/dashboard/projects/${p.id}`)}>
           <div style={{ width: 12, height: 12, borderRadius: '50%', background: p.color || '#6366f1', flexShrink: 0 }} />
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 14, fontWeight: 600, color: '#f1f2f9', marginBottom: 4 }}>{p.name}</div>
+            <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', marginBottom: 4 }}>{p.name}</div>
             <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
               {badge(p.status)}
-              {p.service_type && <span style={{ fontSize: 11, color: '#8b949e' }}>{p.service_type}</span>}
+              {p.service_type && <span style={{ fontSize: 11, color: 'var(--text-2)' }}>{p.service_type}</span>}
             </div>
           </div>
           <div style={{ textAlign: 'right' }}>
-            <div style={{ fontSize: 12, color: '#8b949e', marginBottom: 4 }}>{p.progress}%</div>
+            <div style={{ fontSize: 12, color: 'var(--text-2)', marginBottom: 4 }}>{p.progress}%</div>
             <div style={{ width: 80, height: 4, background: 'rgba(255,255,255,0.08)', borderRadius: 2 }}>
               <div style={{ width: `${p.progress}%`, height: '100%', background: '#6366f1', borderRadius: 2 }} />
             </div>
           </div>
-          <ExternalLink size={14} color="#8b949e" />
+          <ArrowSquareOut size={14} color="#8b949e" />
         </div>
       ))}
     </div>
@@ -222,7 +222,7 @@ function TasksTab({ tasks }: { tasks: Task[] }) {
           <button key={s} onClick={() => setFilter(s)} style={{
             padding: '5px 12px', borderRadius: 20, fontSize: 12, fontWeight: 500, cursor: 'pointer',
             background: filter === s ? '#6366f1' : 'rgba(255,255,255,0.05)',
-            border: filter === s ? '1px solid #6366f1' : '1px solid rgba(255,255,255,0.08)',
+            border: filter === s ? '1px solid #6366f1' : '1px solid var(--border)',
             color: filter === s ? '#fff' : '#8b949e',
           }}>{s === 'all' ? `All (${tasks.length})` : s.replace(/_/g, ' ')}</button>
         ))}
@@ -231,13 +231,13 @@ function TasksTab({ tasks }: { tasks: Task[] }) {
         {filtered.map(t => (
           <div key={t.id} style={{ ...card, display: 'flex', alignItems: 'center', gap: 12 }}>
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 14, color: '#f1f2f9', marginBottom: 4 }}>{t.title}</div>
+              <div style={{ fontSize: 14, color: 'var(--text)', marginBottom: 4 }}>{t.title}</div>
               <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
                 {badge(t.status)}
                 {badge(t.priority, STATUS_COLOR[t.priority])}
                 {t.project_name && (
-                  <span style={{ fontSize: 11, color: '#8b949e' }}>
-                    <FolderKanban size={10} style={{ marginRight: 3, display: 'inline' }} />
+                  <span style={{ fontSize: 11, color: 'var(--text-2)' }}>
+                    <Kanban size={10} style={{ marginRight: 3, display: 'inline' }} />
                     {t.project_name}
                   </span>
                 )}
@@ -247,12 +247,12 @@ function TasksTab({ tasks }: { tasks: Task[] }) {
               {t.assignee_name && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                   {avatar(t.assignee_name, t.assignee_avatar, 24)}
-                  <span style={{ fontSize: 12, color: '#8b949e' }}>{t.assignee_name}</span>
+                  <span style={{ fontSize: 12, color: 'var(--text-2)' }}>{t.assignee_name}</span>
                 </div>
               )}
               {t.due_date && (
-                <span style={{ fontSize: 11, color: '#8b949e' }}>
-                  <Clock size={10} style={{ display: 'inline', marginRight: 3 }} />
+                <span style={{ fontSize: 11, color: 'var(--text-2)' }}>
+                  <Timer size={10} style={{ display: 'inline', marginRight: 3 }} />
                   {new Date(t.due_date).toLocaleDateString()}
                 </span>
               )}
@@ -291,14 +291,14 @@ function InlineComments({ entityType, entityId }: { entityType: string; entityId
   const total = comments.reduce((n, c) => n + 1 + (c.replies?.length || 0), 0);
 
   return (
-    <div style={{ marginTop: 12, borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 10 }}>
+    <div style={{ marginTop: 12, borderTop: '1px solid var(--border)', paddingTop: 10 }}>
       <button onClick={() => setOpen(!open)} style={{
-        background: 'none', border: 'none', color: '#8b949e', cursor: 'pointer',
+        background: 'none', border: 'none', color: 'var(--text-2)', cursor: 'pointer',
         display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, padding: 0,
       }}>
-        <MessageCircle size={13} />
+        <ChatCircle size={13} />
         {total > 0 ? `${total} comment${total !== 1 ? 's' : ''}` : 'Add comment'}
-        {open ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+        {open ? <CaretDown size={12} /> : <CaretRight size={12} />}
       </button>
       {open && (
         <div style={{ marginTop: 10 }}>
@@ -310,9 +310,9 @@ function InlineComments({ entityType, entityId }: { entityType: string; entityId
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: 11, fontWeight: 700, color: '#fff',
               }}>{(c.author_name || 'U')[0].toUpperCase()}</div>
-              <div style={{ flex: 1, background: 'rgba(255,255,255,0.03)', borderRadius: '0 8px 8px 8px', padding: '6px 10px' }}>
-                <div style={{ fontSize: 11, fontWeight: 600, color: '#f1f2f9', marginBottom: 2 }}>{c.author_name || 'Team'}</div>
-                <div style={{ fontSize: 13, color: '#c9d1d9' }}>{c.body}</div>
+              <div style={{ flex: 1, background: 'var(--nav-hover-bg)', borderRadius: '0 8px 8px 8px', padding: '6px 10px' }}>
+                <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text)', marginBottom: 2 }}>{c.author_name || 'Team'}</div>
+                <div style={{ fontSize: 13, color: 'var(--text-3)' }}>{c.body}</div>
               </div>
             </div>
           ))}
@@ -322,7 +322,7 @@ function InlineComments({ entityType, entityId }: { entityType: string; entityId
               style={{ ...inputSt, flex: 1 }} />
             <button onClick={send} disabled={!text.trim() || sending}
               style={{ padding: '8px 12px', borderRadius: 8, background: '#6366f1', border: 'none', color: '#fff', cursor: 'pointer' }}>
-              <Send size={12} />
+              <PaperPlaneTilt size={12} />
             </button>
           </div>
         </div>
@@ -344,23 +344,23 @@ function DesignsTab({ designs, onStatusChange }: { designs: Design[]; onStatusCh
     } finally { setApproving(null); }
   };
 
-  if (!designs.length) return <Empty icon={<Palette size={32} />} label="No design briefs yet" />;
+  if (!designs.length) return <Empty icon={<PaintBrush size={32} />} label="No design briefs yet" />;
   return (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 12 }}>
       {designs.map(d => (
         <div key={d.id} style={card}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
-            <span style={{ fontSize: 11, color: '#8b949e', textTransform: 'capitalize' }}>{d.asset_type}</span>
+            <span style={{ fontSize: 11, color: 'var(--text-2)', textTransform: 'capitalize' }}>{d.asset_type}</span>
             {badge(d.status)}
           </div>
-          <div style={{ fontSize: 14, fontWeight: 600, color: '#f1f2f9', marginBottom: 8 }}>{d.title}</div>
+          <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', marginBottom: 8 }}>{d.title}</div>
           {d.deadline && (
-            <div style={{ fontSize: 12, color: '#8b949e', display: 'flex', alignItems: 'center', gap: 4 }}>
-              <Clock size={11} /> Due {new Date(d.deadline).toLocaleDateString()}
+            <div style={{ fontSize: 12, color: 'var(--text-2)', display: 'flex', alignItems: 'center', gap: 4 }}>
+              <Timer size={11} /> Due {new Date(d.deadline).toLocaleDateString()}
             </div>
           )}
           {d.brief_content && (
-            <p style={{ fontSize: 12, color: '#8b949e', marginTop: 8, lineHeight: 1.5,
+            <p style={{ fontSize: 12, color: 'var(--text-2)', marginTop: 8, lineHeight: 1.5,
               overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2 as any, WebkitBoxOrient: 'vertical' as any }}>
               {d.brief_content}
             </p>
@@ -415,22 +415,22 @@ function ContentTab({ content, onStatusChange }: { content: ContentPiece[]; onSt
     } finally { setApproving(null); }
   };
 
-  if (!content.length) return <Empty icon={<CalendarDays size={32} />} label="No content pieces yet" />;
+  if (!content.length) return <Empty icon={<CalendarDots size={32} />} label="No content pieces yet" />;
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
       {content.map(c => (
         <div key={c.id} style={card}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 14, color: '#f1f2f9', marginBottom: 4 }}>{c.title}</div>
+              <div style={{ fontSize: 14, color: 'var(--text)', marginBottom: 4 }}>{c.title}</div>
               <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                 {badge(c.status)}
-                <span style={{ fontSize: 11, color: '#8b949e' }}>{c.platform} · {c.content_type}</span>
+                <span style={{ fontSize: 11, color: 'var(--text-2)' }}>{c.platform} · {c.content_type}</span>
               </div>
             </div>
             {c.publish_at && (
-              <span style={{ fontSize: 12, color: '#8b949e', flexShrink: 0 }}>
-                <CalendarDays size={11} style={{ display: 'inline', marginRight: 4 }} />
+              <span style={{ fontSize: 12, color: 'var(--text-2)', flexShrink: 0 }}>
+                <CalendarDots size={11} style={{ display: 'inline', marginRight: 4 }} />
                 {new Date(c.publish_at).toLocaleDateString()}
               </span>
             )}
@@ -486,14 +486,14 @@ function FilesTab({ files, clientId }: { files: ClientFile[]; clientId: string }
             <FileText size={16} color="#6366f1" />
           </div>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 14, color: '#f1f2f9', marginBottom: 2 }}>{f.filename}</div>
-            <div style={{ fontSize: 12, color: '#8b949e' }}>
+            <div style={{ fontSize: 14, color: 'var(--text)', marginBottom: 2 }}>{f.filename}</div>
+            <div style={{ fontSize: 12, color: 'var(--text-2)' }}>
               {formatBytes(f.size_bytes)} · {new Date(f.created_at).toLocaleDateString()}
             </div>
           </div>
           <a href={f.public_url} target="_blank" rel="noreferrer"
             style={{ color: '#6366f1', display: 'flex', alignItems: 'center', gap: 4, fontSize: 13 }}>
-            <ExternalLink size={14} /> View
+            <ArrowSquareOut size={14} /> View
           </a>
         </div>
       ))}
@@ -541,7 +541,7 @@ function CredentialsTab({ accounts, clientId, onUpdate }: {
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <AlertCircle size={14} color="#f59e0b" />
+          <WarningCircle size={14} color="#f59e0b" />
           <span style={{ fontSize: 12, color: '#f59e0b' }}>Credentials are stored securely and only visible to staff</span>
         </div>
         <button onClick={() => setAdding(!adding)} style={btnPrimary}>
@@ -551,7 +551,7 @@ function CredentialsTab({ accounts, clientId, onUpdate }: {
 
       {adding && (
         <div style={{ ...card, marginBottom: 16 }}>
-          <h4 style={{ fontSize: 14, color: '#f1f2f9', marginBottom: 12 }}>New Account</h4>
+          <h4 style={{ fontSize: 14, color: 'var(--text)', marginBottom: 12 }}>New Account</h4>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr auto', gap: 10 }}>
             <input placeholder="Platform (e.g. Instagram)" value={form.platform}
               onChange={e => setForm(f => ({ ...f, platform: e.target.value }))} style={inputSt} />
@@ -566,7 +566,7 @@ function CredentialsTab({ accounts, clientId, onUpdate }: {
         </div>
       )}
 
-      {!list.length && !adding && <Empty icon={<KeyRound size={32} />} label="No credentials saved yet" />}
+      {!list.length && !adding && <Empty icon={<Key size={32} />} label="No credentials saved yet" />}
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         {list.map((a, i) => (
@@ -575,11 +575,11 @@ function CredentialsTab({ accounts, clientId, onUpdate }: {
               width: 36, height: 36, borderRadius: 8, background: 'rgba(99,102,241,0.1)',
               display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
             }}>
-              <KeyRound size={16} color="#6366f1" />
+              <Key size={16} color="#6366f1" />
             </div>
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 14, fontWeight: 600, color: '#f1f2f9', marginBottom: 2 }}>{a.platform}</div>
-              <div style={{ fontSize: 13, color: '#8b949e', display: 'flex', gap: 12 }}>
+              <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', marginBottom: 2 }}>{a.platform}</div>
+              <div style={{ fontSize: 13, color: 'var(--text-2)', display: 'flex', gap: 12 }}>
                 <span>{a.username}</span>
                 <span>{reveal[i] ? a.password : '••••••••'}</span>
               </div>
@@ -592,7 +592,7 @@ function CredentialsTab({ accounts, clientId, onUpdate }: {
                 {copied === `p${i}` ? <Check size={13} color="#22c55e" /> : <Copy size={13} />}
               </IconBtn>
               <IconBtn title="Toggle reveal" onClick={() => setReveal(r => ({ ...r, [i]: !r[i] }))}>
-                {reveal[i] ? <Unlock size={13} /> : <Lock size={13} />}
+                {reveal[i] ? <LockOpen size={13} /> : <Lock size={13} />}
               </IconBtn>
               <IconBtn title="Remove" onClick={() => remove(i)}>
                 <span style={{ fontSize: 13 }}>×</span>
@@ -608,8 +608,8 @@ function CredentialsTab({ accounts, clientId, onUpdate }: {
 function IconBtn({ onClick, title, children }: { onClick: () => void; title?: string; children: React.ReactNode }) {
   return (
     <button onClick={onClick} title={title} style={{
-      width: 28, height: 28, borderRadius: 6, background: 'rgba(255,255,255,0.05)',
-      border: '1px solid rgba(255,255,255,0.08)', color: '#8b949e',
+      width: 28, height: 28, borderRadius: 6, background: 'var(--nav-hover-bg)',
+      border: '1px solid var(--border)', color: 'var(--text-2)',
       display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
     }}>{children}</button>
   );
@@ -617,7 +617,7 @@ function IconBtn({ onClick, title, children }: { onClick: () => void; title?: st
 
 function Empty({ icon, label }: { icon: React.ReactNode; label: string }) {
   return (
-    <div style={{ textAlign: 'center', padding: '48px 0', color: '#8b949e' }}>
+    <div style={{ textAlign: 'center', padding: '48px 0', color: 'var(--text-2)' }}>
       <div style={{ marginBottom: 12, opacity: 0.4 }}>{icon}</div>
       <p style={{ fontSize: 14 }}>{label}</p>
     </div>
@@ -656,7 +656,7 @@ function SharePanel({ client, onUpdate }: { client: ClientDetail; onUpdate: (c: 
   return (
     <div style={card}>
       <h3 style={cardTitle}>Client Portal</h3>
-      <p style={{ fontSize: 13, color: '#8b949e', marginBottom: 16 }}>
+      <p style={{ fontSize: 13, color: 'var(--text-2)', marginBottom: 16 }}>
         Share a secure link with your client to view their projects, content, and designs.
       </p>
 
@@ -669,18 +669,18 @@ function SharePanel({ client, onUpdate }: { client: ClientDetail; onUpdate: (c: 
             </button>
           </div>
           {client.share_token_expires_at && (
-            <p style={{ fontSize: 12, color: '#8b949e' }}>
+            <p style={{ fontSize: 12, color: 'var(--text-2)' }}>
               Expires: {new Date(client.share_token_expires_at).toLocaleDateString()}
             </p>
           )}
           <button onClick={generate} disabled={loading} style={{ ...btnGhost, marginTop: 10, fontSize: 13 }}>
-            <RefreshCw size={12} /> Regenerate link
+            <ArrowClockwise size={12} /> Regenerate link
           </button>
         </div>
       ) : (
         <div>
           <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 12 }}>
-            <span style={{ fontSize: 13, color: '#8b949e' }}>Expires in</span>
+            <span style={{ fontSize: 13, color: 'var(--text-2)' }}>Expires in</span>
             <select value={days} onChange={e => setDays(Number(e.target.value))}
               style={{ ...inputSt, width: 120 }}>
               <option value={7}>7 days</option>
@@ -690,7 +690,7 @@ function SharePanel({ client, onUpdate }: { client: ClientDetail; onUpdate: (c: 
             </select>
           </div>
           <button onClick={generate} disabled={loading} style={btnPrimary}>
-            {loading ? 'Generating...' : <><ExternalLink size={14} /> Generate Portal Link</>}
+            {loading ? 'Generating...' : <><ArrowSquareOut size={14} /> Generate Portal Link</>}
           </button>
         </div>
       )}
@@ -701,18 +701,18 @@ function SharePanel({ client, onUpdate }: { client: ClientDetail; onUpdate: (c: 
 // ─── Shared styles ────────────────────────────────────────────────────────────
 
 const card: React.CSSProperties = {
-  background: 'rgba(255,255,255,0.03)',
-  border: '1px solid rgba(255,255,255,0.07)',
+  background: 'var(--nav-hover-bg)',
+  border: '1px solid var(--border)',
   borderRadius: 12, padding: '16px 18px',
 };
 
 const cardTitle: React.CSSProperties = {
-  fontSize: 14, fontWeight: 600, color: '#f1f2f9', marginBottom: 14,
+  fontSize: 14, fontWeight: 600, color: 'var(--text)', marginBottom: 14,
 };
 
 const inputSt: React.CSSProperties = {
-  padding: '10px 12px', borderRadius: 8, background: 'rgba(255,255,255,0.04)',
-  border: '1px solid rgba(255,255,255,0.08)', color: '#f1f2f9', fontSize: 13, outline: 'none',
+  padding: '10px 12px', borderRadius: 8, background: 'var(--nav-hover-bg)',
+  border: '1px solid var(--border)', color: 'var(--text)', fontSize: 13, outline: 'none',
 };
 
 const btnPrimary: React.CSSProperties = {
@@ -723,8 +723,8 @@ const btnPrimary: React.CSSProperties = {
 
 const btnGhost: React.CSSProperties = {
   display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 14px',
-  borderRadius: 8, background: 'transparent', border: '1px solid rgba(255,255,255,0.1)',
-  color: '#8b949e', fontSize: 13, cursor: 'pointer',
+  borderRadius: 8, background: 'transparent', border: '1px solid var(--border)',
+  color: 'var(--text-2)', fontSize: 13, cursor: 'pointer',
 };
 
 // ─── Main Component ───────────────────────────────────────────────────────────
@@ -752,7 +752,7 @@ export default function ClientProfilePage() {
   useEffect(() => { load(); }, [load]);
 
   if (loading) return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 300, color: '#8b949e' }}>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 300, color: 'var(--text-2)' }}>
       Loading client profile...
     </div>
   );
@@ -781,16 +781,16 @@ export default function ClientProfilePage() {
         </button>
         {avatar(client.name, client.avatar_url, 52)}
         <div style={{ flex: 1 }}>
-          <h1 style={{ fontSize: 22, fontWeight: 700, color: '#f1f2f9', margin: 0 }}>{client.name}</h1>
+          <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--text)', margin: 0 }}>{client.name}</h1>
           {client.company && (
-            <p style={{ fontSize: 14, color: '#8b949e', margin: '4px 0 0' }}>
-              <Building2 size={12} style={{ display: 'inline', marginRight: 4 }} />{client.company}
+            <p style={{ fontSize: 14, color: 'var(--text-2)', margin: '4px 0 0' }}>
+              <Buildings size={12} style={{ display: 'inline', marginRight: 4 }} />{client.company}
             </p>
           )}
         </div>
         <button onClick={() => router.push(`/dashboard/clients/${client.id}/report`)}
           style={{ ...btnPrimary, padding: '9px 16px', fontSize: 12 }}>
-          <TrendingUp size={13} /> View Report
+          <TrendUp size={13} /> View Report
         </button>
         <button onClick={() => router.push(`/dashboard/clients?edit=${client.id}`)} style={btnGhost}>
           Edit
@@ -803,7 +803,7 @@ export default function ClientProfilePage() {
           {/* Tabs */}
           <div style={{
             display: 'flex', gap: 4, marginBottom: 20,
-            borderBottom: '1px solid rgba(255,255,255,0.07)', paddingBottom: 0,
+            borderBottom: '1px solid var(--border)', paddingBottom: 0,
             overflowX: 'auto',
           }}>
             {TABS.map(t => {
@@ -888,7 +888,7 @@ export default function ClientProfilePage() {
                 { label: 'Drafts', value: client.content.filter(c => c.status === 'draft').length, color: '#8b5cf6' },
               ].map(s => (
                 <div key={s.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: 13, color: '#8b949e' }}>{s.label}</span>
+                  <span style={{ fontSize: 13, color: 'var(--text-2)' }}>{s.label}</span>
                   <span style={{ fontSize: 14, fontWeight: 700, color: s.color }}>{s.value}</span>
                 </div>
               ))}

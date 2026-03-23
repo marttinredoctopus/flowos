@@ -81,7 +81,7 @@ export default function AuthModal({ initialMode, mode: modeProp, onClose, onSwit
       <div
         style={{
           background: '#0f1117',
-          border: '1px solid rgba(255,255,255,0.08)',
+          border: '1px solid var(--border)',
           borderRadius: '20px',
           padding: '2.5rem',
           width: '100%',
@@ -119,7 +119,7 @@ export default function AuthModal({ initialMode, mode: modeProp, onClose, onSwit
 
         {/* Tabs */}
         <div style={{
-          display: 'flex', background: 'rgba(255,255,255,0.04)',
+          display: 'flex', background: 'var(--nav-hover-bg)',
           borderRadius: 10, padding: '4px', marginBottom: '2rem',
         }}>
           {(['login', 'signup'] as const).map((m) => (
@@ -153,8 +153,8 @@ export default function AuthModal({ initialMode, mode: modeProp, onClose, onSwit
                 onChange={(e) => setName(e.target.value)}
                 style={{
                   width: '100%', padding: '0.75rem 1rem',
-                  background: 'rgba(255,255,255,0.05)',
-                  border: '1px solid rgba(255,255,255,0.1)',
+                  background: 'var(--nav-hover-bg)',
+                  border: '1px solid var(--border)',
                   borderRadius: 10, color: '#fff', fontSize: '0.95rem',
                   outline: 'none', boxSizing: 'border-box',
                 }}
@@ -174,8 +174,8 @@ export default function AuthModal({ initialMode, mode: modeProp, onClose, onSwit
               onChange={(e) => setEmail(e.target.value)}
               style={{
                 width: '100%', padding: '0.75rem 1rem',
-                background: 'rgba(255,255,255,0.05)',
-                border: '1px solid rgba(255,255,255,0.1)',
+                background: 'var(--nav-hover-bg)',
+                border: '1px solid var(--border)',
                 borderRadius: 10, color: '#fff', fontSize: '0.95rem',
                 outline: 'none', boxSizing: 'border-box',
               }}
@@ -195,8 +195,8 @@ export default function AuthModal({ initialMode, mode: modeProp, onClose, onSwit
                 onChange={(e) => setPassword(e.target.value)}
                 style={{
                   width: '100%', padding: '0.75rem 2.8rem 0.75rem 1rem',
-                  background: 'rgba(255,255,255,0.05)',
-                  border: '1px solid rgba(255,255,255,0.1)',
+                  background: 'var(--nav-hover-bg)',
+                  border: '1px solid var(--border)',
                   borderRadius: 10, color: '#fff', fontSize: '0.95rem',
                   outline: 'none', boxSizing: 'border-box',
                 }}

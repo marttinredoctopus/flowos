@@ -26,7 +26,7 @@ export function UpgradePrompt({ feature, requiredPlan = 'pro', onDismiss }: Upgr
       <h3 style={{ fontSize: 18, fontWeight: 700, color: '#fff', marginBottom: 8 }}>
         Upgrade to {planName}
       </h3>
-      <p style={{ fontSize: 14, color: '#8b949e', lineHeight: 1.6, marginBottom: 24 }}>
+      <p style={{ fontSize: 14, color: 'var(--text-2)', lineHeight: 1.6, marginBottom: 24 }}>
         {feature
           ? `${feature} requires the ${planName} plan.`
           : `You've reached the limit of your current plan.`}{' '}
@@ -51,9 +51,9 @@ export function UpgradePrompt({ feature, requiredPlan = 'pro', onDismiss }: Upgr
           <button onClick={onDismiss} style={{
             padding: '10px 20px',
             borderRadius: 8,
-            border: '1px solid rgba(255,255,255,0.1)',
+            border: '1px solid var(--border)',
             background: 'transparent',
-            color: '#8b949e',
+            color: 'var(--text-2)',
             fontSize: 14,
             cursor: 'pointer',
           }}>

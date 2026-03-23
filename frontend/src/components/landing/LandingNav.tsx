@@ -2,7 +2,8 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Menu, X, Zap } from 'lucide-react';
+import { List, X } from '@phosphor-icons/react';
+import { Logo } from '@/components/ui/Logo';
 
 const NAV_LINKS = [
   { label: 'Features', href: '/features' },
@@ -30,23 +31,13 @@ export function LandingNav() {
         transition: 'background 0.3s, border-color 0.3s, backdrop-filter 0.3s',
         background: scrolled ? 'rgba(7,8,16,0.88)' : 'transparent',
         backdropFilter: scrolled ? 'blur(20px) saturate(180%)' : 'none',
-        borderBottom: scrolled ? '1px solid rgba(255,255,255,0.06)' : '1px solid transparent',
+        borderBottom: scrolled ? '1px solid var(--border)' : '1px solid transparent',
       }}
     >
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px', height: 68, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         {/* Logo */}
-        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 9, textDecoration: 'none', flexShrink: 0 }}>
-          <div style={{
-            width: 34, height: 34, borderRadius: 9,
-            background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '0 0 16px rgba(99,102,241,0.4)',
-          }}>
-            <Zap size={18} color="#fff" fill="#fff" />
-          </div>
-          <span style={{ fontWeight: 800, fontSize: 18, color: 'var(--text)', letterSpacing: '-0.03em', fontFamily: 'Inter, sans-serif' }}>
-            Tasks<span style={{ background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Done</span>
-          </span>
+        <Link href="/" style={{ textDecoration: 'none', flexShrink: 0 }}>
+          <Logo size={32} showWordmark />
         </Link>
 
         {/* Desktop nav */}
@@ -79,13 +70,13 @@ export function LandingNav() {
             onClick={() => router.push('/register')}
             style={{
               padding: '9px 22px', borderRadius: 9, fontSize: 14, fontWeight: 600,
-              background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+              background: 'linear-gradient(135deg, #0EA5E9 0%, #2563EB 100%)',
               color: '#fff', border: 'none', cursor: 'pointer',
-              boxShadow: '0 0 20px rgba(99,102,241,0.35)',
+              boxShadow: '0 0 20px rgba(37,99,235,0.35)',
               transition: 'transform 0.15s, box-shadow 0.15s',
             }}
-            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(-1px)'; (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 0 30px rgba(99,102,241,0.5)'; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(0)'; (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 0 20px rgba(99,102,241,0.35)'; }}
+            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(-1px)'; (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 0 30px rgba(37,99,235,0.5)'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(0)'; (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 0 20px rgba(37,99,235,0.35)'; }}
           >
             Start Free
           </button>
@@ -98,7 +89,7 @@ export function LandingNav() {
           style={{ background: 'none', border: 'none', color: 'var(--text)', cursor: 'pointer', padding: 6, borderRadius: 8 }}
           aria-label="Toggle menu"
         >
-          {open ? <X size={22} /> : <Menu size={22} />}
+          {open ? <X size={22} /> : <List size={22} />}
         </button>
       </div>
 
@@ -107,7 +98,7 @@ export function LandingNav() {
         <div style={{
           position: 'absolute', top: '100%', left: 0, right: 0,
           background: 'rgba(7,8,16,0.97)', backdropFilter: 'blur(20px)',
-          borderBottom: '1px solid rgba(255,255,255,0.08)',
+          borderBottom: '1px solid var(--border)',
           padding: '16px 24px 24px',
           display: 'flex', flexDirection: 'column', gap: 4,
         }}>
@@ -124,15 +115,15 @@ export function LandingNav() {
             <Link href="/login" onClick={() => setOpen(false)} style={{
               padding: '13px 20px', borderRadius: 10, fontSize: 15, fontWeight: 500,
               color: 'var(--text-2)', textDecoration: 'none', textAlign: 'center',
-              border: '1px solid rgba(255,255,255,0.08)',
+              border: '1px solid var(--border)',
             }}>
               Sign in
             </Link>
             <Link href="/register" onClick={() => setOpen(false)} style={{
               padding: '13px 20px', borderRadius: 10, fontSize: 15, fontWeight: 600,
-              background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+              background: 'linear-gradient(135deg, #0EA5E9 0%, #2563EB 100%)',
               color: '#fff', textDecoration: 'none', textAlign: 'center',
-              boxShadow: '0 0 20px rgba(99,102,241,0.3)',
+              boxShadow: '0 0 20px rgba(37,99,235,0.3)',
             }}>
               Start Free — No credit card
             </Link>

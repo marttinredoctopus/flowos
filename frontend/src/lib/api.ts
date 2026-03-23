@@ -15,6 +15,64 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// ─── Fetch-based API helpers ─────────────────────────────────────────────────
+// Base URL: strip trailing /api so we can use /api/... paths
+const API_BASE = (() => {
+  const url = process.env.NEXT_PUBLIC_API_URL || 'https://api.tasksdone.cloud/api';
+  return url.replace(/\/api\/?$/, '');
+})();
+
+function getToken(): string {
+  if (typeof window === 'undefined') return '';
+  return (window as any).__TASKSDONE_AUTH_TOKEN__ || '';
+}
+
+function authHeaders() {
+  return {
+    Authorization: `Bearer ${getToken()}`,
+    'Content-Type': 'application/json',
+  };
+}
+
+export async function apiGet(path: string) {
+  const res = await fetch(`${API_BASE}${path}`, {
+    headers: authHeaders(),
+    credentials: 'include',
+  });
+  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  return res.json();
+}
+
+export async function apiPost(path: string, body: any) {
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: 'POST',
+    headers: authHeaders(),
+    credentials: 'include',
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  return res.json();
+}
+
+export async function apiPatch(path: string, body: any) {
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: 'PATCH',
+    headers: authHeaders(),
+    credentials: 'include',
+    body: JSON.stringify(body),
+  });
+  return res.json();
+}
+
+export async function apiDelete(path: string) {
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${getToken()}` },
+    credentials: 'include',
+  });
+  return res.json();
+}
+
 // ─── Content ────────────────────────────────────────────────────────────────
 
 export const contentApi = {

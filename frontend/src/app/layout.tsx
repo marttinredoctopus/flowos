@@ -1,28 +1,61 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
+import { Outfit, Inter, JetBrains_Mono } from 'next/font/google';
 import { Toaster } from 'react-hot-toast';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { AuthInit } from '@/components/AuthInit';
 import './globals.css';
 
+const outfit = Outfit({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700', '800'],
+  variable: '--font-outfit',
+  display: 'swap',
+});
+
+const inter = Inter({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700', '800'],
+  variable: '--font-inter',
+  display: 'swap',
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ['latin'],
+  weight: ['400'],
+  variable: '--font-mono',
+  display: 'swap',
+});
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  themeColor: '#0EA5E9',
+};
+
 export const metadata: Metadata = {
   title: 'TasksDone — The Agency OS That Actually Ships',
   description: 'Replace 6 tools with one platform built for real agencies. Tasks, clients, campaigns, invoices, AI, and more — all in one place.',
   keywords: 'agency management, project management, client portal, task management, invoicing, AI tools',
+  metadataBase: new URL('https://tasksdone.cloud'),
   openGraph: {
     title: 'TasksDone — The Agency OS That Actually Ships',
     description: 'Replace 6 tools with one platform built for real agencies.',
     siteName: 'TasksDone',
     type: 'website',
+    url: 'https://tasksdone.cloud',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'TasksDone — The Agency OS That Actually Ships',
+    description: 'Replace 6 tools with one platform built for real agencies.',
   },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${outfit.variable} ${inter.variable} ${jetbrainsMono.variable}`}>
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet" />
         <link rel="icon" href="/favicon.ico" />
         {/* Prevent flash of wrong theme */}
         <script dangerouslySetInnerHTML={{ __html: `(function(){try{var t=localStorage.getItem('theme');if(t==='light')document.documentElement.classList.add('light');}catch(e){}})()` }} />

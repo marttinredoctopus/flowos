@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400&display=swap');
+/* Fonts loaded via next/font/google in layout.tsx */
 
 @tailwind base;
 @tailwind components;
@@ -27,12 +27,12 @@
   --text-dim: #4a4d6a;
 
   /* Brand palette */
-  --indigo: #6366f1;
-  --indigo-2: rgba(99,102,241,0.15);
-  --violet: #8b5cf6;
-  --violet-2: rgba(139,92,246,0.15);
-  --cyan: #06b6d4;
-  --cyan-2: rgba(6,182,212,0.12);
+  --indigo: #2563EB;
+  --indigo-2: rgba(37,99,235,0.15);
+  --violet: #7C3AED;
+  --violet-2: rgba(124,58,237,0.15);
+  --cyan: #0EA5E9;
+  --cyan-2: rgba(14,165,233,0.12);
   --emerald: #10b981;
   --emerald-2: rgba(16,185,129,0.12);
   --amber: #f59e0b;
@@ -41,11 +41,11 @@
   --rose-2: rgba(244,63,94,0.12);
 
   /* Legacy brand aliases (used across existing pages) */
-  --purple: #6366f1;
-  --purple-light: #8b5cf6;
-  --purple-dim: rgba(99,102,241,0.15);
-  --blue: #06b6d4;
-  --blue-dim: rgba(6,182,212,0.12);
+  --purple: #2563EB;
+  --purple-light: #0EA5E9;
+  --purple-dim: rgba(37,99,235,0.15);
+  --blue: #0EA5E9;
+  --blue-dim: rgba(14,165,233,0.12);
   --pink: #f43f5e;
   --pink-dim: rgba(244,63,94,0.12);
   --teal: #10b981;
@@ -58,18 +58,18 @@
   --orange-dim: rgba(249,115,22,0.12);
   --red: #f43f5e;
   --red-dim: rgba(244,63,94,0.12);
-  --brand: #6366f1;
-  --brand-blue: #06b6d4;
+  --brand: #2563EB;
+  --brand-blue: #0EA5E9;
 
   /* Gradients */
-  --grad-primary: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-  --grad-success: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
+  --grad-primary: linear-gradient(135deg, #0EA5E9 0%, #2563EB 100%);
+  --grad-success: linear-gradient(135deg, #10b981 0%, #0EA5E9 100%);
   --grad-warm: linear-gradient(135deg, #f59e0b 0%, #f43f5e 100%);
-  --grad-mesh: radial-gradient(at 40% 20%, rgba(99,102,241,0.12) 0%, transparent 50%),
-               radial-gradient(at 80% 0%, rgba(139,92,246,0.08) 0%, transparent 40%),
-               radial-gradient(at 0% 100%, rgba(6,182,212,0.06) 0%, transparent 40%);
+  --grad-mesh: radial-gradient(at 40% 20%, rgba(37,99,235,0.12) 0%, transparent 50%),
+               radial-gradient(at 80% 0%, rgba(14,165,233,0.08) 0%, transparent 40%),
+               radial-gradient(at 0% 100%, rgba(16,185,129,0.06) 0%, transparent 40%);
   --gradient: var(--grad-primary);
-  --glow: rgba(99,102,241,0.2);
+  --glow: rgba(37,99,235,0.2);
 
   /* Border radii */
   --radius-sm: 6px;
@@ -82,7 +82,7 @@
   --shadow-sm: 0 1px 3px rgba(0,0,0,0.4);
   --shadow: 0 4px 16px rgba(0,0,0,0.5);
   --shadow-lg: 0 8px 32px rgba(0,0,0,0.6);
-  --shadow-glow: 0 0 24px rgba(99,102,241,0.2);
+  --shadow-glow: 0 0 24px rgba(37,99,235,0.25);
 
   /* Inputs */
   --input-bg: rgba(255,255,255,0.04);
@@ -92,74 +92,169 @@
   --nav-hover-bg: rgba(255,255,255,0.04);
 }
 
-/* ── Light mode ──────────────────────────────────────────────── */
-:root.light {
-  --bg: #f3f4fb;
+/* ── Light mode (Linear/ClickUp style) ───────────────────────── */
+html.light {
+  /* Backgrounds */
+  --bg: #f5f5f7;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #ebebed;
   --surface: #ffffff;
+  --surface-hover: #f5f5f7;
+  --surface-active: #ede9fe;
+
+  /* Cards */
   --card: #ffffff;
-  --card-hover: #f8f9ff;
-  --overlay: rgba(243,244,251,0.9);
+  --card-bg: #ffffff;
+  --card-border: #e5e7eb;
+  --card-hover: #f5f5f7;
+  --card-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --card-shadow-hover: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+  --overlay: rgba(245,245,247,0.92);
 
-  --border: rgba(0,0,0,0.07);
-  --border-hover: rgba(0,0,0,0.13);
-  --border-focus: rgba(99,102,241,0.5);
+  /* Sidebar */
+  --sidebar-bg: #ffffff;
+  --sidebar-border: #e5e7eb;
+  --sidebar-text: #6b7280;
+  --sidebar-text-hover: #111827;
+  --sidebar-active-bg: #DBEAFE;
+  --sidebar-active-text: #2563EB;
+  --sidebar-section-text: #9ca3af;
+  --sidebar-icon: #6b7280;
 
-  --text: #13152b;
-  --text-2: #5c6080;
-  --text-3: #b0b4cc;
-  --text-muted: #5c6080;
-  --text-dim: #b0b4cc;
+  /* Topbar */
+  --topbar-bg: #ffffff;
+  --topbar-border: #f3f4f6;
 
-  --indigo: #4f52e8;
-  --indigo-2: rgba(79,82,232,0.1);
-  --violet: #7c3aed;
+  /* Borders */
+  --border: #e5e7eb;
+  --border-hover: #d1d5db;
+  --border-subtle: #f3f4f6;
+  --border-focus: #2563EB;
+
+  /* Text */
+  --text: #111827;
+  --text-2: #374151;
+  --text-3: #6b7280;
+  --text-secondary: #4b5563;
+  --text-muted: #9ca3af;
+  --text-dim: #9ca3af;
+  --text-inverse: #ffffff;
+
+  /* Primary */
+  --primary: #2563EB;
+  --primary-hover: #1D4ED8;
+  --primary-light: #DBEAFE;
+  --primary-fg: #ffffff;
+  --primary-text: #2563EB;
+
+  /* Inputs */
+  --input-bg: #f9fafb;
+  --input-border: #e5e7eb;
+  --input-border-focus: #2563EB;
+  --input-text: #111827;
+  --input-placeholder: #9ca3af;
+
+  /* Brand palette — vibrant for light mode */
+  --indigo: #2563EB;
+  --indigo-2: rgba(37,99,235,0.1);
+  --violet: #7C3AED;
   --violet-2: rgba(124,58,237,0.1);
-  --cyan: #0891b2;
-  --cyan-2: rgba(8,145,178,0.1);
-  --emerald: #059669;
-  --emerald-2: rgba(5,150,105,0.1);
-  --amber: #d97706;
-  --amber-2: rgba(217,119,6,0.1);
-  --rose: #e11d48;
-  --rose-2: rgba(225,29,72,0.1);
+  --cyan: #0ea5e9;
+  --cyan-2: rgba(14,165,233,0.1);
+  --emerald: #10b981;
+  --emerald-2: rgba(16,185,129,0.1);
+  --amber: #f59e0b;
+  --amber-2: rgba(245,158,11,0.1);
+  --rose: #f43f5e;
+  --rose-2: rgba(244,63,94,0.1);
 
-  --purple: #4f52e8;
-  --purple-light: #7c3aed;
-  --purple-dim: rgba(79,82,232,0.1);
-  --blue: #0891b2;
-  --blue-dim: rgba(8,145,178,0.1);
-  --pink: #e11d48;
-  --pink-dim: rgba(225,29,72,0.1);
-  --teal: #059669;
-  --teal-dim: rgba(5,150,105,0.1);
-  --green: #059669;
-  --green-dim: rgba(5,150,105,0.1);
-  --yellow: #d97706;
-  --yellow-dim: rgba(217,119,6,0.1);
-  --orange: #ea580c;
-  --orange-dim: rgba(234,88,12,0.1);
-  --red: #e11d48;
-  --red-dim: rgba(225,29,72,0.1);
-  --brand: #4f52e8;
-  --brand-blue: #0891b2;
+  /* Status colors */
+  --color-indigo: #6366f1;
+  --color-violet: #8b5cf6;
+  --color-emerald: #10b981;
+  --color-amber: #f59e0b;
+  --color-rose: #f43f5e;
+  --color-sky: #0ea5e9;
+  --color-pink: #ec4899;
 
-  --grad-primary: linear-gradient(135deg, #4f52e8 0%, #7c3aed 100%);
-  --grad-success: linear-gradient(135deg, #059669 0%, #0891b2 100%);
-  --grad-warm: linear-gradient(135deg, #d97706 0%, #e11d48 100%);
-  --grad-mesh: radial-gradient(at 40% 20%, rgba(79,82,232,0.06) 0%, transparent 50%),
-               radial-gradient(at 80% 0%, rgba(124,58,237,0.04) 0%, transparent 40%),
-               radial-gradient(at 0% 100%, rgba(8,145,178,0.04) 0%, transparent 40%);
+  /* Legacy aliases */
+  --purple: #2563EB;
+  --purple-light: #0ea5e9;
+  --purple-dim: rgba(37,99,235,0.1);
+  --blue: #0ea5e9;
+  --blue-dim: rgba(14,165,233,0.1);
+  --pink: #ec4899;
+  --pink-dim: rgba(236,72,153,0.1);
+  --teal: #10b981;
+  --teal-dim: rgba(16,185,129,0.1);
+  --green: #10b981;
+  --green-dim: rgba(16,185,129,0.1);
+  --yellow: #f59e0b;
+  --yellow-dim: rgba(245,158,11,0.1);
+  --orange: #f97316;
+  --orange-dim: rgba(249,115,22,0.1);
+  --red: #f43f5e;
+  --red-dim: rgba(244,63,94,0.1);
+  --brand: #2563EB;
+  --brand-blue: #0ea5e9;
+
+  /* Kanban columns — colorful */
+  --kanban-todo-bg: #f9fafb;
+  --kanban-todo-border: #e5e7eb;
+  --kanban-progress-bg: #eff6ff;
+  --kanban-progress-border: #bfdbfe;
+  --kanban-review-bg: #fffbeb;
+  --kanban-review-border: #fde68a;
+  --kanban-done-bg: #f0fdf4;
+  --kanban-done-border: #bbf7d0;
+
+  /* Gradients */
+  --grad-primary: linear-gradient(135deg, #0EA5E9 0%, #2563EB 100%);
+  --grad-success: linear-gradient(135deg, #10b981 0%, #0ea5e9 100%);
+  --grad-warm: linear-gradient(135deg, #f59e0b 0%, #f43f5e 100%);
+  --grad-mesh: radial-gradient(at 40% 20%, rgba(37,99,235,0.05) 0%, transparent 50%),
+               radial-gradient(at 80% 0%, rgba(14,165,233,0.04) 0%, transparent 40%),
+               radial-gradient(at 0% 100%, rgba(16,185,129,0.04) 0%, transparent 40%);
   --gradient: var(--grad-primary);
-  --glow: rgba(79,82,232,0.15);
-  --shadow-glow: 0 0 24px rgba(79,82,232,0.12);
+  --glow: rgba(37,99,235,0.12);
+  --shadow-glow: 0 0 24px rgba(37,99,235,0.12);
 
-  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
-  --shadow: 0 4px 16px rgba(0,0,0,0.08);
-  --shadow-lg: 0 8px 32px rgba(0,0,0,0.12);
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.05);
+  --shadow-lg: 0 10px 15px rgba(0,0,0,0.08), 0 4px 6px rgba(0,0,0,0.04);
 
-  --input-bg: #f3f4fb;
-  --glass-bg: rgba(255,255,255,0.85);
+  --glass-bg: rgba(255,255,255,0.88);
   --nav-hover-bg: rgba(0,0,0,0.04);
+
+  /* Aliases for --foreground (used as safe text color in both modes) */
+  --foreground: var(--text);
+  --color-text: var(--text);
+}
+
+/* ── Light mode component overrides ─────────────────────────── */
+/* Fix Tailwind text-white on body text (not buttons/badges/icons) */
+html.light p.text-white,
+html.light h1.text-white,
+html.light h2.text-white,
+html.light h3.text-white,
+html.light h4.text-white,
+html.light div.text-white:not([class*="gradient"]) {
+  color: var(--text) !important;
+}
+html.light main {
+  color: var(--text);
+  background: var(--bg);
+}
+html.light .flex.h-screen {
+  background: var(--bg);
+}
+
+/* ── Dark mode: also alias --foreground ─────────────────────── */
+:root {
+  --foreground: var(--text);
+  --color-text: var(--text);
 }
 
 /* ── Base ────────────────────────────────────────────────────── */
@@ -169,35 +264,36 @@
   body {
     background-color: var(--bg);
     color: var(--text);
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-inter, 'Inter'), sans-serif;
     font-size: 16px;
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    transition: background-color 0.2s ease, color 0.2s ease;
   }
   h1 {
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-outfit, 'Outfit'), sans-serif;
     font-size: 36px;
     font-weight: 800;
     line-height: 1.15;
     letter-spacing: -0.03em;
   }
   h2 {
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-outfit, 'Outfit'), sans-serif;
     font-size: 28px;
     font-weight: 700;
     line-height: 1.2;
     letter-spacing: -0.025em;
   }
   h3 {
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-outfit, 'Outfit'), sans-serif;
     font-size: 20px;
     font-weight: 700;
     line-height: 1.3;
     letter-spacing: -0.02em;
   }
   h4, h5, h6 {
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-outfit, 'Outfit'), sans-serif;
     font-weight: 600;
     letter-spacing: -0.015em;
   }
@@ -242,8 +338,8 @@
   .mesh-bg {
     background: var(--grad-mesh);
   }
-  .font-display { font-family: 'Inter', sans-serif; }
-  .font-mono-code { font-family: 'JetBrains Mono', monospace; }
+  .font-display { font-family: var(--font-outfit, 'Outfit'), sans-serif; }
+  .font-mono-code { font-family: var(--font-mono, 'JetBrains Mono'), monospace; }
 
   /* Sidebar nav items */
   .nav-item-active {
@@ -286,7 +382,7 @@
   }
   .input-base:focus {
     border-color: var(--border-focus);
-    box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
+    box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
   }
 
   /* Badge variants */
@@ -388,7 +484,7 @@
   position: absolute;
   width: 700px; height: 700px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(99,102,241,0.14), transparent 70%);
+  background: radial-gradient(circle, rgba(14,165,233,0.14), transparent 70%);
   top: -150px; left: 50%;
   transform: translateX(-55%);
   pointer-events: none;
@@ -397,7 +493,7 @@
 .hero-orb-2 {
   position: absolute;
   width: 500px; height: 500px;
-  background: radial-gradient(circle, rgba(139,92,246,0.10), transparent 70%);
+  background: radial-gradient(circle, rgba(37,99,235,0.10), transparent 70%);
   top: 200px; right: -100px;
   pointer-events: none;
   animation: glow-pulse 8s ease-in-out infinite reverse;
@@ -405,7 +501,7 @@
 .hero-orb-3 {
   position: absolute;
   width: 300px; height: 300px;
-  background: radial-gradient(circle, rgba(6,182,212,0.07), transparent 70%);
+  background: radial-gradient(circle, rgba(16,185,129,0.07), transparent 70%);
   bottom: 0; left: -50px;
   pointer-events: none;
 }
@@ -581,4 +677,40 @@
   section { padding-left: 16px !important; padding-right: 16px !important; }
   .pricing-grid { grid-template-columns: 1fr !important; }
   .footer-grid { grid-template-columns: 1fr 1fr !important; }
+}
+
+/* ── Mobile global fixes (Issue 5) ───────────────────────────── */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* Touch improvements */
+button, a, [role="button"] {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+/* Smooth scrolling container */
+.scroll-container {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Responsive utility classes */
+@media (max-width: 768px) {
+  .hide-mobile { display: none !important; }
+  .full-mobile { width: 100% !important; }
+  h1 { font-size: clamp(24px, 6vw, 40px) !important; }
+  h2 { font-size: clamp(20px, 5vw, 32px) !important; }
+  /* Stack 4-col grids to 2-col on mobile */
+  .grid-4-mobile { grid-template-columns: 1fr 1fr !important; }
+  /* Stack 3-col grids to 1-col on mobile */
+  .grid-3-mobile { grid-template-columns: 1fr !important; }
+  /* Stack 2-col grids to 1-col on mobile */
+  .grid-2-mobile { grid-template-columns: 1fr !important; }
+  /* Dashboard padding */
+  .p-6 { padding: 16px !important; }
+  .p-8 { padding: 16px !important; }
+  .max-w-7xl { padding-left: 12px !important; padding-right: 12px !important; }
 }

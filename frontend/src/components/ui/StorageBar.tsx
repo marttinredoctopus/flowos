@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { HardDrive } from 'lucide-react';
+import { HardDrive } from '@phosphor-icons/react';
 import apiClient from '@/lib/apiClient';
 
 interface StorageData {

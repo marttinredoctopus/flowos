@@ -4,16 +4,16 @@ import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import {
-  LayoutDashboard, Inbox, MessageSquare, Clock,
-  FolderKanban, CheckSquare, Users, UserCircle, Target,
-  CalendarDays, Lightbulb, Megaphone,
-  Palette, FileText,
-  TrendingUp, Search, Sparkles,
-  Receipt, CreditCard, BarChart3,
-  BookOpen, ClipboardList, Video, Camera, HardDrive, Settings,
-  Plus, Sun, Moon, LogOut, Menu, Bell, Zap, Globe, LayoutTemplate,
-} from 'lucide-react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+  House, Tray, ChatCircle, Timer,
+  Kanban, CheckSquare, Users, User, Target,
+  CalendarDots, Lightbulb, Megaphone,
+  PaintBrush,
+  TrendUp, MagnifyingGlass, Sparkle,
+  Receipt, CreditCard, ChartBar,
+  BookOpen, ClipboardText, VideoCamera, Camera, HardDrive, Gear,
+  Plus, Sun, Moon, SignOut, List, Bell, Lightning, Globe, SquaresFour,
+} from '@phosphor-icons/react';
+import { CaretLeft, CaretRight } from '@phosphor-icons/react';
 import { useAuthStore } from '@/store/authStore';
 import { useThemeStore } from '@/store/themeStore';
 import NotificationBell from '@/components/notifications/NotificationBell';
@@ -27,26 +27,25 @@ const ALL_NAV_SECTIONS = [
   {
     label: 'Workspace',
     items: [
-      { label: 'Dashboard',    href: '/dashboard',              Icon: LayoutDashboard, color: 'var(--indigo)' },
-      { label: 'Inbox',        href: '/dashboard/inbox',        Icon: Inbox,           color: 'var(--cyan)',    roles: ['admin','manager','member','team'] },
-      { label: 'Chat',         href: '/dashboard/chat',         Icon: MessageSquare,   color: 'var(--emerald)', roles: ['admin','manager','member','team'] },
-      { label: 'Time Tracking',href: '/dashboard/time-tracking',Icon: Clock,           color: 'var(--amber)',   roles: ['admin','manager','member','team'] },
+      { label: 'Dashboard',    href: '/dashboard',              Icon: House,         color: 'var(--indigo)' },
+      { label: 'Inbox',        href: '/dashboard/inbox',        Icon: Tray,          color: 'var(--cyan)',    roles: ['admin','manager','member','team'] },
+      { label: 'Chat',         href: '/dashboard/chat',         Icon: ChatCircle,    color: 'var(--emerald)', roles: ['admin','manager','member','team'] },
+      { label: 'Time Tracking',href: '/dashboard/time-tracking',Icon: Timer,         color: 'var(--amber)',   roles: ['admin','manager','member','team'] },
     ],
   },
   {
     label: 'Work',
     items: [
-      { label: 'Projects',   href: '/dashboard/projects', Icon: FolderKanban, color: 'var(--cyan)' },
+      { label: 'Projects',   href: '/dashboard/projects', Icon: Kanban,      color: 'var(--cyan)' },
       { label: 'Tasks',      href: '/dashboard/tasks',    Icon: CheckSquare,  color: 'var(--emerald)' },
-      { label: 'Clients',    href: '/dashboard/clients',  Icon: UserCircle,   color: 'var(--rose)',    roles: ['admin','manager','member','team'] },
+      { label: 'Clients',    href: '/dashboard/clients',  Icon: User,         color: 'var(--rose)',    roles: ['admin','manager','member','team'] },
       { label: 'Team',       href: '/dashboard/team',     Icon: Users,        color: 'var(--indigo)',  roles: ['admin','manager','member','team'] },
-      { label: 'Goals & OKRs', href: '/dashboard/goals', Icon: Target,       color: 'var(--amber)',   roles: ['admin','manager','member','team'] },
     ],
   },
   {
     label: 'Marketing',
     items: [
-      { label: 'Content Planner', href: '/dashboard/content',          Icon: CalendarDays, color: 'var(--cyan)',    roles: ['admin','manager','member','team'] },
+      { label: 'Content Planner', href: '/dashboard/content',          Icon: CalendarDots, color: 'var(--cyan)',    roles: ['admin','manager','member','team'] },
       { label: 'Strategy Hub',   href: '/dashboard/content/sections', Icon: Lightbulb,    color: 'var(--violet)', roles: ['admin','manager','member','team'] },
       { label: 'Idea Bank',      href: '/dashboard/ideas',            Icon: Lightbulb,    color: 'var(--amber)',  roles: ['admin','manager','member','team'] },
       { label: 'Ad Campaigns',    href: '/dashboard/campaigns', Icon: Megaphone,    color: 'var(--orange, #f97316)', roles: ['admin','manager','member','team'] },
@@ -55,17 +54,16 @@ const ALL_NAV_SECTIONS = [
   {
     label: 'Creative',
     items: [
-      { label: 'Design Hub',    href: '/dashboard/creative/design',  Icon: Palette,   color: 'var(--rose)',  roles: ['admin','manager','member','team'] },
-      { label: 'Content Team',  href: '/dashboard/creative/content', Icon: FileText,  color: 'var(--cyan)',  roles: ['admin','manager','member','team'] },
+      { label: 'Design Hub',    href: '/dashboard/creative/design',  Icon: PaintBrush, color: 'var(--rose)',  roles: ['admin','manager','member','team'] },
     ],
   },
   {
     label: 'Intelligence',
     items: [
-      { label: 'AI Campaign Builder', href: '/dashboard/intelligence/campaign-builder', Icon: Sparkles,   color: 'var(--violet)',  roles: ['admin','manager','member','team'] },
-      { label: 'AI Generator',        href: '/dashboard/intelligence/generate',         Icon: Sparkles,   color: 'var(--indigo)',  roles: ['admin','manager','member','team'] },
-      { label: 'Competitor Analysis', href: '/dashboard/intelligence',                  Icon: TrendingUp, color: 'var(--emerald)', roles: ['admin','manager','member','team'] },
-      { label: 'Market Research',     href: '/dashboard/intelligence/research',         Icon: Search,     color: 'var(--cyan)',    roles: ['admin','manager','member','team'] },
+      { label: 'AI Campaign Builder', href: '/dashboard/intelligence/campaign-builder', Icon: Sparkle,         color: 'var(--violet)',  roles: ['admin','manager','member','team'] },
+      { label: 'AI Generator',        href: '/dashboard/intelligence/generate',         Icon: Sparkle,         color: 'var(--indigo)',  roles: ['admin','manager','member','team'] },
+      { label: 'Competitor Analysis', href: '/dashboard/intelligence',                  Icon: TrendUp,      color: 'var(--emerald)', roles: ['admin','manager','member','team'] },
+      { label: 'Market Research',     href: '/dashboard/intelligence/research',         Icon: MagnifyingGlass, color: 'var(--cyan)',    roles: ['admin','manager','member','team'] },
     ],
   },
   {
@@ -75,21 +73,21 @@ const ALL_NAV_SECTIONS = [
     items: [
       { label: 'Invoices',  href: '/dashboard/finance/invoices',  Icon: Receipt,    color: 'var(--emerald)', roles: ['admin','manager'] },
       { label: 'Expenses',  href: '/dashboard/finance/expenses',  Icon: CreditCard, color: 'var(--rose)',    roles: ['admin','manager'] },
-      { label: 'Reports',   href: '/dashboard/reports',           Icon: BarChart3,  color: 'var(--cyan)',    roles: ['admin','manager'] },
+      { label: 'Reports',   href: '/dashboard/reports',           Icon: ChartBar,  color: 'var(--cyan)',    roles: ['admin','manager'] },
     ],
   },
   {
     label: 'Agency',
     items: [
-      { label: 'Automations',     href: '/dashboard/automations',     Icon: Zap,           color: 'var(--amber)',   roles: ['admin','manager'] },
-      { label: 'Templates',       href: '/dashboard/templates',       Icon: LayoutTemplate,color: 'var(--cyan)',    roles: ['admin','manager','member','team'] },
+      { label: 'Automations',     href: '/dashboard/automations',     Icon: Lightning,     color: 'var(--amber)',   roles: ['admin','manager'] },
+      { label: 'Templates',       href: '/dashboard/templates',       Icon: SquaresFour,   color: 'var(--cyan)',    roles: ['admin','manager','member','team'] },
       { label: 'Client Portal',   href: '/dashboard/clients/portal',  Icon: Globe,         color: 'var(--emerald)' },
       { label: 'Docs & Wiki',     href: '/dashboard/docs',            Icon: BookOpen,      color: 'var(--indigo)' },
-      { label: 'Forms',           href: '/dashboard/forms',           Icon: ClipboardList, color: 'var(--violet)',  roles: ['admin','manager','member','team'] },
-      { label: 'Meetings',        href: '/dashboard/meetings',        Icon: Video,         color: 'var(--rose)',    roles: ['admin','manager','member','team'] },
+      { label: 'Forms',           href: '/dashboard/forms',           Icon: ClipboardText, color: 'var(--violet)',  roles: ['admin','manager','member','team'] },
+      { label: 'Meetings',        href: '/dashboard/meetings',        Icon: VideoCamera,   color: 'var(--rose)',    roles: ['admin','manager','member','team'] },
       { label: 'Shoot Sessions',  href: '/dashboard/shoots',          Icon: Camera,        color: 'var(--indigo)',  roles: ['admin','manager','member','team'] },
       { label: 'Files',           href: '/dashboard/files',           Icon: HardDrive,     color: 'var(--cyan)' },
-      { label: 'Settings',        href: '/dashboard/settings',        Icon: Settings,      color: 'var(--text-2)', roles: ['admin','manager'] },
+      { label: 'Settings',        href: '/dashboard/settings',        Icon: Gear,          color: 'var(--text-2)', roles: ['admin','manager'] },
     ],
   },
 ];
@@ -103,12 +101,10 @@ const PAGE_TITLES: Record<string, string> = {
   '/dashboard/inbox': 'Inbox',
   '/dashboard/chat': 'Chat',
   '/dashboard/time-tracking': 'Time Tracking',
-  '/dashboard/goals': 'Goals & OKRs',
   '/dashboard/content': 'Content Planner',
   '/dashboard/ideas': 'Idea Bank',
   '/dashboard/campaigns': 'Ad Campaigns',
   '/dashboard/creative/design': 'Design Hub',
-  '/dashboard/creative/content': 'Content Team',
   '/dashboard/intelligence': 'Competitor Analysis',
   '/dashboard/intelligence/generate': 'AI Generator',
   '/dashboard/intelligence/campaign-builder': 'AI Campaign Builder',
@@ -194,7 +190,7 @@ function GlobalSearch({ onClose }: { onClose: () => void }) {
         onClick={e => e.stopPropagation()}
       >
         <div className="flex items-center gap-3 px-4 py-3" style={{ borderBottom: '1px solid var(--border)' }}>
-          <Search size={15} style={{ color: 'var(--text-3)', flexShrink: 0 }} />
+          <MagnifyingGlass size={15} style={{ color: 'var(--text-3)', flexShrink: 0 }} />
           <input
             autoFocus
             value={q}
@@ -245,7 +241,7 @@ function GlobalSearch({ onClose }: { onClose: () => void }) {
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { user, isAuthenticated, logout } = useAuthStore();
+  const { user, isAuthenticated, accessToken, logout } = useAuthStore();
   const { theme, toggle: toggleTheme } = useThemeStore();
   const [hydrated, setHydrated] = useState(false);
 
@@ -274,7 +270,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   useEffect(() => {
     if (!hydrated) return;
-    if (!isAuthenticated) router.replace('/');
+    if (!isAuthenticated) router.replace('/login');
   }, [hydrated, isAuthenticated, router]);
 
   useEffect(() => {
@@ -301,7 +297,20 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     return () => window.removeEventListener('keydown', handleKey);
   }, [gPressed, router]);
 
-  function handleLogout() { disconnectSocket(); logout(); router.replace('/'); }
+  async function handleLogout() {
+    disconnectSocket();
+    // Clear httpOnly refresh_token cookie on the backend
+    try {
+      const token = accessToken || (window as any).__TASKSDONE_AUTH_TOKEN__;
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.tasksdone.cloud/api'}/auth/logout`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+    } catch { /* ignore */ }
+    logout();
+    router.replace('/login');
+  }
 
   function isActive(href: string) {
     if (href === '/dashboard') return pathname === '/dashboard';
@@ -333,8 +342,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       className="flex-shrink-0 flex flex-col h-full overflow-hidden"
       style={{
         width: isMobile ? 224 : sidebarWidth,
-        background: 'var(--surface)',
-        borderRight: '1px solid var(--border)',
+        background: 'var(--sidebar-bg, var(--surface))',
+        borderRight: '1px solid var(--sidebar-border, var(--border))',
         transition: 'width 0.2s ease',
       }}
     >
@@ -373,7 +382,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             className="w-full flex items-center gap-2 px-3 h-8 rounded-lg text-sm transition"
             style={{ background: 'var(--card)', color: 'var(--text-2)', border: '1px solid var(--border)' }}
           >
-            <Search size={12} style={{ flexShrink: 0 }} />
+            <MagnifyingGlass size={12} style={{ flexShrink: 0 }} />
             <span className="flex-1 text-left text-xs">Search…</span>
             <kbd className="text-[10px] px-1 rounded" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-3)' }}>⌘K</kbd>
           </button>
@@ -386,7 +395,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             style={{ background: 'var(--card)', color: 'var(--text-2)', border: '1px solid var(--border)' }}
             title="Search (⌘K)"
           >
-            <Search size={14} />
+            <MagnifyingGlass size={14} />
           </button>
         </div>
       )}
@@ -426,7 +435,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             )}
             {/* Section label — hidden when collapsed */}
             {(!collapsed || isMobile) && (
-              <p className="text-[10px] font-bold tracking-widest uppercase px-3 py-1" style={{ color: 'var(--text-3)' }}>
+              <p className="text-[10px] font-bold tracking-widest uppercase px-3 py-1" style={{ color: 'var(--sidebar-section-text, var(--text-3))' }}>
                 {section.label}
               </p>
             )}
@@ -445,7 +454,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                       height: 32,
                       background: active ? `color-mix(in srgb, ${item.color} 12%, transparent)` : 'transparent',
                       borderLeft: active ? `2px solid ${item.color}` : '2px solid transparent',
-                      color: active ? item.color : 'var(--text-3)',
+                      color: active ? item.color : 'var(--sidebar-section-text, var(--text-3))',
                       borderRadius: '0 8px 8px 0',
                       marginLeft: 0,
                       marginRight: 4,
@@ -468,7 +477,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     paddingRight: 8,
                     background: active ? `color-mix(in srgb, ${item.color} 12%, transparent)` : 'transparent',
                     borderLeft: active ? `2px solid ${item.color}` : '2px solid transparent',
-                    color: active ? item.color : undefined,
+                    color: active ? item.color : 'var(--sidebar-text, var(--text-2))',
                     borderRadius: '0 8px 8px 0',
                     marginLeft: 0,
                     marginRight: 4,
@@ -479,12 +488,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     className="w-5 h-5 flex-shrink-0 flex items-center justify-center rounded"
                     style={{
                       background: active ? `color-mix(in srgb, ${item.color} 15%, transparent)` : 'transparent',
-                      color: active ? item.color : 'var(--text-3)',
+                      color: active ? item.color : 'var(--sidebar-icon, var(--text-3))',
                     }}
                   >
                     <item.Icon size={15} />
                   </span>
-                  <span style={{ color: active ? item.color : undefined }}>{item.label}</span>
+                  <span style={{ color: active ? item.color : 'var(--sidebar-text, var(--text-2))' }}>{item.label}</span>
                 </Link>
               );
             })}
@@ -503,7 +512,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           style={{ color: 'var(--text-3)', borderTop: '1px solid var(--border)' }}
           title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
-          {collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+          {collapsed ? <CaretRight size={14} /> : <CaretLeft size={14} />}
         </button>
       )}
 
@@ -523,7 +532,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               style={{ color: 'var(--text-2)', background: 'var(--border)' }}
               title="Sign out"
             >
-              <LogOut size={12} />
+              <SignOut size={12} />
             </button>
           </div>
         </div>
@@ -542,11 +551,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   );
 
   const bottomNavItems = [
-    { Icon: LayoutDashboard, label: 'Home',     href: '/dashboard' },
-    { Icon: CheckSquare,     label: 'Tasks',    href: '/dashboard/tasks' },
-    { Icon: FolderKanban,    label: 'Projects', href: '/dashboard/projects' },
-    { Icon: MessageSquare,   label: 'Chat',     href: '/dashboard/chat' },
-    { Icon: Menu,            label: 'More',     href: '', action: () => setSidebarOpen(true) },
+    { Icon: House,       label: 'Home',     href: '/dashboard' },
+    { Icon: CheckSquare, label: 'Tasks',    href: '/dashboard/tasks' },
+    { Icon: Kanban,      label: 'Projects', href: '/dashboard/projects' },
+    { Icon: ChatCircle,  label: 'Chat',     href: '/dashboard/chat' },
+    { Icon: List,        label: 'More',     href: '', action: () => setSidebarOpen(true) },
   ];
 
   return (
@@ -576,21 +585,21 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden" style={{ transition: 'width 0.2s ease' }}>
         {/* Mobile topbar */}
-        <header className="md:hidden flex items-center justify-between px-4 h-14 flex-shrink-0" style={{ background: 'var(--surface)', borderBottom: '1px solid var(--border)' }}>
+        <header className="md:hidden flex items-center justify-between px-4 h-14 flex-shrink-0" style={{ background: 'var(--topbar-bg, var(--surface))', borderBottom: '1px solid var(--topbar-border, var(--border))', boxShadow: 'var(--shadow-sm)' }}>
           <button onClick={() => setSidebarOpen(true)} className="p-2 transition" style={{ color: 'var(--text-2)' }}>
-            <Menu size={20} />
+            <List size={20} />
           </button>
           <span className="font-bold text-base gradient-text tracking-tight">TasksDone</span>
           <div className="flex items-center gap-1">
             <button onClick={() => setSearchOpen(true)} className="p-2 transition" style={{ color: 'var(--text-2)' }}>
-              <Search size={16} />
+              <MagnifyingGlass size={16} />
             </button>
             <NotificationBell />
           </div>
         </header>
 
         {/* Desktop topbar */}
-        <header className="hidden md:flex items-center justify-between px-6 h-12 flex-shrink-0" style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface)' }}>
+        <header className="hidden md:flex items-center justify-between px-6 h-12 flex-shrink-0" style={{ borderBottom: '1px solid var(--topbar-border, var(--border))', background: 'var(--topbar-bg, var(--surface))', boxShadow: 'var(--shadow-sm)' }}>
           <h1 className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{pageTitle}</h1>
           <div className="flex items-center gap-2">
             <button
@@ -598,7 +607,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               className="flex items-center gap-2 px-3 h-7 rounded-lg text-xs transition"
               style={{ background: 'var(--card)', color: 'var(--text-2)', border: '1px solid var(--border)' }}
             >
-              <Search size={12} /><span>Search</span><kbd className="text-[10px] px-1 rounded" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-3)' }}>⌘K</kbd>
+              <MagnifyingGlass size={12} /><span>Search</span><kbd className="text-[10px] px-1 rounded" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-3)' }}>⌘K</kbd>
             </button>
             <NotificationBell />
             <Avatar name={user?.name || '?'} size={26} />

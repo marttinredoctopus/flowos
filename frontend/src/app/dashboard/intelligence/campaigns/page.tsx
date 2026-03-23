@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import { Sparkles, ChevronDown, ChevronUp, Rocket } from 'lucide-react';
+import { Sparkle, CaretDown, CaretUp, Rocket } from '@phosphor-icons/react';
 import apiClient from '@/lib/apiClient';
 import toast from 'react-hot-toast';
 
@@ -47,7 +47,7 @@ export default function CampaignGeneratorPage() {
     <div className="p-6 max-w-5xl mx-auto">
       <div className="flex items-center gap-3 mb-6">
         <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'var(--amber-2)' }}>
-          <Sparkles size={18} style={{ color: 'var(--amber)' }} />
+          <Sparkle size={18} style={{ color: 'var(--amber)' }} />
         </div>
         <div>
           <h1 className="text-xl font-bold" style={{ color: 'var(--text)' }}>Campaign Idea Generator</h1>
@@ -166,8 +166,8 @@ export default function CampaignGeneratorPage() {
                       <p className="text-xs italic" style={{ color: 'var(--text-2)' }}>{concept.tagline}</p>
                     </div>
                     {expandedConcept === i
-                      ? <ChevronUp size={16} style={{ color: 'var(--text-3)' }} />
-                      : <ChevronDown size={16} style={{ color: 'var(--text-3)' }} />}
+                      ? <CaretUp size={16} style={{ color: 'var(--text-3)' }} />
+                      : <CaretDown size={16} style={{ color: 'var(--text-3)' }} />}
                   </button>
 
                   {expandedConcept === i && (
@@ -224,7 +224,7 @@ export default function CampaignGeneratorPage() {
           ) : (
             <div className="h-full min-h-64 flex items-center justify-center rounded-xl border-2 border-dashed p-8" style={{ borderColor: 'var(--border)' }}>
               <div className="text-center">
-                <Sparkles size={40} className="mx-auto mb-4" style={{ color: 'var(--text-3)' }} />
+                <Sparkle size={40} className="mx-auto mb-4" style={{ color: 'var(--text-3)' }} />
                 <p className="text-sm" style={{ color: 'var(--text-2)' }}>Fill in the brief and Claude AI will generate 3 complete campaign concepts</p>
               </div>
             </div>

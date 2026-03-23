@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import { TrendingUp, Search, History, Plus, ChevronRight, Zap, Building2 } from 'lucide-react';
+import { TrendUp, MagnifyingGlass, ClockCounterClockwise, Plus, CaretRight, Lightning, Buildings } from '@phosphor-icons/react';
 import apiClient from '@/lib/apiClient';
 import toast from 'react-hot-toast';
 
@@ -11,14 +11,14 @@ export default function IntelligencePage() {
   const [form, setForm] = useState({ brandName: '', industry: '', competitors: ['', '', ''], analysisTypes: ANALYSIS_TYPES });
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
-  const [history, setHistory] = useState<any[]>([]);
+  const [history, setClockCounterClockwise] = useState<any[]>([]);
   const [histLoading, setHistLoading] = useState(false);
 
-  async function loadHistory() {
+  async function loadClockCounterClockwise() {
     setHistLoading(true);
     try {
       const r = await apiClient.get('/intelligence/competitor-analyses');
-      setHistory(r.data);
+      setClockCounterClockwise(r.data);
     } catch {} finally { setHistLoading(false); }
   }
 
@@ -55,7 +55,7 @@ export default function IntelligencePage() {
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
         <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'var(--emerald-2)' }}>
-          <TrendingUp size={18} style={{ color: 'var(--emerald)' }} />
+          <TrendUp size={18} style={{ color: 'var(--emerald)' }} />
         </div>
         <div>
           <h1 className="text-xl font-bold" style={{ color: 'var(--text)' }}>Competitor Analysis</h1>
@@ -65,8 +65,8 @@ export default function IntelligencePage() {
 
       {/* Tabs */}
       <div className="flex gap-2 mb-6 p-1 rounded-xl w-fit" style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
-        {([['analyze', 'New Analysis', Search], ['history', 'History', History]] as const).map(([key, label, Icon]) => (
-          <button key={key} onClick={() => { setTab(key as any); if (key === 'history') loadHistory(); }}
+        {([['analyze', 'New Analysis', MagnifyingGlass], ['history', 'ClockCounterClockwise', ClockCounterClockwise]] as const).map(([key, label, Icon]) => (
+          <button key={key} onClick={() => { setTab(key as any); if (key === 'history') loadClockCounterClockwise(); }}
             className="flex items-center gap-2 px-4 py-1.5 rounded-lg text-sm font-medium transition"
             style={{
               background: tab === key ? 'var(--indigo-2)' : 'transparent',
@@ -138,7 +138,7 @@ export default function IntelligencePage() {
                   Analyzing with Claude AI…
                 </>
               ) : (
-                <><TrendingUp size={14} /> Run Analysis</>
+                <><TrendUp size={14} /> Run Analysis</>
               )}
             </button>
           </form>
@@ -177,7 +177,7 @@ export default function IntelligencePage() {
                 {result.competitors?.map((comp: any, i: number) => (
                   <div key={i} className="rounded-xl p-4" style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
                     <h3 className="text-sm font-semibold mb-3 flex items-center gap-2" style={{ color: 'var(--text)' }}>
-                      <Building2 size={14} style={{ color: 'var(--text-2)' }} />{comp.name}
+                      <Buildings size={14} style={{ color: 'var(--text-2)' }} />{comp.name}
                     </h3>
                     <div className="grid grid-cols-2 gap-3 text-xs">
                       <div>
@@ -207,7 +207,7 @@ export default function IntelligencePage() {
                     <ul className="space-y-2">
                       {result.recommendations.map((r: string, i: number) => (
                         <li key={i} className="flex gap-2 text-sm" style={{ color: 'var(--text-2)' }}>
-                          <ChevronRight size={14} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--indigo)' }} />{r}
+                          <CaretRight size={14} className="flex-shrink-0 mt-0.5" style={{ color: 'var(--indigo)' }} />{r}
                         </li>
                       ))}
                     </ul>
@@ -218,7 +218,7 @@ export default function IntelligencePage() {
                 {result.quick_wins?.length > 0 && (
                   <div className="rounded-xl p-4" style={{ background: 'var(--emerald-2)', border: '1px solid var(--emerald)' }}>
                     <h3 className="text-sm font-semibold mb-3 flex items-center gap-2" style={{ color: 'var(--emerald)' }}>
-                      <Zap size={14} /> Quick Wins
+                      <Lightning size={14} /> Quick Wins
                     </h3>
                     <ul className="space-y-1">
                       {result.quick_wins.map((q: string, i: number) => (
@@ -233,7 +233,7 @@ export default function IntelligencePage() {
             ) : (
               <div className="h-full min-h-64 flex items-center justify-center rounded-xl border-2 border-dashed p-8" style={{ borderColor: 'var(--border)' }}>
                 <div className="text-center">
-                  <TrendingUp size={40} className="mx-auto mb-4" style={{ color: 'var(--text-3)' }} />
+                  <TrendUp size={40} className="mx-auto mb-4" style={{ color: 'var(--text-3)' }} />
                   <p className="text-sm" style={{ color: 'var(--text-2)' }}>Fill in the form and run your analysis to see AI-powered competitive insights here</p>
                 </div>
               </div>
@@ -250,7 +250,7 @@ export default function IntelligencePage() {
             </div>
           ) : history.length === 0 ? (
             <div className="text-center py-16 rounded-xl border-2 border-dashed" style={{ borderColor: 'var(--border)' }}>
-              <History size={40} className="mx-auto mb-3" style={{ color: 'var(--text-3)' }} />
+              <ClockCounterClockwise size={40} className="mx-auto mb-3" style={{ color: 'var(--text-3)' }} />
               <p style={{ color: 'var(--text-2)' }}>No analyses yet. Run your first one!</p>
               <button onClick={() => setTab('analyze')} className="mt-4 px-4 h-9 rounded-lg text-sm font-semibold text-white" style={{ background: 'var(--grad-primary)' }}>
                 Start Analysis

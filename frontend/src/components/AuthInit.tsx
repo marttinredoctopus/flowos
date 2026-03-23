@@ -23,7 +23,15 @@ export function AuthInit() {
           method: 'POST',
           credentials: 'include',
         });
-        if (!res.ok) throw new Error('refresh failed');
+        if (!res.ok) {
+          // Only logout on auth errors (expired/revoked session)
+          // Ignore server errors (5xx) or network failures
+          if (res.status === 401 || res.status === 403) {
+            logout();
+            disconnectSocket();
+          }
+          return;
+        }
         const data = await res.json();
         const token = data.accessToken || data.data?.accessToken;
         if (token && user) {
@@ -45,8 +53,7 @@ export function AuthInit() {
           }
         }
       } catch {
-        logout();
-        disconnectSocket();
+        // Network error — keep the user logged in; silentRefresh will retry
       }
     }
 

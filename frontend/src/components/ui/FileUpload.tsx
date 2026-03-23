@@ -1,6 +1,6 @@
 'use client';
 import { useState, useRef, DragEvent } from 'react';
-import { Upload, File, Image, FileText, Loader2 } from 'lucide-react';
+import { UploadSimple, File, Image, FileText, CircleNotch } from '@phosphor-icons/react';
 
 export interface UploadedFile {
   url:      string;
@@ -118,8 +118,8 @@ export function FileUpload({
           style={{ background: 'var(--card)', border: '1px solid var(--border-hover)', color: 'var(--text-2)' }}
         >
           {uploading
-            ? <><Loader2 size={12} className="animate-spin" /> {progress}%</>
-            : <><Upload size={12} /> {label}</>}
+            ? <><CircleNotch size={12} className="animate-spin" /> {progress}%</>
+            : <><UploadSimple size={12} /> {label}</>}
         </button>
       </>
     );
@@ -144,7 +144,7 @@ export function FileUpload({
       >
         {uploading ? (
           <div>
-            <Loader2 size={28} className="mx-auto mb-2 animate-spin" style={{ color: 'var(--indigo)' }} />
+            <CircleNotch size={28} className="mx-auto mb-2 animate-spin" style={{ color: 'var(--indigo)' }} />
             <p className="text-sm mb-2" style={{ color: 'var(--text-2)' }}>Uploading to cloud… {progress}%</p>
             <div className="h-1.5 rounded-full mx-auto max-w-xs" style={{ background: 'var(--border)' }}>
               <div className="h-full rounded-full transition-all duration-200"
@@ -153,7 +153,7 @@ export function FileUpload({
           </div>
         ) : (
           <>
-            <Upload size={28} className="mx-auto mb-2"
+            <UploadSimple size={28} className="mx-auto mb-2"
               style={{ color: dragOver ? 'var(--indigo)' : 'var(--text-3)' }} />
             <p className="text-sm font-medium" style={{ color: dragOver ? 'var(--indigo)' : 'var(--text-2)' }}>
               {dragOver ? 'Drop to upload' : 'Drag & drop or click to upload'}

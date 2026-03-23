@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { Plus, FolderKanban, ChevronRight, Trash2, Copy, Play, X } from 'lucide-react';
+import { Plus, Kanban, CaretRight, TrashSimple, Copy, Play, X } from '@phosphor-icons/react';
 import apiClient from '@/lib/apiClient';
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
@@ -327,7 +327,7 @@ export default function TemplatesPage() {
                   </div>
                 </div>
                 <button onClick={() => remove(tpl.id)} className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg hover:bg-white/5 transition text-slate-500 hover:text-red-400">
-                  <Trash2 size={13} />
+                  <TrashSimple size={13} />
                 </button>
               </div>
 

@@ -1,123 +1,122 @@
 'use client';
-export const dynamic = 'force-dynamic';
+import { useRouter } from 'next/navigation';
 import { LandingNav } from '@/components/landing/LandingNav';
 import { LandingFooter } from '@/components/landing/LandingFooter';
 
-const TEAM = [
-  { name: 'Karim Hassan', role: 'CEO & Co-Founder', bio: 'Former agency owner who ran a 20-person digital marketing firm for 8 years. Built TasksDone to solve his own problems.', initials: 'KH', color: '#6366f1' },
-  { name: 'Sara Nour', role: 'CTO & Co-Founder', bio: 'Full-stack engineer with 10+ years experience building SaaS products at scale. Previously at a Fortune 500 tech company.', initials: 'SN', color: '#8b5cf6' },
-  { name: 'Omar Adel', role: 'Head of Product', bio: 'Product designer and strategist. Former UX lead at a leading agency management platform.', initials: 'OA', color: '#06b6d4' },
-  { name: 'Lina Mostafa', role: 'Head of Customer Success', bio: 'Obsessed with making customers win. Has personally onboarded 500+ agency teams.', initials: 'LM', color: '#10b981' },
+const VALUES = [
+  { icon: '🎯', title: 'Built for agencies', desc: "Every feature is designed around how marketing agencies actually work. Not generic teams — agencies." },
+  { icon: '⚡', title: 'Simple over complex', desc: "We obsess over simplicity. If a feature makes things more complicated, we don't ship it." },
+  { icon: '💬', title: 'Customer-first', desc: 'Our roadmap is driven by customer feedback. Every feature request gets read by a founder.' },
+  { icon: '🔓', title: 'Transparent', desc: "We share our roadmap publicly. We're honest about pricing. No surprises, ever." },
 ];
 
-const VALUES = [
-  { title: 'Agency-first', desc: 'Every feature we build starts with a real agency problem. We don\'t build for enterprise software — we build for your Monday morning.' },
-  { title: 'Radical simplicity', desc: 'The best tools feel obvious. We remove complexity ruthlessly so your team can focus on work, not the tool.' },
-  { title: 'Speed over perfection', desc: 'We ship fast, listen to feedback, and iterate. You\'ll see new features every week — not every year.' },
-  { title: 'Customer obsession', desc: 'Every support ticket, every feature request, every frustration matters to us. We read every message.' },
+const TEAM = [
+  { name: 'Karim Hassan', role: 'CEO & Co-founder', color: 'linear-gradient(135deg,#0EA5E9,#2563EB)' },
+  { name: 'Sara Nour', role: 'CTO & Co-founder', color: 'linear-gradient(135deg,#7C3AED,#2563EB)' },
+  { name: 'Omar Adel', role: 'Head of Product', color: 'linear-gradient(135deg,#f59e0b,#f43f5e)' },
+  { name: 'Lina Mostafa', role: 'Head of Customer Success', color: 'linear-gradient(135deg,#10b981,#0EA5E9)' },
+];
+
+const STATS = [
+  { value: '2,400+', label: 'Agencies worldwide' },
+  { value: '40+', label: 'Countries' },
+  { value: '98.7%', label: 'Uptime SLA' },
+  { value: '< 3min', label: 'Avg. support response' },
 ];
 
 export default function AboutPage() {
+  const router = useRouter();
   return (
-    <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
+    <div style={{ background: '#060B18', minHeight: '100vh', color: 'white' }}>
       <LandingNav />
-      <div style={{ paddingTop: 100 }}>
 
-        {/* Hero */}
-        <section style={{ maxWidth: 800, margin: '0 auto', padding: '60px 24px 80px', textAlign: 'center' }}>
-          <span style={{ fontSize: 12, fontWeight: 700, color: '#6366f1', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Our Story</span>
-          <h1 style={{ fontSize: 'clamp(32px, 5vw, 52px)', fontWeight: 800, letterSpacing: '-0.035em', color: 'var(--text)', marginTop: 12, marginBottom: 20, lineHeight: 1.15 }}>
-            Built by agency people,<br />for agency people.
+      {/* Hero */}
+      <section style={{ padding: '120px 24px 80px', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', width: 700, height: 400, borderRadius: '50%', top: -100, left: '50%', transform: 'translateX(-50%)', background: 'radial-gradient(circle, rgba(37,99,235,0.1) 0%, transparent 70%)', pointerEvents: 'none' }} />
+        <div style={{ maxWidth: 760, margin: '0 auto', position: 'relative', zIndex: 1 }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 14px', borderRadius: 100, background: 'rgba(37,99,235,0.1)', border: '1px solid rgba(37,99,235,0.2)', fontSize: 12, color: '#60a5fa', fontWeight: 600, marginBottom: 20 }}>Our story</div>
+          <h1 style={{ fontFamily: 'var(--font-outfit,Outfit)', fontSize: 'clamp(36px,5vw,60px)', fontWeight: 900, letterSpacing: '-0.03em', marginBottom: 20, lineHeight: 1.1 }}>
+            Built by agency people,<br />for agency people
           </h1>
-          <p style={{ fontSize: 18, color: 'var(--text-2)', lineHeight: 1.75 }}>
-            TasksDone was born out of frustration. In 2022, our founder was running a 20-person digital agency and paying for 7 different tools — none of which talked to each other. Client data was scattered. Invoices lived in spreadsheets. The team never knew what was the priority. Sound familiar?
+          <p style={{ fontSize: 18, color: 'rgba(255,255,255,0.5)', maxWidth: 520, margin: '0 auto', lineHeight: 1.7 }}>
+            We got frustrated with juggling 6 tools to run our agency. So we built one platform that does it all.
           </p>
-        </section>
+        </div>
+      </section>
 
-        {/* Mission */}
-        <section style={{ background: 'rgba(99,102,241,0.04)', borderTop: '1px solid rgba(255,255,255,0.05)', borderBottom: '1px solid rgba(255,255,255,0.05)', padding: '64px 24px' }}>
-          <div style={{ maxWidth: 1100, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 40 }}>
-            {[
-              { label: 'Mission', icon: '🎯', text: 'Give every agency in the world the operating system they need to grow — without the enterprise complexity or the enterprise price.' },
-              { label: 'Vision', icon: '🔭', text: 'A world where running an agency is as simple as running a great product. Where tools help you scale, not slow you down.' },
-              { label: 'Promise', icon: '🤝', text: 'We\'ll always put your success first. If TasksDone doesn\'t help your agency grow, we haven\'t done our job.' },
-            ].map((item, i) => (
-              <div key={i} style={{ textAlign: 'center', padding: 24 }}>
-                <div style={{ fontSize: 40, marginBottom: 16 }}>{item.icon}</div>
-                <h3 style={{ fontSize: 20, fontWeight: 800, color: 'var(--text)', marginBottom: 12, letterSpacing: '-0.02em' }}>{item.label}</h3>
-                <p style={{ fontSize: 15, color: 'var(--text-2)', lineHeight: 1.7, margin: 0 }}>{item.text}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* The story */}
-        <section style={{ maxWidth: 760, margin: '0 auto', padding: '80px 24px' }}>
-          <h2 style={{ fontSize: 32, fontWeight: 800, color: 'var(--text)', letterSpacing: '-0.03em', marginBottom: 24 }}>How it started</h2>
-          <div style={{ fontSize: 16, color: 'var(--text-2)', lineHeight: 1.8 }}>
-            <p style={{ marginBottom: 20 }}>In early 2022, Karim was running a 20-person digital agency. Good clients, great team — but operations were a disaster. Asana for tasks, Notion for docs, Google Sheets for invoices, Loomly for content, HubSpot for clients, Slack for communication. Nothing talked to each other. Clients asked for updates, and he'd spend 30 minutes pulling data from 4 different places.</p>
-            <p style={{ marginBottom: 20 }}>He tried every tool on the market. None of them were built for agencies. They were either too simple (missing finance, client portals, campaign tracking) or too complex (enterprise software that took months to implement).</p>
-            <p style={{ marginBottom: 20 }}>So in Q3 2022, he teamed up with Sara (his longtime developer friend) to build what didn't exist: a single platform that handled everything an agency needs, designed specifically for how agencies actually work.</p>
-            <p>TasksDone launched publicly in early 2023. Within 6 months, 500 agencies had signed up. Today, we serve over 2,400 agencies across 40+ countries — and we're just getting started.</p>
-          </div>
-        </section>
-
-        {/* Values */}
-        <section style={{ background: 'rgba(0,0,0,0.2)', borderTop: '1px solid rgba(255,255,255,0.05)', borderBottom: '1px solid rgba(255,255,255,0.05)', padding: '80px 24px' }}>
-          <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-            <h2 style={{ fontSize: 32, fontWeight: 800, color: 'var(--text)', letterSpacing: '-0.03em', marginBottom: 40, textAlign: 'center' }}>What we stand for</h2>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 20 }}>
-              {VALUES.map((v, i) => (
-                <div key={i} style={{ padding: '24px', background: 'var(--card)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 14 }}>
-                  <h3 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text)', marginBottom: 10 }}>{v.title}</h3>
-                  <p style={{ fontSize: 14, color: 'var(--text-2)', lineHeight: 1.65, margin: 0 }}>{v.desc}</p>
-                </div>
-              ))}
+      {/* Stats */}
+      <section style={{ maxWidth: 900, margin: '0 auto', padding: '0 24px 80px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 20 }}>
+          {STATS.map(s => (
+            <div key={s.label} style={{ textAlign: 'center', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 16, padding: '28px 16px' }}>
+              <div style={{ fontFamily: 'var(--font-outfit,Outfit)', fontSize: 36, fontWeight: 900, background: 'linear-gradient(135deg,#0EA5E9,#2563EB)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', letterSpacing: '-0.03em', marginBottom: 8 }}>{s.value}</div>
+              <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)' }}>{s.label}</div>
             </div>
-          </div>
-        </section>
+          ))}
+        </div>
+      </section>
 
-        {/* Team */}
-        <section style={{ maxWidth: 1100, margin: '0 auto', padding: '80px 24px' }}>
-          <h2 style={{ fontSize: 32, fontWeight: 800, color: 'var(--text)', letterSpacing: '-0.03em', marginBottom: 40, textAlign: 'center' }}>Meet the team</h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 20 }}>
-            {TEAM.map((member, i) => (
-              <div key={i} style={{ padding: '28px 24px', background: 'var(--card)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 14, textAlign: 'center' }}>
-                <div style={{
-                  width: 64, height: 64, borderRadius: '50%', margin: '0 auto 16px',
-                  background: `${member.color}20`, border: `2px solid ${member.color}40`,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 20, fontWeight: 800, color: member.color,
-                }}>
-                  {member.initials}
-                </div>
-                <h3 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text)', marginBottom: 4 }}>{member.name}</h3>
-                <p style={{ fontSize: 12, color: member.color, fontWeight: 600, marginBottom: 12 }}>{member.role}</p>
-                <p style={{ fontSize: 13, color: 'var(--text-2)', lineHeight: 1.6, margin: 0 }}>{member.bio}</p>
-              </div>
-            ))}
-          </div>
-        </section>
+      {/* Story */}
+      <section style={{ maxWidth: 720, margin: '0 auto', padding: '0 24px 80px' }}>
+        <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 20, padding: '40px 48px' }}>
+          {[
+            'TasksDone was born out of frustration. Running a marketing agency means managing clients, campaigns, content, creative work, and billing — all at the same time.',
+            'We were using Trello for tasks, Notion for docs, Slack for chat, Harvest for time tracking, Google Sheets for reporting, and email for client updates. It was chaos. Context was constantly lost. Deadlines were missed. Clients were frustrated. We were burning out.',
+            'So in 2024, we decided to build the tool we always wished existed — an operating system built specifically for marketing agencies.',
+            'Today, TasksDone helps 2,400+ agencies worldwide run smarter, move faster, and grow stronger.',
+          ].map((p, i) => (
+            <p key={i} style={{ fontSize: 16, color: 'rgba(255,255,255,0.65)', lineHeight: 1.8, marginBottom: i < 3 ? 20 : 0 }}>{p}</p>
+          ))}
+        </div>
+      </section>
 
-        {/* Stats */}
-        <section style={{ background: 'rgba(99,102,241,0.05)', borderTop: '1px solid rgba(99,102,241,0.1)', padding: '64px 24px', textAlign: 'center' }}>
-          <div style={{ maxWidth: 900, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 32 }}>
-            {[
-              { value: '2,400+', label: 'Agencies worldwide' },
-              { value: '40+', label: 'Countries' },
-              { value: '98.7%', label: 'Uptime SLA' },
-              { value: '< 3min', label: 'Avg. support response' },
-            ].map((stat, i) => (
-              <div key={i}>
-                <div style={{ fontSize: 36, fontWeight: 800, background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', letterSpacing: '-0.03em' }}>
-                  {stat.value}
-                </div>
-                <div style={{ fontSize: 14, color: 'var(--text-2)', marginTop: 8 }}>{stat.label}</div>
-              </div>
-            ))}
-          </div>
-        </section>
-      </div>
+      {/* Mission */}
+      <section style={{ textAlign: 'center', padding: '0 24px 80px' }}>
+        <div style={{ maxWidth: 660, margin: '0 auto', background: 'rgba(37,99,235,0.06)', border: '1px solid rgba(37,99,235,0.2)', borderRadius: 20, padding: '40px 48px' }}>
+          <div style={{ fontSize: 11, fontWeight: 800, color: '#60a5fa', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 16 }}>Our Mission</div>
+          <p style={{ fontFamily: 'var(--font-outfit,Outfit)', fontSize: 22, fontWeight: 700, color: 'white', lineHeight: 1.6, letterSpacing: '-0.01em' }}>
+            &ldquo;To give every marketing agency — from 1-person freelancers to 100-person studios — the tools they need to do their best work.&rdquo;
+          </p>
+        </div>
+      </section>
+
+      {/* Values */}
+      <section style={{ maxWidth: 1000, margin: '0 auto', padding: '0 24px 80px' }}>
+        <h2 style={{ fontFamily: 'var(--font-outfit,Outfit)', fontSize: 36, fontWeight: 800, color: 'white', textAlign: 'center', marginBottom: 40, letterSpacing: '-0.02em' }}>What we believe</h2>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 20 }}>
+          {VALUES.map(v => (
+            <div key={v.title} style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 16, padding: '28px 24px' }}>
+              <div style={{ fontSize: 32, marginBottom: 14 }}>{v.icon}</div>
+              <h3 style={{ fontFamily: 'var(--font-outfit,Outfit)', fontSize: 18, fontWeight: 700, color: 'white', marginBottom: 10 }}>{v.title}</h3>
+              <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)', lineHeight: 1.7 }}>{v.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Team */}
+      <section style={{ maxWidth: 1000, margin: '0 auto', padding: '0 24px 80px', textAlign: 'center' }}>
+        <h2 style={{ fontFamily: 'var(--font-outfit,Outfit)', fontSize: 36, fontWeight: 800, color: 'white', marginBottom: 12, letterSpacing: '-0.02em' }}>A small team with big ambitions</h2>
+        <p style={{ color: 'rgba(255,255,255,0.4)', marginBottom: 40 }}>We&apos;re a distributed team passionate about building great software.</p>
+        <div style={{ display: 'flex', gap: 24, justifyContent: 'center', flexWrap: 'wrap' }}>
+          {TEAM.map(m => (
+            <div key={m.name} style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 16, padding: '32px 28px', width: 220, textAlign: 'center' }}>
+              <div style={{ width: 72, height: 72, borderRadius: '50%', background: m.color, margin: '0 auto 16px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, fontWeight: 800, color: 'white' }}>{m.name[0]}</div>
+              <div style={{ fontSize: 15, fontWeight: 700, color: 'white', marginBottom: 4 }}>{m.name}</div>
+              <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)' }}>{m.role}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section style={{ textAlign: 'center', padding: '60px 24px 100px' }}>
+        <h2 style={{ fontFamily: 'var(--font-outfit,Outfit)', fontSize: 36, fontWeight: 900, color: 'white', marginBottom: 12, letterSpacing: '-0.02em' }}>Join 2,400+ agencies running smarter</h2>
+        <button onClick={() => router.push('/register')} style={{ padding: '14px 32px', borderRadius: 12, border: 'none', background: 'linear-gradient(135deg,#0EA5E9,#2563EB)', color: 'white', fontSize: 16, fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 24px rgba(37,99,235,0.35)' }}>
+          Start for free →
+        </button>
+      </section>
+
       <LandingFooter />
     </div>
   );

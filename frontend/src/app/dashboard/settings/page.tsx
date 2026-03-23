@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import apiClient from '@/lib/apiClient';
 import toast from 'react-hot-toast';
 import { FileUpload } from '@/components/ui/FileUpload';
+import { PRICING } from '@/lib/pricing';
 
 type Tab = 'general' | 'profile' | 'team' | 'notifications' | 'appearance' | 'finance' | 'billing' | 'api' | 'webhooks' | 'danger';
 
@@ -477,9 +478,9 @@ function BillingTab() {
   const planDetails = billing?.plan_details || {};
 
   const PLANS_INFO = [
-    { id: 'starter', name: 'Starter', price_monthly: 0, price_annual: 0, color: '#6e7681', features: ['5 team members', '3 projects', '5 clients', 'Task & Kanban boards'] },
-    { id: 'pro', name: 'Pro', price_monthly: 49, price_annual: 39, color: '#4a9eff', features: ['25 team members', 'Unlimited projects & clients', 'Content Calendar', 'Ad Campaigns', 'Time Tracking & Invoices', 'Client Portal', 'AI Intelligence'] },
-    { id: 'enterprise', name: 'Enterprise', price_monthly: 149, price_annual: 119, color: '#7c6fe0', features: ['Unlimited everything', 'White-label branding', 'Public API + Webhooks', 'FB & Google Ads API', 'Dedicated support'] },
+    { id: 'free', name: PRICING.free.name, price_monthly: PRICING.free.price.monthly, price_annual: PRICING.free.price.annual, color: '#6e7681', features: [...PRICING.free.features] },
+    { id: 'pro', name: PRICING.pro.name, price_monthly: PRICING.pro.price.monthly, price_annual: PRICING.pro.price.annual, color: '#4a9eff', features: [...PRICING.pro.features] },
+    { id: 'agency', name: PRICING.agency.name, price_monthly: PRICING.agency.price.monthly, price_annual: PRICING.agency.price.annual, color: '#7c6fe0', features: [...PRICING.agency.features] },
   ];
 
   return (

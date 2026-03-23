@@ -7,9 +7,9 @@ import { useOnboarding } from '@/context/onboardingContext';
 import apiClient from '@/lib/apiClient';
 import toast from 'react-hot-toast';
 import {
-  ArrowRight, ArrowLeft, Zap, Users, Sparkles,
-  Rocket, CheckCircle2, Copy, Check,
-} from 'lucide-react';
+  ArrowRight, ArrowLeft, Lightning, Users, Sparkle,
+  Rocket, CheckCircle, Copy, Check,
+} from '@phosphor-icons/react';
 import Step2Agency from './steps/Step2Agency';
 
 const TOTAL_STEPS = 7;
@@ -165,7 +165,7 @@ export default function OnboardingFlow() {
         <div style={{ textAlign: 'center', marginBottom: 28 }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
             <div style={{ width: 30, height: 30, borderRadius: 8, background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Zap size={15} color="#fff" fill="#fff" />
+              <Lightning size={15} color="#fff" fill="#fff" />
             </div>
             <span style={{ fontSize: 17, fontWeight: 800, color: '#f1f2f9', letterSpacing: '-0.03em' }}>
               Tasks<span style={{ background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Done</span>
@@ -335,7 +335,7 @@ export default function OnboardingFlow() {
                     <button onClick={generateAI} disabled={aiLoading} style={{ ...btnPrimary, marginBottom: 12 }}>
                       {aiLoading
                         ? <><span style={{ width: 16, height: 16, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.8s linear infinite', display: 'inline-block' }} /> Generating...</>
-                        : <><Sparkles size={16} /> Generate Campaign Plan</>
+                        : <><Sparkle size={16} /> Generate Campaign Plan</>
                       }
                     </button>
                     <div style={{ display: 'flex', gap: 10 }}>
@@ -359,7 +359,7 @@ export default function OnboardingFlow() {
                       <p style={{ fontSize: 11, color: '#10b981', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 12 }}>✅ Suggested Tasks</p>
                       {aiResult.tasks.map((t, i) => (
                         <div key={i} style={{ display: 'flex', gap: 10, padding: '6px 0', borderBottom: i < aiResult.tasks.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}>
-                          <CheckCircle2 size={13} color="#10b981" style={{ flexShrink: 0, marginTop: 2 }} />
+                          <CheckCircle size={13} color="#10b981" style={{ flexShrink: 0, marginTop: 2 }} />
                           <span style={{ fontSize: 13, color: '#c9d1d9', lineHeight: 1.5 }}>{t}</span>
                         </div>
                       ))}

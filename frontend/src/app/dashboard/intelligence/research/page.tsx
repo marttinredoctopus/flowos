@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
-import { Plus, Send, Bot, Trash2 } from 'lucide-react';
+import { Plus, PaperPlaneTilt, Robot, TrashSimple } from '@phosphor-icons/react';
 import apiClient from '@/lib/apiClient';
 import toast from 'react-hot-toast';
 import { Avatar } from '@/components/ui/Avatar';
@@ -161,7 +161,7 @@ export default function MarketResearchPage() {
               <button onClick={e => deleteConversation(c.id, e)}
                 className="opacity-0 group-hover:opacity-100 p-0.5 rounded transition flex-shrink-0 ml-1"
                 style={{ color: 'var(--rose)' }}>
-                <Trash2 size={11} />
+                <TrashSimple size={11} />
               </button>
             </button>
           ))}
@@ -179,7 +179,7 @@ export default function MarketResearchPage() {
           {messages.length === 0 && (
             <div className="flex flex-col items-center justify-center h-full text-center py-12">
               <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4" style={{ background: 'var(--indigo-2)' }}>
-                <Bot size={26} style={{ color: 'var(--indigo)' }} />
+                <Robot size={26} style={{ color: 'var(--indigo)' }} />
               </div>
               <p className="font-semibold mb-1" style={{ color: 'var(--text)' }}>Marketing Strategy Assistant</p>
               <p className="text-sm max-w-md" style={{ color: 'var(--text-2)' }}>Ask me about market sizing, competitor strategies, content ideas, campaign concepts, or any marketing challenge.</p>
@@ -199,7 +199,7 @@ export default function MarketResearchPage() {
             <div key={i} className={`flex gap-3 ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
               {m.role === 'assistant' && (
                 <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-1" style={{ background: 'var(--indigo-2)' }}>
-                  <Bot size={14} style={{ color: 'var(--indigo)' }} />
+                  <Robot size={14} style={{ color: 'var(--indigo)' }} />
                 </div>
               )}
               <div
@@ -251,7 +251,7 @@ export default function MarketResearchPage() {
             >
               {loading
                 ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                : <Send size={14} />}
+                : <PaperPlaneTilt size={14} />}
             </button>
           </div>
           <p className="text-[10px] text-center mt-1" style={{ color: 'var(--text-3)' }}>Shift+Enter for new line · Enter to send</p>

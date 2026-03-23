@@ -1,147 +1,133 @@
 'use client';
-export const dynamic = 'force-dynamic';
+import { useRouter } from 'next/navigation';
 import { LandingNav } from '@/components/landing/LandingNav';
 import { LandingFooter } from '@/components/landing/LandingFooter';
-import { CheckCircle2, Target, Users, Megaphone, CreditCard, Brain, Clock, FileText, Shield, BarChart3, Zap, Globe } from 'lucide-react';
+import {
+  Kanban, CalendarDots, TrendUp, Timer, Buildings, Sparkle,
+  ChatCircle, PaintBrush, CheckCircle,
+} from '@phosphor-icons/react';
 
 const FEATURES = [
   {
-    category: 'Project & Task Management',
-    color: '#6366f1',
-    icon: <Target size={28} color="#6366f1" />,
-    items: [
-      { title: 'Kanban & List Boards', desc: 'Visualize work with drag-and-drop kanban boards or structured list views. Switch between views instantly.' },
-      { title: 'Task Assignment & Due Dates', desc: 'Assign tasks to team members, set deadlines, and track completion status in real time.' },
-      { title: 'Sprint Planning', desc: 'Organize tasks into sprints, set sprint goals, and track velocity across your team.' },
-      { title: 'Subtasks & Dependencies', desc: 'Break large tasks into subtasks. Set task dependencies to ensure work flows in the right order.' },
-      { title: 'Time Tracking', desc: 'Log time directly on tasks. Generate time reports and bill clients accurately.' },
-    ],
+    icon: Kanban, color: '#2563EB', iconBg: 'rgba(37,99,235,0.12)',
+    title: 'Tasks that actually get done',
+    desc: 'From simple to-dos to complex multi-step campaigns — TasksDone handles it all with multiple views and powerful automation.',
+    bullets: ['Kanban, List, Calendar, and Timeline views', 'Drag-and-drop with priorities and due dates', '@mentions and real-time comments', 'Recurring tasks and templates'],
   },
   {
-    category: 'Client Management',
-    color: '#f43f5e',
-    icon: <Users size={28} color="#f43f5e" />,
-    items: [
-      { title: 'Client Profiles', desc: 'Store all client info — contacts, briefs, accounts, notes — in one organized place.' },
-      { title: 'Client Portal', desc: 'Give clients their own branded portal to view projects, tasks, files, and invoices.' },
-      { title: 'Client Communication Log', desc: 'Track every interaction with a client. Never lose context again.' },
-      { title: 'Client Folders', desc: 'Organize all files, assets, and documents per client with a clean folder structure.' },
-    ],
+    icon: CalendarDots, color: '#7C3AED', iconBg: 'rgba(124,58,237,0.12)',
+    title: 'Plan content across every platform',
+    desc: "See your entire content pipeline at a glance. Never miss a posting deadline again with visual scheduling and approval workflows.",
+    bullets: ['Schedule for Instagram, Facebook, TikTok, LinkedIn, X, YouTube', 'Visual calendar with drag-and-drop scheduling', 'Content approval workflow', 'Auto-reminders for upcoming deadlines'],
   },
   {
-    category: 'Campaign & Content',
-    color: '#06b6d4',
-    icon: <Megaphone size={28} color="#06b6d4" />,
-    items: [
-      { title: 'Ad Campaign Tracker', desc: 'Track Facebook, Google, and TikTok campaigns. Monitor budget, spend, and ROAS in one dashboard.' },
-      { title: 'Content Calendar', desc: 'Plan and schedule social media content with a drag-and-drop calendar. Never miss a posting day.' },
-      { title: 'Idea Bank', desc: 'Capture and organize creative ideas with tags, categories, and AI-powered inspiration.' },
-      { title: 'Campaign Builder', desc: 'Build full campaign plans with budgets, platforms, target audiences, and creative assets.' },
-    ],
+    icon: TrendUp, color: '#10b981', iconBg: 'rgba(16,185,129,0.12)',
+    title: 'Track campaigns, not spreadsheets',
+    desc: "Connect your ad accounts and monitor performance in real-time. Know what's working before your client asks.",
+    bullets: ['Live ROAS, CTR, CPC, and spend tracking', 'Multi-platform: Meta, Google, TikTok Ads', 'Budget alerts and performance notifications', 'Automated weekly reports'],
   },
   {
-    category: 'Finance & Invoicing',
-    color: '#10b981',
-    icon: <CreditCard size={28} color="#10b981" />,
-    items: [
-      { title: 'Invoice Generation', desc: 'Create professional invoices in seconds. Send directly to clients via email or portal.' },
-      { title: 'Expense Tracking', desc: 'Log and categorize business expenses. Attach receipts and link to projects.' },
-      { title: 'Revenue Reports', desc: 'Track MRR, outstanding payments, and profit margins with real-time dashboards.' },
-      { title: 'Payment Reminders', desc: 'Automated reminders for overdue invoices. Stop chasing payments manually.' },
-    ],
+    icon: Timer, color: '#f59e0b', iconBg: 'rgba(245,158,11,0.12)',
+    title: 'Track time. Get paid faster.',
+    desc: 'Know exactly how profitable each project is and bill clients with one click. No more forgotten hours.',
+    bullets: ['One-click timers linked to projects and tasks', 'Automatic billable hours calculation', 'Professional invoice generation and sending', 'Payment tracking and reminders'],
   },
   {
-    category: 'AI Intelligence',
-    color: '#8b5cf6',
-    icon: <Brain size={28} color="#8b5cf6" />,
-    items: [
-      { title: 'AI Campaign Builder', desc: 'Describe your goal and AI generates a complete campaign plan with tasks, copy, and strategy.' },
-      { title: 'Competitor Analysis', desc: 'Analyze competitor ad strategies and content. Know what\'s working in your market.' },
-      { title: 'AI Content Generator', desc: 'Generate ad copy, email templates, social posts, and proposals in seconds.' },
-      { title: 'Intelligent Alerts', desc: 'AI surfaces overdue tasks, at-risk projects, and revenue insights before they become problems.' },
-    ],
+    icon: Buildings, color: '#0EA5E9', iconBg: 'rgba(14,165,233,0.12)',
+    title: 'Clients love the portal',
+    desc: 'Give every client their own branded space to stay updated without endless email chains.',
+    bullets: ['Unique secure login per client', 'Real-time project and task visibility', 'Deliverable approval with one click', 'Shared files and brand assets'],
   },
   {
-    category: 'Team & Collaboration',
-    color: '#f59e0b',
-    icon: <Users size={28} color="#f59e0b" />,
-    items: [
-      { title: 'Team Chat', desc: 'Real-time messaging with channels, direct messages, and task-linked threads.' },
-      { title: 'Role-Based Access', desc: 'Control what each team member can see and do. Admin, Team Member, and Client roles.' },
-      { title: 'File Sharing', desc: 'Upload and share files with your team and clients. Up to 1TB storage on Enterprise.' },
-      { title: 'Meeting Notes', desc: 'Record and summarize meetings. Link notes to projects and generate action items.' },
-    ],
+    icon: Sparkle, color: '#8b5cf6', iconBg: 'rgba(139,92,246,0.12)',
+    title: 'AI built for marketing agencies',
+    desc: 'Claude-powered AI that understands your industry and gives real, actionable insights.',
+    bullets: ['Competitor analysis with SWOT breakdown', 'Campaign idea generator with 3 concepts', 'Market research and trend reports', 'AI-powered task suggestions'],
+  },
+  {
+    icon: ChatCircle, color: '#f43f5e', iconBg: 'rgba(244,63,94,0.12)',
+    title: 'Chat where work happens',
+    desc: 'Project-linked conversations so context is never lost. Stop switching between Slack and your PM tool.',
+    bullets: ['Channels linked to projects and clients', 'Direct messages and group chats', 'File sharing and previews', 'Threaded replies and reactions'],
+  },
+  {
+    icon: PaintBrush, color: '#f97316', iconBg: 'rgba(249,115,22,0.12)',
+    title: 'Manage creative work beautifully',
+    desc: 'Upload, version, review, and approve creative assets in one place. Built for the way designers actually work.',
+    bullets: ['Upload designs with version history', 'Pinned feedback directly on designs', 'Brand guidelines and asset library', 'Client approval workflow'],
   },
 ];
 
 export default function FeaturesPage() {
+  const router = useRouter();
   return (
-    <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
+    <div style={{ background: '#060B18', minHeight: '100vh', color: 'white' }}>
       <LandingNav />
-      <div style={{ paddingTop: 100 }}>
-        {/* Hero */}
-        <section style={{ maxWidth: 900, margin: '0 auto', padding: '60px 24px 80px', textAlign: 'center' }}>
-          <span style={{ fontSize: 12, fontWeight: 700, color: '#6366f1', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Features</span>
-          <h1 style={{ fontSize: 'clamp(32px, 5vw, 56px)', fontWeight: 800, letterSpacing: '-0.035em', color: 'var(--text)', marginTop: 12, lineHeight: 1.15 }}>
-            Everything your agency needs.<br />
-            <span style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6, #06b6d4)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-              Nothing you don't.
-            </span>
+
+      {/* Hero */}
+      <section style={{ padding: '120px 24px 80px', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', width: 700, height: 500, borderRadius: '50%', top: -100, left: '50%', transform: 'translateX(-50%)', background: 'radial-gradient(circle, rgba(37,99,235,0.1) 0%, transparent 70%)', pointerEvents: 'none' }} />
+        <div style={{ maxWidth: 760, margin: '0 auto', position: 'relative', zIndex: 1 }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 14px', borderRadius: 100, background: 'rgba(37,99,235,0.1)', border: '1px solid rgba(37,99,235,0.2)', fontSize: 12, color: '#60a5fa', fontWeight: 600, marginBottom: 20 }}>
+            Everything included
+          </div>
+          <h1 style={{ fontFamily: 'var(--font-outfit,Outfit)', fontSize: 'clamp(36px,5vw,64px)', fontWeight: 900, letterSpacing: '-0.03em', color: 'white', marginBottom: 20, lineHeight: 1.1 }}>
+            Every tool your agency needs
           </h1>
-          <p style={{ fontSize: 18, color: 'var(--text-2)', marginTop: 20, lineHeight: 1.65, maxWidth: 600, margin: '20px auto 0' }}>
-            TasksDone replaces 5+ separate tools with one integrated platform. Here's everything included.
+          <p style={{ fontSize: 18, color: 'rgba(255,255,255,0.5)', maxWidth: 520, margin: '0 auto 32px', lineHeight: 1.7 }}>
+            TasksDone replaces 6 different tools with one powerful platform. Here&apos;s everything you get.
           </p>
-        </section>
+        </div>
+      </section>
 
-        {/* Feature categories */}
-        <section style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px 100px' }}>
-          {FEATURES.map((category, i) => (
-            <div key={i} style={{ marginBottom: 64 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 28, paddingBottom: 16, borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                <div style={{ width: 52, height: 52, borderRadius: 14, background: `${category.color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  {category.icon}
-                </div>
-                <h2 style={{ fontSize: 24, fontWeight: 800, color: 'var(--text)', letterSpacing: '-0.02em' }}>{category.category}</h2>
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 16 }}>
-                {category.items.map((item, j) => (
-                  <div key={j} style={{
-                    padding: '20px 22px', background: 'var(--card)', border: '1px solid rgba(255,255,255,0.07)',
-                    borderRadius: 12, transition: 'border-color 0.2s',
-                  }}
-                    onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.borderColor = `${category.color}40`}
-                    onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(255,255,255,0.07)'}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-                      <CheckCircle2 size={16} color={category.color} style={{ marginTop: 2, flexShrink: 0 }} />
-                      <div>
-                        <h3 style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)', marginBottom: 6 }}>{item.title}</h3>
-                        <p style={{ fontSize: 13, color: 'var(--text-2)', lineHeight: 1.6, margin: 0 }}>{item.desc}</p>
-                      </div>
-                    </div>
+      {/* Features */}
+      <section style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px 100px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 80 }}>
+          {FEATURES.map((f, i) => {
+            const Icon = f.icon;
+            const isEven = i % 2 === 0;
+            return (
+              <div key={f.title} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 64, alignItems: 'center' }}>
+                {/* Text side */}
+                <div style={{ order: isEven ? 0 : 1 }}>
+                  <div style={{ width: 52, height: 52, borderRadius: 14, background: f.iconBg, border: `1px solid ${f.color}25`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
+                    <Icon size={26} weight="duotone" color={f.color} />
                   </div>
-                ))}
+                  <h2 style={{ fontFamily: 'var(--font-outfit,Outfit)', fontSize: 32, fontWeight: 800, color: 'white', letterSpacing: '-0.02em', marginBottom: 14, lineHeight: 1.2 }}>{f.title}</h2>
+                  <p style={{ fontSize: 16, color: 'rgba(255,255,255,0.5)', lineHeight: 1.75, marginBottom: 24 }}>{f.desc}</p>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    {f.bullets.map(b => (
+                      <div key={b} style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                        <CheckCircle size={16} weight="duotone" color={f.color} style={{ flexShrink: 0, marginTop: 2 }} />
+                        <span style={{ fontSize: 14, color: 'rgba(255,255,255,0.6)', lineHeight: 1.5 }}>{b}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                {/* Visual side */}
+                <div style={{ order: isEven ? 1 : 0, background: 'rgba(255,255,255,0.02)', border: `1px solid ${f.color}20`, borderRadius: 20, padding: 32, minHeight: 260, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
+                  <div style={{ position: 'absolute', width: 200, height: 200, borderRadius: '50%', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', background: `radial-gradient(circle, ${f.color}18 0%, transparent 70%)` }} />
+                  <Icon size={80} weight="duotone" color={f.color} style={{ opacity: 0.8 }} />
+                </div>
               </div>
-            </div>
-          ))}
-        </section>
+            );
+          })}
+        </div>
+      </section>
 
-        {/* CTA */}
-        <section style={{ background: 'rgba(99,102,241,0.05)', borderTop: '1px solid rgba(99,102,241,0.1)', padding: '64px 24px', textAlign: 'center' }}>
-          <h2 style={{ fontSize: 'clamp(24px, 3vw, 36px)', fontWeight: 800, color: 'var(--text)', letterSpacing: '-0.02em', marginBottom: 16 }}>
-            Ready to try everything?
-          </h2>
-          <p style={{ fontSize: 16, color: 'var(--text-2)', marginBottom: 32 }}>Start free. No credit card required.</p>
-          <a href="/register" style={{
-            display: 'inline-flex', alignItems: 'center', gap: 8,
-            padding: '13px 28px', borderRadius: 11, fontSize: 15, fontWeight: 600,
-            background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: '#fff',
-            textDecoration: 'none', boxShadow: '0 0 24px rgba(99,102,241,0.35)',
-          }}>
-            Start Free →
-          </a>
-        </section>
-      </div>
+      {/* CTA */}
+      <section style={{ textAlign: 'center', padding: '80px 24px', background: 'linear-gradient(180deg, #060B18 0%, #0A1628 100%)' }}>
+        <h2 style={{ fontFamily: 'var(--font-outfit,Outfit)', fontSize: 40, fontWeight: 900, color: 'white', letterSpacing: '-0.02em', marginBottom: 12 }}>
+          Ready to replace all your tools?
+        </h2>
+        <p style={{ fontSize: 16, color: 'rgba(255,255,255,0.4)', marginBottom: 32 }}>
+          Free 14-day trial · No credit card required
+        </p>
+        <button onClick={() => router.push('/register')} style={{ padding: '14px 32px', borderRadius: 12, border: 'none', background: 'linear-gradient(135deg,#0EA5E9,#2563EB)', color: 'white', fontSize: 16, fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 24px rgba(37,99,235,0.35)' }}>
+          Start for free →
+        </button>
+      </section>
+
       <LandingFooter />
     </div>
   );

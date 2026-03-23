@@ -1,9 +1,9 @@
 'use client';
-import { useEffect } from 'react';
+import { useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
 
-export default function GoogleCallbackPage() {
+function GoogleCallbackInner() {
   const router = useRouter();
   const params = useSearchParams();
   const { setAuth } = useAuthStore();
@@ -53,5 +53,18 @@ export default function GoogleCallbackPage() {
         <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 14 }}>Signing you in with Google…</p>
       </div>
     </div>
+  );
+}
+
+export default function GoogleCallbackPage() {
+  return (
+    <Suspense fallback={
+      <div style={{ minHeight: '100vh', background: '#07080f', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ width: 48, height: 48, borderRadius: '50%', border: '3px solid #6366f1', borderTopColor: 'transparent', animation: 'spin 0.8s linear infinite' }} />
+        <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+      </div>
+    }>
+      <GoogleCallbackInner />
+    </Suspense>
   );
 }

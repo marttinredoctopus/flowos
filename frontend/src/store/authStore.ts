@@ -28,6 +28,9 @@ export const useAuthStore = create<AuthState>()(
       setAuth: (user, accessToken) => {
         if (typeof window !== 'undefined') {
           (window as any).__TASKSDONE_AUTH_TOKEN__ = accessToken;
+          // Set session indicator cookie for middleware (frontend domain)
+          const secure = location.protocol === 'https:' ? '; Secure' : '';
+          document.cookie = `td_session=1; path=/; max-age=${30 * 24 * 3600}; SameSite=Lax${secure}`;
         }
         set({ user, accessToken, isAuthenticated: true });
       },
@@ -40,6 +43,8 @@ export const useAuthStore = create<AuthState>()(
       logout: () => {
         if (typeof window !== 'undefined') {
           (window as any).__TASKSDONE_AUTH_TOKEN__ = null;
+          // Clear session indicator cookie
+          document.cookie = 'td_session=; path=/; max-age=0';
         }
         set({ user: null, accessToken: null, isAuthenticated: false });
       },

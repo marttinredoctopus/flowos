@@ -1,21 +1,21 @@
 import type { Metadata, Viewport } from 'next';
-import { Outfit, Inter, JetBrains_Mono } from 'next/font/google';
+import { Plus_Jakarta_Sans, DM_Sans, JetBrains_Mono } from 'next/font/google';
 import { Toaster } from 'react-hot-toast';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { AuthInit } from '@/components/AuthInit';
 import './globals.css';
 
-const outfit = Outfit({
+const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ['latin'],
   weight: ['400', '500', '600', '700', '800'],
-  variable: '--font-outfit',
+  variable: '--font-display',
   display: 'swap',
 });
 
-const inter = Inter({
+const dmSans = DM_Sans({
   subsets: ['latin'],
-  weight: ['400', '500', '600', '700', '800'],
-  variable: '--font-inter',
+  weight: ['400', '500', '600'],
+  variable: '--font-body',
   display: 'swap',
 });
 
@@ -30,7 +30,7 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
-  themeColor: '#0EA5E9',
+  themeColor: '#7B68EE',
 };
 
 export const metadata: Metadata = {
@@ -54,7 +54,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${outfit.variable} ${inter.variable} ${jetbrainsMono.variable}`}>
+    <html lang="en" className={`${plusJakartaSans.variable} ${dmSans.variable} ${jetbrainsMono.variable}`}>
       <head>
         <link rel="icon" href="/favicon.ico" />
         {/* Prevent flash of wrong theme */}

@@ -335,27 +335,28 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   if (!isAuthenticated) return null;
 
-  const sidebarWidth = collapsed ? 56 : 224;
+  const sidebarWidth = collapsed ? 56 : 240;
 
   const SidebarContent = ({ isMobile = false }: { isMobile?: boolean }) => (
     <aside
       className="flex-shrink-0 flex flex-col h-full overflow-hidden"
       style={{
-        width: isMobile ? 224 : sidebarWidth,
+        width: isMobile ? 240 : sidebarWidth,
         background: 'var(--sidebar-bg, var(--surface))',
         borderRight: '1px solid var(--sidebar-border, var(--border))',
         transition: 'width 0.2s ease',
+        fontFamily: 'var(--font-body, "DM Sans"), sans-serif',
       }}
     >
       {/* Workspace header */}
       {(!collapsed || isMobile) ? (
-        <div className="flex items-center gap-3 px-4 py-4" style={{ borderBottom: '1px solid var(--border)' }}>
+        <div className="flex items-center gap-3 px-4" style={{ height: 56, borderBottom: '1px solid var(--sidebar-border, var(--border))' }}>
           <div className="w-8 h-8 rounded-xl flex items-center justify-center text-white font-bold text-sm flex-shrink-0" style={{ background: 'var(--grad-primary)' }}>
-            F
+            T
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold tracking-tight truncate" style={{ color: 'var(--text)' }}>TasksDone</p>
-            <p className="text-[10px]" style={{ color: 'var(--text-3)' }}>Agency Edition</p>
+            <p className="truncate" style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)', fontFamily: 'var(--font-display, "Plus Jakarta Sans"), sans-serif', letterSpacing: '-0.01em' }}>TasksDone</p>
+            <p style={{ fontSize: 10, color: 'var(--sidebar-section-text, var(--text-3))' }}>Agency Edition</p>
           </div>
           <button
             onClick={toggleTheme}
@@ -367,32 +368,32 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </button>
         </div>
       ) : (
-        <div className="flex items-center justify-center py-4" style={{ borderBottom: '1px solid var(--border)' }}>
+        <div className="flex items-center justify-center" style={{ height: 56, borderBottom: '1px solid var(--sidebar-border, var(--border))' }}>
           <div className="w-8 h-8 rounded-xl flex items-center justify-center text-white font-bold text-sm flex-shrink-0" style={{ background: 'var(--grad-primary)' }}>
-            F
+            T
           </div>
         </div>
       )}
 
       {/* Search bar */}
       {(!collapsed || isMobile) ? (
-        <div className="px-3 pt-3 pb-2">
+        <div className="px-3 pt-3 pb-1">
           <button
             onClick={() => setSearchOpen(true)}
-            className="w-full flex items-center gap-2 px-3 h-8 rounded-lg text-sm transition"
-            style={{ background: 'var(--card)', color: 'var(--text-2)', border: '1px solid var(--border)' }}
+            className="w-full flex items-center gap-2 px-3 rounded-lg transition"
+            style={{ height: 32, background: 'var(--bg-secondary, var(--card))', color: 'var(--sidebar-text, var(--text-2))', border: '1px solid var(--sidebar-border, var(--border))', fontSize: 13 }}
           >
             <MagnifyingGlass size={12} style={{ flexShrink: 0 }} />
-            <span className="flex-1 text-left text-xs">Search…</span>
-            <kbd className="text-[10px] px-1 rounded" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-3)' }}>⌘K</kbd>
+            <span className="flex-1 text-left" style={{ fontSize: 12 }}>Search…</span>
+            <kbd style={{ fontSize: 10, padding: '1px 4px', borderRadius: 4, background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-3)' }}>⌘K</kbd>
           </button>
         </div>
       ) : (
-        <div className="flex items-center justify-center pt-3 pb-2">
+        <div className="flex items-center justify-center pt-3 pb-1">
           <button
             onClick={() => setSearchOpen(true)}
             className="w-8 h-8 flex items-center justify-center rounded-lg transition"
-            style={{ background: 'var(--card)', color: 'var(--text-2)', border: '1px solid var(--border)' }}
+            style={{ background: 'var(--bg-secondary, var(--card))', color: 'var(--sidebar-text, var(--text-2))', border: '1px solid var(--sidebar-border, var(--border))' }}
             title="Search (⌘K)"
           >
             <MagnifyingGlass size={14} />
@@ -402,18 +403,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       {/* Create button */}
       {(!collapsed || isMobile) ? (
-        <div className="px-3 pb-3">
+        <div className="px-3 pb-2">
           <Link
             href="/dashboard/tasks?new=1"
-            className="w-full flex items-center justify-center gap-2 h-8 rounded-lg text-xs font-semibold text-white transition hover:opacity-90"
-            style={{ background: 'var(--grad-primary)' }}
+            className="w-full flex items-center justify-center gap-2 rounded-lg text-white transition hover:opacity-90"
+            style={{ height: 32, background: 'var(--grad-primary)', fontSize: 13, fontWeight: 600, fontFamily: 'var(--font-display, "Plus Jakarta Sans"), sans-serif' }}
           >
             <Plus size={13} />
             <span>Create</span>
           </Link>
         </div>
       ) : (
-        <div className="flex items-center justify-center pb-3">
+        <div className="flex items-center justify-center pb-2">
           <Link
             href="/dashboard/tasks?new=1"
             className="w-8 h-8 flex items-center justify-center rounded-lg text-white transition hover:opacity-90"
@@ -435,7 +436,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             )}
             {/* Section label — hidden when collapsed */}
             {(!collapsed || isMobile) && (
-              <p className="text-[10px] font-bold tracking-widest uppercase px-3 py-1" style={{ color: 'var(--sidebar-section-text, var(--text-3))' }}>
+              <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--sidebar-section-text, var(--text-3))', padding: '12px 12px 4px' }}>
                 {section.label}
               </p>
             )}
@@ -454,11 +455,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                       height: 32,
                       background: active ? `color-mix(in srgb, ${item.color} 12%, transparent)` : 'transparent',
                       borderLeft: active ? `2px solid ${item.color}` : '2px solid transparent',
-                      color: active ? item.color : 'var(--sidebar-section-text, var(--text-3))',
-                      borderRadius: '0 8px 8px 0',
+                      color: active ? item.color : 'var(--sidebar-icon, var(--text-3))',
+                      borderRadius: '0 6px 6px 0',
                       marginLeft: 0,
                       marginRight: 4,
-                      transition: 'width 0.2s ease, opacity 0.15s',
                     }}
                   >
                     <item.Icon size={15} />
@@ -471,29 +471,32 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   href={item.href}
                   onClick={() => setSidebarOpen(false)}
                   title={item.label}
-                  className="flex items-center gap-2.5 py-1.5 text-sm font-medium transition-all mb-0.5"
+                  className="flex items-center gap-2 transition-all mb-0.5"
                   style={{
+                    height: 32,
                     paddingLeft: 10,
                     paddingRight: 8,
+                    fontSize: 13.5,
+                    fontWeight: active ? 600 : 500,
                     background: active ? `color-mix(in srgb, ${item.color} 12%, transparent)` : 'transparent',
                     borderLeft: active ? `2px solid ${item.color}` : '2px solid transparent',
                     color: active ? item.color : 'var(--sidebar-text, var(--text-2))',
-                    borderRadius: '0 8px 8px 0',
+                    borderRadius: '0 6px 6px 0',
                     marginLeft: 0,
                     marginRight: 4,
-                    transition: 'width 0.2s ease, opacity 0.15s',
                   }}
                 >
                   <span
-                    className="w-5 h-5 flex-shrink-0 flex items-center justify-center rounded"
+                    className="flex-shrink-0 flex items-center justify-center rounded"
                     style={{
-                      background: active ? `color-mix(in srgb, ${item.color} 15%, transparent)` : 'transparent',
+                      width: 18,
+                      height: 18,
                       color: active ? item.color : 'var(--sidebar-icon, var(--text-3))',
                     }}
                   >
                     <item.Icon size={15} />
                   </span>
-                  <span style={{ color: active ? item.color : 'var(--sidebar-text, var(--text-2))' }}>{item.label}</span>
+                  <span>{item.label}</span>
                 </Link>
               );
             })}
@@ -599,8 +602,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </header>
 
         {/* Desktop topbar */}
-        <header className="topbar-dashboard hidden md:flex items-center justify-between px-6 h-12 flex-shrink-0" style={{ borderBottom: '1px solid var(--topbar-border, var(--border))', background: 'var(--topbar-bg, var(--surface))', boxShadow: 'var(--shadow-sm)' }}>
-          <h1 className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{pageTitle}</h1>
+        <header className="topbar-dashboard hidden md:flex items-center justify-between px-6 flex-shrink-0" style={{ height: 48, borderBottom: '1px solid var(--topbar-border, var(--border))', background: 'var(--topbar-bg, var(--surface))', boxShadow: 'var(--shadow-sm)' }}>
+          <h1 style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', fontFamily: 'var(--font-display, "Plus Jakarta Sans"), sans-serif', letterSpacing: '-0.01em' }}>{pageTitle}</h1>
           <div className="flex items-center gap-2">
             <button
               onClick={() => setSearchOpen(true)}

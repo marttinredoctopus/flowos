@@ -7,7 +7,6 @@ import {
   CaretDown, Star, Sparkle, CheckCircle, X,
   Kanban, CalendarDots, Receipt, TrendUp, Rocket, Users,
 } from '@phosphor-icons/react';
-import { LandingNav } from '@/components/landing/LandingNav';
 import { LandingFooter } from '@/components/landing/LandingFooter';
 import { PRICING } from '@/lib/pricing';
 
@@ -172,8 +171,6 @@ export default function LandingPage() {
           Get started →
         </button>
       </div>
-      <LandingNav />
-
       {/* ── HERO ─────────────────────────────────────────── */}
       <section style={{ paddingTop: 140, paddingBottom: 100, position: 'relative', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 80% 50% at 50% -10%,rgba(37,99,235,0.11),transparent)', pointerEvents: 'none' }} />

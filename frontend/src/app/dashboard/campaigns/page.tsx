@@ -65,6 +65,155 @@ function StatusBadge({ status }: { status: string }) {
   );
 }
 
+// ─── Score Ring ───────────────────────────────────────────────────────────────
+function ScoreRing({ score }: { score: number }) {
+  const color = score >= 80 ? '#10b981' : score >= 60 ? '#f59e0b' : '#ef4444';
+  const r = 28, circ = 2 * Math.PI * r;
+  const fill = (score / 100) * circ;
+  return (
+    <div style={{ position: 'relative', width: 72, height: 72 }}>
+      <svg width={72} height={72} style={{ transform: 'rotate(-90deg)' }}>
+        <circle cx={36} cy={36} r={r} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth={6} />
+        <circle cx={36} cy={36} r={r} fill="none" stroke={color} strokeWidth={6}
+          strokeDasharray={`${fill} ${circ - fill}`} strokeLinecap="round"
+          style={{ transition: 'stroke-dasharray 0.6s ease' }} />
+      </svg>
+      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
+        <span style={{ fontSize: 18, fontWeight: 800, color }}>{score}</span>
+      </div>
+    </div>
+  );
+}
+
+// ─── AI Report Modal ──────────────────────────────────────────────────────────
+function AIReportModal({ campaign, report, onClose }: { campaign: any; report: any; onClose: () => void }) {
+  const STATUS_COLOR: Record<string, string> = { good: '#10b981', warning: '#f59e0b', poor: '#ef4444', critical: '#ef4444' };
+  const IMPACT_BG: Record<string, string>   = { high: 'rgba(16,185,129,0.12)', medium: 'rgba(245,158,11,0.12)', low: 'rgba(107,114,128,0.12)' };
+  const IMPACT_C: Record<string, string>    = { high: '#10b981', medium: '#f59e0b', low: '#6b7280' };
+  const PRIORITY_C: Record<string, string>  = { high: '#ef4444', medium: '#f59e0b', low: '#6b7280' };
+
+  const gradeColor = report.overall_score >= 80 ? '#10b981' : report.overall_score >= 60 ? '#f59e0b' : '#ef4444';
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 60, padding: 16 }}>
+      <div style={{ background: '#0d0e14', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 20, width: '100%', maxWidth: 780, maxHeight: '90vh', overflowY: 'auto', padding: 28 }}>
+
+        {/* Header */}
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 24 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            <ScoreRing score={report.overall_score} />
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
+                <h2 style={{ fontSize: 18, fontWeight: 800, color: '#fff', margin: 0 }}>AI Campaign Analysis</h2>
+                <span style={{ fontSize: 22, fontWeight: 900, color: gradeColor }}>{report.overall_grade}</span>
+              </div>
+              <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', margin: 0 }}>{campaign.name}</p>
+            </div>
+          </div>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', fontSize: 20, lineHeight: 1, padding: 4 }}>✕</button>
+        </div>
+
+        {/* Summary */}
+        <div style={{ background: 'rgba(37,99,235,0.08)', border: '1px solid rgba(37,99,235,0.2)', borderRadius: 12, padding: '14px 16px', marginBottom: 20 }}>
+          <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.75)', lineHeight: 1.7, margin: 0 }}>{report.summary}</p>
+        </div>
+
+        {/* Performance Breakdown */}
+        <h3 style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: 10 }}>Performance Breakdown</h3>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(210px,1fr))', gap: 10, marginBottom: 20 }}>
+          {report.performance_breakdown && Object.entries(report.performance_breakdown).map(([key, val]: [string, any]) => (
+            <div key={key} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12, padding: '12px 14px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                <span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase' }}>{key}</span>
+                <span style={{ fontSize: 11, fontWeight: 700, color: STATUS_COLOR[val.status] || '#6b7280', background: `${STATUS_COLOR[val.status] || '#6b7280'}18`, padding: '2px 8px', borderRadius: 20 }}>{val.status}</span>
+              </div>
+              <div style={{ fontSize: 20, fontWeight: 800, color: STATUS_COLOR[val.status] || '#fff', marginBottom: 4 }}>{val.score}</div>
+              <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', margin: 0, lineHeight: 1.5 }}>{val.insight}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Strengths & Weaknesses */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 20 }}>
+          <div style={{ background: 'rgba(16,185,129,0.05)', border: '1px solid rgba(16,185,129,0.15)', borderRadius: 12, padding: '14px 16px' }}>
+            <h4 style={{ fontSize: 12, fontWeight: 700, color: '#10b981', textTransform: 'uppercase', letterSpacing: '0.6px', marginBottom: 10 }}>Strengths</h4>
+            {(report.strengths || []).map((s: string, i: number) => (
+              <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 7 }}>
+                <span style={{ color: '#10b981', fontSize: 12, flexShrink: 0 }}>✓</span>
+                <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.65)', margin: 0, lineHeight: 1.5 }}>{s}</p>
+              </div>
+            ))}
+          </div>
+          <div style={{ background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.15)', borderRadius: 12, padding: '14px 16px' }}>
+            <h4 style={{ fontSize: 12, fontWeight: 700, color: '#ef4444', textTransform: 'uppercase', letterSpacing: '0.6px', marginBottom: 10 }}>Weaknesses</h4>
+            {(report.weaknesses || []).map((w: string, i: number) => (
+              <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 7 }}>
+                <span style={{ color: '#ef4444', fontSize: 12, flexShrink: 0 }}>✗</span>
+                <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.65)', margin: 0, lineHeight: 1.5 }}>{w}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Quick Wins */}
+        {report.quick_wins?.length > 0 && (
+          <div style={{ marginBottom: 20 }}>
+            <h3 style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: 10 }}>Quick Wins</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {report.quick_wins.map((w: any, i: number) => (
+                <div key={i} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12, padding: '12px 16px', display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 4, flexShrink: 0 }}>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: IMPACT_C[w.impact] || '#6b7280', background: IMPACT_BG[w.impact] || 'transparent', padding: '2px 8px', borderRadius: 20, textTransform: 'uppercase' }}>{w.impact} impact</span>
+                    <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', textAlign: 'center' }}>{w.effort}</span>
+                  </div>
+                  <div>
+                    <p style={{ fontSize: 13, fontWeight: 700, color: '#fff', margin: '0 0 4px 0' }}>{w.action}</p>
+                    <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', margin: 0, lineHeight: 1.5 }}>{w.description}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Recommendations */}
+        {report.recommendations?.length > 0 && (
+          <div style={{ marginBottom: 20 }}>
+            <h3 style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: 10 }}>Recommendations</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {report.recommendations.map((r: any, i: number) => (
+                <div key={i} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12, padding: '12px 16px', display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: PRIORITY_C[r.priority] || '#6b7280', flexShrink: 0, marginTop: 6 }} />
+                  <div>
+                    <p style={{ fontSize: 13, fontWeight: 700, color: '#fff', margin: '0 0 3px 0' }}>{r.title}</p>
+                    <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', margin: 0, lineHeight: 1.5 }}>{r.description}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Predicted Improvement */}
+        {report.predicted_improvement && (
+          <div style={{ background: 'rgba(139,92,246,0.06)', border: '1px solid rgba(139,92,246,0.2)', borderRadius: 12, padding: '14px 16px', display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12 }}>
+            {[
+              { label: 'ROAS Increase',       value: report.predicted_improvement.roas_increase },
+              { label: 'Cost Reduction',       value: report.predicted_improvement.cost_reduction },
+              { label: 'Conversion Increase',  value: report.predicted_improvement.conversion_increase },
+            ].map(item => item.value ? (
+              <div key={item.label} style={{ textAlign: 'center' }}>
+                <p style={{ fontSize: 18, fontWeight: 800, color: '#a78bfa', margin: '0 0 4px 0' }}>{item.value}</p>
+                <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', margin: 0, textTransform: 'uppercase', letterSpacing: '0.6px' }}>{item.label}</p>
+              </div>
+            ) : null)}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ─── Share Modal ──────────────────────────────────────────────────────────────
 function ShareModal({ accounts, onClose, onCreated }: { accounts: any[]; onClose: () => void; onCreated: (s: any) => void }) {
   const [title, setTitle]       = useState('Campaign Report');
@@ -144,6 +293,11 @@ export default function CampaignsPage() {
   const [compForm, setCompForm]     = useState({ industry: '', competitors: '', platform: 'Meta' });
   const [compResult, setCompResult] = useState('');
   const [loadingComp, setLoadingComp] = useState(false);
+
+  // ── Meta Ads AI state ──
+  const [analyzing, setAnalyzing]         = useState<string | null>(null);
+  const [aiReport, setAiReport]           = useState<any | null>(null);
+  const [aiCampaign, setAiCampaign]       = useState<any | null>(null);
 
   // ── Meta Ads state ──
   const [metaAccounts, setMetaAccounts]   = useState<any[]>([]);
@@ -273,6 +427,23 @@ export default function CampaignsPage() {
     await apiClient.post('/meta-ads/sync', {});
     toast.success('Sync started — data will update in a moment');
     setTimeout(loadMetaAll, 4000);
+  }
+
+  async function analyzeCampaign(c: any) {
+    setAnalyzing(c.id);
+    try {
+      const dates = getDateRange(dateRange);
+      const r = await apiClient.post(`/meta-ads/campaigns/${c.id}/analyze`, {
+        date_start: dates.start,
+        date_end:   dates.end,
+      });
+      setAiCampaign(c);
+      setAiReport(r.data.data.report);
+    } catch (err: any) {
+      toast.error(err.response?.data?.error || 'Analysis failed');
+    } finally {
+      setAnalyzing(null);
+    }
   }
 
   // ─────────────────────────────────────────────────────────────────────────────
@@ -513,7 +684,7 @@ export default function CampaignsPage() {
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                   <thead>
                     <tr className="border-b border-white/5">
-                      {['Campaign','Status','Spend','Revenue','ROAS','Impr.','Clicks','CTR','CPC'].map(h => (
+                      {['Campaign','Status','Spend','Revenue','ROAS','Impr.','Clicks','CTR','CPC','AI'].map(h => (
                         <th key={h} style={{ padding: '8px 14px', textAlign: 'left', fontSize: 10, color: 'rgba(255,255,255,0.3)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.6px', whiteSpace: 'nowrap' }}>{h}</th>
                       ))}
                     </tr>
@@ -533,10 +704,19 @@ export default function CampaignsPage() {
                         <td style={{ padding: '11px 14px', fontSize: 12, color: 'rgba(255,255,255,0.5)' }}>{fmtNum(c.clicks)}</td>
                         <td style={{ padding: '11px 14px', fontSize: 12, color: 'rgba(255,255,255,0.5)' }}>{Number(c.ctr).toFixed(2)}%</td>
                         <td style={{ padding: '11px 14px', fontSize: 12, color: 'rgba(255,255,255,0.5)' }}>${Number(c.cpc).toFixed(2)}</td>
+                        <td style={{ padding: '11px 14px' }}>
+                          <button
+                            onClick={() => analyzeCampaign(c)}
+                            disabled={analyzing === c.id}
+                            style={{ padding: '5px 12px', borderRadius: 8, border: 'none', background: analyzing === c.id ? 'rgba(139,92,246,0.1)' : 'rgba(139,92,246,0.15)', color: '#a78bfa', fontSize: 11, fontWeight: 700, cursor: analyzing === c.id ? 'not-allowed' : 'pointer', whiteSpace: 'nowrap', transition: 'background 0.15s' }}
+                          >
+                            {analyzing === c.id ? '...' : '✨ Analyze'}
+                          </button>
+                        </td>
                       </tr>
                     ))}
                     {metaCampaigns.length === 0 && (
-                      <tr><td colSpan={9} style={{ padding: 40, textAlign: 'center', color: 'rgba(255,255,255,0.2)', fontSize: 13 }}>No campaign data yet — sync may be in progress</td></tr>
+                      <tr><td colSpan={10} style={{ padding: 40, textAlign: 'center', color: 'rgba(255,255,255,0.2)', fontSize: 13 }}>No campaign data yet — sync may be in progress</td></tr>
                     )}
                   </tbody>
                 </table>
@@ -636,6 +816,14 @@ export default function CampaignsPage() {
           accounts={metaAccounts}
           onClose={() => setShowShareModal(false)}
           onCreated={s => setShares(prev => [s, ...prev])}
+        />
+      )}
+
+      {aiReport && aiCampaign && (
+        <AIReportModal
+          campaign={aiCampaign}
+          report={aiReport}
+          onClose={() => { setAiReport(null); setAiCampaign(null); }}
         />
       )}
     </div>

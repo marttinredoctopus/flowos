@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { apiGet, apiPost, apiPatch, apiDelete } from '@/lib/api';
 import toast from 'react-hot-toast';
 import { LoadingScreen, EmptyState, Modal, FormField, StatusBadge, inputStyle, formatDate } from '@/components/ui/shared';
+import { Kanban, PencilSimple, Trash, Folder } from '@phosphor-icons/react';
 
 const COLORS = ['#6366f1','#8b5cf6','#ec4899','#f59e0b','#22c55e','#06b6d4','#ef4444','#f97316'];
 const ICONS  = ['📁','🚀','💡','🎯','📱','🛒','✨','🎨','📊','💼'];
@@ -139,8 +140,8 @@ export default function Projects() {
                   <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{p.client_name || 'No client'}</div>
                 </div>
                 <div style={{ display: 'flex', gap: 4 }}>
-                  <button onClick={() => openEdit(p)} style={{ padding: '4px 6px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--card)', cursor: 'pointer', color: 'var(--text-muted)', fontSize: 11 }}>✏️</button>
-                  <button onClick={() => deleteProject(p.id)} style={{ padding: '4px 6px', borderRadius: 6, border: '1px solid rgba(239,68,68,0.2)', background: 'transparent', cursor: 'pointer', color: '#ef4444', fontSize: 11 }}>🗑️</button>
+                  <button onClick={() => openEdit(p)} style={{ padding: '5px 7px', borderRadius: 7, border: '1px solid var(--border)', background: 'var(--card)', cursor: 'pointer', color: 'var(--text-2)', display:'flex', alignItems:'center' }}><PencilSimple size={13} /></button>
+                  <button onClick={() => deleteProject(p.id)} style={{ padding: '5px 7px', borderRadius: 7, border: '1px solid rgba(255,77,106,0.2)', background: 'transparent', cursor: 'pointer', color: '#FF4D6A', display:'flex', alignItems:'center' }}><Trash size={13} /></button>
                 </div>
               </div>
 

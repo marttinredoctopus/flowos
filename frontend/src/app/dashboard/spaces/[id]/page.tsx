@@ -7,8 +7,10 @@ import {
   ArrowLeft, Plus, Folder, CheckSquare, Kanban, UploadSimple, VideoCamera,
   Info, Trash, PencilSimple, Link, Image, FileText, Play, X,
   Users, CaretDown, DotsSixVertical, Check, Circle,
+  SquaresFour, ListBullets, CalendarBlank, CaretLeft, CaretRight,
 } from '@phosphor-icons/react';
 import { LoadingScreen, Modal, FormField, PriorityBadge, inputStyle, formatDate } from '@/components/ui/shared';
+import TaskDetailPanel from '@/components/tasks/TaskDetailPanel';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 const KANBAN_COLS = [
@@ -50,6 +52,10 @@ export default function SpaceDetail() {
   const [teamList, setTeamList] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab]         = useState<'projects'|'tasks'|'assets'|'videos'|'info'>('projects');
+  const [taskView, setTaskView] = useState<'board'|'list'|'calendar'>('board');
+  const [selectedTask, setSelectedTask] = useState<any>(null);
+  const [calYear, setCalYear]   = useState(new Date().getFullYear());
+  const [calMonth, setCalMonth] = useState(new Date().getMonth());
 
   /* drag */
   const [dragging, setDragging] = useState<string|null>(null);
@@ -223,6 +229,29 @@ export default function SpaceDetail() {
     finally { setUploading(false); if (fileRef.current) fileRef.current.value = ''; }
   }
 
+  function handleTaskUpdate(updated: any) {
+    setTasks(prev => prev.map(t => t.id === updated.id ? { ...t, ...updated } : t));
+    setSelectedTask((prev: any) => prev ? { ...prev, ...updated } : prev);
+  }
+
+  function tasksOnDay(day: number) {
+    return tasks.filter((t: any) => {
+      if (!t.due_date) return false;
+      const d = new Date(t.due_date);
+      return d.getFullYear() === calYear && d.getMonth() === calMonth && d.getDate() === day;
+    });
+  }
+
+  function calDays() {
+    const first = new Date(calYear, calMonth, 1).getDay();
+    const total = new Date(calYear, calMonth + 1, 0).getDate();
+    return { first, total };
+  }
+
+  const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const WEEKDAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const colColor = (status: string) => KANBAN_COLS.find(c => c.id === status)?.color || '#6b7280';
+
   if (loading) return <LoadingScreen />;
   if (!space) return <div style={{ padding: 40, color: 'var(--text-muted)' }}>Space not found</div>;
 
@@ -339,65 +368,164 @@ export default function SpaceDetail() {
           </div>
         )}
 
-        {/* ── TASKS (Kanban) ────────────────────────────────────── */}
+        {/* ── TASKS ────────────────────────────────────────────── */}
         {tab === 'tasks' && (
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
               <h2 style={{ fontSize: 18, fontWeight: 700, color: 'var(--text)', margin: 0 }}>Tasks ({tasks.length})</h2>
-              <button onClick={() => setShowNewTask(true)} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', borderRadius: 10, border: 'none', background: `linear-gradient(135deg,${spaceColor},#DB1FFF)`, color: 'white', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>
-                <Plus size={14} weight="bold" /> New Task
-              </button>
+              <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                {/* View toggle */}
+                <div style={{ display: 'flex', background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 10, overflow: 'hidden' }}>
+                  {([['board', SquaresFour], ['list', ListBullets], ['calendar', CalendarBlank]] as const).map(([v, Icon]) => (
+                    <button key={v} onClick={() => setTaskView(v as any)}
+                      style={{ padding: '7px 12px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 600, background: taskView === v ? `linear-gradient(135deg,${spaceColor},#DB1FFF)` : 'transparent', color: taskView === v ? 'white' : 'var(--text-muted)', transition: 'all 0.15s' }}>
+                      <Icon size={14} />{(v as string).charAt(0).toUpperCase() + (v as string).slice(1)}
+                    </button>
+                  ))}
+                </div>
+                <button onClick={() => setShowNewTask(true)} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', borderRadius: 10, border: 'none', background: `linear-gradient(135deg,${spaceColor},#DB1FFF)`, color: 'white', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>
+                  <Plus size={14} weight="bold" /> New Task
+                </button>
+              </div>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 14, alignItems: 'start' }}>
-              {KANBAN_COLS.map(col => {
-                const colTasks = tasks.filter((t: any) => (t.status||'todo') === col.id);
-                const isOver = dragOver === col.id;
-                return (
-                  <div key={col.id}
-                    onDragOver={e => { e.preventDefault(); setDragOver(col.id); }}
-                    onDragLeave={() => setDragOver(null)}
-                    onDrop={e => { e.preventDefault(); if (dragging) moveTask(dragging, col.id); setDragging(null); setDragOver(null); }}
-                    style={{ background: isOver ? `${col.color}12` : 'var(--surface)', border: `1px solid ${isOver ? col.color : 'var(--border)'}`, borderRadius: 14, padding: 12, minHeight: 200, transition: 'all 0.15s' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <div style={{ width: 8, height: 8, borderRadius: '50%', background: col.color }} />
-                        <span style={{ fontSize: 11, fontWeight: 700, color: col.color, textTransform: 'uppercase', letterSpacing: '0.5px' }}>{col.label}</span>
-                      </div>
-                      <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', background: 'var(--card)', padding: '2px 7px', borderRadius: 99 }}>{colTasks.length}</span>
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                      {colTasks.map((task: any) => (
-                        <div key={task.id}
-                          draggable
-                          onDragStart={() => setDragging(task.id)}
-                          onDragEnd={() => { setDragging(null); setDragOver(null); }}
-                          style={{ background: 'var(--card)', border: '1px solid var(--border)', borderLeft: `3px solid ${col.color}`, borderRadius: 8, padding: '10px 12px', cursor: 'grab', opacity: dragging === task.id ? 0.5 : 1 }}>
-                          <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)', marginBottom: 8, lineHeight: 1.4 }}>{task.title}</div>
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
-                            <PriorityBadge priority={task.priority||'medium'} />
-                            {task.project_name && (
-                              <span style={{ fontSize: 10, color: 'var(--text-muted)', background: 'var(--surface)', padding: '2px 6px', borderRadius: 4 }}>
-                                {task.project_name}
-                              </span>
-                            )}
-                          </div>
-                          {task.due_date && (
-                            <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 6 }}>📅 {formatDate(task.due_date)}</div>
-                          )}
+
+            {/* Board view */}
+            {taskView === 'board' && (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 14, alignItems: 'start' }}>
+                {KANBAN_COLS.map(col => {
+                  const colTasks = tasks.filter((t: any) => (t.status||'todo') === col.id);
+                  const isOver = dragOver === col.id;
+                  return (
+                    <div key={col.id}
+                      onDragOver={e => { e.preventDefault(); setDragOver(col.id); }}
+                      onDragLeave={() => setDragOver(null)}
+                      onDrop={e => { e.preventDefault(); if (dragging) moveTask(dragging, col.id); setDragging(null); setDragOver(null); }}
+                      style={{ background: isOver ? `${col.color}12` : 'var(--surface)', border: `1px solid ${isOver ? col.color : 'var(--border)'}`, borderRadius: 14, padding: 12, minHeight: 200, transition: 'all 0.15s' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <div style={{ width: 8, height: 8, borderRadius: '50%', background: col.color }} />
+                          <span style={{ fontSize: 11, fontWeight: 700, color: col.color, textTransform: 'uppercase', letterSpacing: '0.5px' }}>{col.label}</span>
                         </div>
-                      ))}
-                      <button onClick={() => { setTaskForm(f => ({ ...f, status: col.id })); setShowNewTask(true); }}
-                        style={{ width: '100%', padding: '7px', borderRadius: 8, border: `1px dashed var(--border)`, background: 'transparent', color: 'var(--text-muted)', fontSize: 12, cursor: 'pointer' }}
-                        onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = col.color; (e.currentTarget as HTMLButtonElement).style.color = col.color; }}
-                        onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border)'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-muted)'; }}>
-                        + Add task
-                      </button>
+                        <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', background: 'var(--card)', padding: '2px 7px', borderRadius: 99 }}>{colTasks.length}</span>
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                        {colTasks.map((task: any) => (
+                          <div key={task.id}
+                            draggable
+                            onDragStart={() => setDragging(task.id)}
+                            onDragEnd={() => { setDragging(null); setDragOver(null); }}
+                            onClick={() => setSelectedTask(task)}
+                            style={{ background: 'var(--card)', border: `1px solid ${selectedTask?.id === task.id ? col.color : 'var(--border)'}`, borderLeft: `3px solid ${col.color}`, borderRadius: 8, padding: '10px 12px', cursor: 'pointer', opacity: dragging === task.id ? 0.5 : 1 }}>
+                            <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)', marginBottom: 8, lineHeight: 1.4 }}>{task.title}</div>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
+                              <PriorityBadge priority={task.priority||'medium'} />
+                              {task.project_name && <span style={{ fontSize: 10, color: 'var(--text-muted)', background: 'var(--surface)', padding: '2px 6px', borderRadius: 4 }}>{task.project_name}</span>}
+                            </div>
+                            {task.due_date && <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 6 }}>📅 {formatDate(task.due_date)}</div>}
+                          </div>
+                        ))}
+                        <button onClick={() => { setTaskForm(f => ({ ...f, status: col.id })); setShowNewTask(true); }}
+                          style={{ width: '100%', padding: '7px', borderRadius: 8, border: '1px dashed var(--border)', background: 'transparent', color: 'var(--text-muted)', fontSize: 12, cursor: 'pointer' }}
+                          onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = col.color; (e.currentTarget as HTMLButtonElement).style.color = col.color; }}
+                          onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border)'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-muted)'; }}>
+                          + Add task
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* List view */}
+            {taskView === 'list' && (
+              <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 14, overflow: 'hidden' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 80px 100px 80px', gap: 0, padding: '10px 16px', borderBottom: '1px solid var(--border)', background: 'rgba(0,0,0,0.02)' }}>
+                  {['Task', 'Project', 'Priority', 'Due Date', ''].map(h => (
+                    <span key={h} style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{h}</span>
+                  ))}
+                </div>
+                {tasks.map((task: any, i: number) => (
+                  <div key={task.id} onClick={() => setSelectedTask(task)}
+                    style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 80px 100px 80px', gap: 0, padding: '12px 16px', borderBottom: i < tasks.length - 1 ? '1px solid var(--border)' : 'none', cursor: 'pointer', background: selectedTask?.id === task.id ? `${spaceColor}08` : 'transparent', transition: 'background 0.1s' }}
+                    onMouseEnter={e => { if (selectedTask?.id !== task.id) (e.currentTarget as HTMLElement).style.background = 'rgba(0,0,0,0.02)'; }}
+                    onMouseLeave={e => { if (selectedTask?.id !== task.id) (e.currentTarget as HTMLElement).style.background = 'transparent'; }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <div style={{ width: 6, height: 6, borderRadius: '50%', background: colColor(task.status||'todo'), flexShrink: 0 }} />
+                      <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)' }}>{task.title}</span>
+                    </div>
+                    <span style={{ fontSize: 12, color: 'var(--text-muted)', alignSelf: 'center' }}>{task.project_name || '—'}</span>
+                    <div style={{ alignSelf: 'center' }}><PriorityBadge priority={task.priority||'medium'} /></div>
+                    <span style={{ fontSize: 12, color: 'var(--text-muted)', alignSelf: 'center' }}>{task.due_date ? formatDate(task.due_date) : '—'}</span>
+                    <div style={{ alignSelf: 'center', display: 'flex', justifyContent: 'flex-end' }}>
+                      <button onClick={e => { e.stopPropagation(); if (confirm('Delete?')) { apiDelete(`/api/tasks/${task.id}`).then(() => setTasks(p => p.filter(t => t.id !== task.id))); }}} style={{ padding: '4px', borderRadius: 6, border: 'none', background: 'transparent', cursor: 'pointer', color: '#FF4D6A', display: 'flex', alignItems: 'center' }}><Trash size={13} /></button>
                     </div>
                   </div>
-                );
-              })}
-            </div>
+                ))}
+              </div>
+            )}
+
+            {/* Calendar view */}
+            {taskView === 'calendar' && (() => {
+              const { first, total } = calDays();
+              const cells = Array.from({ length: first + total }, (_, i) => i < first ? null : i - first + 1);
+              while (cells.length % 7 !== 0) cells.push(null);
+              const today = new Date();
+              return (
+                <div style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 14, overflow: 'hidden' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', borderBottom: '1px solid var(--border)' }}>
+                    <button onClick={() => { if (calMonth === 0) { setCalMonth(11); setCalYear(y => y - 1); } else setCalMonth(m => m - 1); }}
+                      style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid var(--border)', background: 'transparent', cursor: 'pointer', color: 'var(--text)', display: 'flex', alignItems: 'center' }}>
+                      <CaretLeft size={14} />
+                    </button>
+                    <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)' }}>{MONTHS[calMonth]} {calYear}</span>
+                    <button onClick={() => { if (calMonth === 11) { setCalMonth(0); setCalYear(y => y + 1); } else setCalMonth(m => m + 1); }}
+                      style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid var(--border)', background: 'transparent', cursor: 'pointer', color: 'var(--text)', display: 'flex', alignItems: 'center' }}>
+                      <CaretRight size={14} />
+                    </button>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', borderBottom: '1px solid var(--border)' }}>
+                    {WEEKDAYS.map(d => <div key={d} style={{ padding: '8px 0', textAlign: 'center', fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>{d}</div>)}
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)' }}>
+                    {cells.map((day, idx) => {
+                      const isToday = day !== null && today.getFullYear() === calYear && today.getMonth() === calMonth && today.getDate() === day;
+                      const dayTasks = day ? tasksOnDay(day) : [];
+                      return (
+                        <div key={idx} style={{ minHeight: 80, padding: '6px 8px', borderRight: (idx + 1) % 7 !== 0 ? '1px solid var(--border)' : 'none', borderBottom: idx < cells.length - 7 ? '1px solid var(--border)' : 'none', background: day === null ? 'rgba(0,0,0,0.02)' : 'transparent' }}>
+                          {day && (
+                            <>
+                              <div style={{ width: 22, height: 22, borderRadius: '50%', background: isToday ? `linear-gradient(135deg,${spaceColor},#DB1FFF)` : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: isToday ? 700 : 400, color: isToday ? 'white' : 'var(--text-muted)', marginBottom: 3 }}>{day}</div>
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                {dayTasks.slice(0, 3).map((t: any) => (
+                                  <div key={t.id} onClick={() => setSelectedTask(t)}
+                                    style={{ fontSize: 10, padding: '2px 5px', borderRadius: 4, background: `${colColor(t.status||'todo')}22`, color: colColor(t.status||'todo'), fontWeight: 600, cursor: 'pointer', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
+                                    {t.title}
+                                  </div>
+                                ))}
+                                {dayTasks.length > 3 && <span style={{ fontSize: 9, color: 'var(--text-muted)' }}>+{dayTasks.length - 3} more</span>}
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })()}
           </div>
+        )}
+
+        {/* Task Detail Panel */}
+        {selectedTask && (
+          <TaskDetailPanel
+            task={selectedTask}
+            projects={projects}
+            onClose={() => setSelectedTask(null)}
+            onUpdate={handleTaskUpdate}
+            onDelete={(taskId) => { apiDelete(`/api/tasks/${taskId}`).then(() => { setTasks(p => p.filter(t => t.id !== taskId)); setSelectedTask(null); }).catch(() => toast.error('Failed to delete')); }}
+          />
         )}
 
         {/* ── ASSETS HUB ───────────────────────────────────────── */}
@@ -506,7 +634,22 @@ export default function SpaceDetail() {
                           </a>
                         )}
                       </div>
-                      <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+                      <div style={{ display: 'flex', gap: 6, flexShrink: 0, alignItems: 'flex-start' }}>
+                        <button
+                          title="Create task from this video"
+                          onClick={() => {
+                            setTaskForm(f => ({
+                              ...f,
+                              title: `Video: ${v.title}`,
+                              description: v.description || '',
+                              status: 'todo',
+                              project_id: projects[0]?.id || '',
+                            }));
+                            setShowNewTask(true);
+                          }}
+                          style={{ padding: '6px 10px', borderRadius: 8, border: `1px solid ${spaceColor}44`, background: `${spaceColor}10`, cursor: 'pointer', color: spaceColor, display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, fontWeight: 600 }}>
+                          <CheckSquare size={13} /> Task
+                        </button>
                         <button onClick={() => { setEditVideo(v); setVideoForm({ title:v.title, description:v.description||'', caption:v.caption||'', tov:v.tov||'', subtitles:v.subtitles||'', video_link:v.video_link||'', video_url:v.video_url||'', assigned_to:v.assigned_to||'', status:v.status||'draft' }); setShowNewVideo(true); }}
                           style={{ padding: '6px 8px', borderRadius: 8, border: '1px solid var(--border)', background: 'transparent', cursor: 'pointer', color: 'var(--text-muted)', display: 'flex', alignItems: 'center' }}><PencilSimple size={13} /></button>
                         <button onClick={() => deleteVideo(v.id)} style={{ padding: '6px 8px', borderRadius: 8, border: '1px solid rgba(255,77,106,0.2)', background: 'transparent', cursor: 'pointer', color: '#FF4D6A', display: 'flex', alignItems: 'center' }}><Trash size={13} /></button>

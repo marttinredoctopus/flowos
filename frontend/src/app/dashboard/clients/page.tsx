@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { apiGet, apiPost, apiPatch, apiDelete } from '@/lib/api';
 import toast from 'react-hot-toast';
 import { LoadingScreen, EmptyState, Modal, FormField, inputStyle } from '@/components/ui/shared';
+import { PencilSimple, Trash } from '@phosphor-icons/react';
 
 const COLORS = ['#6366f1','#8b5cf6','#ec4899','#f59e0b','#22c55e','#06b6d4','#ef4444','#f97316'];
 
@@ -115,8 +116,8 @@ export default function Clients() {
                   <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{c.company || '—'}</div>
                 </div>
                 <div style={{ display: 'flex', gap: 4 }}>
-                  <button onClick={e => { e.stopPropagation(); openEdit(c); }} style={{ padding: '4px 6px', borderRadius: 6, border: '1px solid var(--border)', background: 'transparent', cursor: 'pointer', fontSize: 11 }}>✏️</button>
-                  <button onClick={e => { e.stopPropagation(); deleteClient(c.id); }} style={{ padding: '4px 6px', borderRadius: 6, border: '1px solid rgba(239,68,68,0.2)', background: 'transparent', cursor: 'pointer', color: '#ef4444', fontSize: 11 }}>🗑️</button>
+                  <button onClick={e => { e.stopPropagation(); openEdit(c); }} style={{ padding: '5px 7px', borderRadius: 7, border: '1px solid var(--border)', background: 'transparent', cursor: 'pointer', color: 'var(--text-2)', display:'flex', alignItems:'center' }}><PencilSimple size={13} /></button>
+                  <button onClick={e => { e.stopPropagation(); deleteClient(c.id); }} style={{ padding: '5px 7px', borderRadius: 7, border: '1px solid rgba(255,77,106,0.2)', background: 'transparent', cursor: 'pointer', color: '#FF4D6A', display:'flex', alignItems:'center' }}><Trash size={13} /></button>
                 </div>
               </div>
 

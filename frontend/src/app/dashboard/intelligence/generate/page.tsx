@@ -1,16 +1,16 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { Sparkle, Copy, Check, Warning, CaretDown, CaretUp } from '@phosphor-icons/react';
+import { Sparkle, Copy, Check, Warning, CaretDown, CaretUp, Megaphone, Lightbulb, PencilSimple, Hash, EnvelopeSimple, Article } from '@phosphor-icons/react';
 import apiClient from '@/lib/apiClient';
 import toast from 'react-hot-toast';
 
 const TYPES = [
-  { id: 'ad_copy',        label: 'Ad Copy',         icon: '📢', desc: 'High-converting ad variations' },
-  { id: 'content_ideas',  label: 'Content Ideas',   icon: '💡', desc: '10 creative post ideas' },
-  { id: 'caption',        label: 'Captions',        icon: '✍️', desc: 'Engaging social captions' },
-  { id: 'hashtags',       label: 'Hashtags',        icon: '#',  desc: '20 targeted hashtags' },
-  { id: 'email',          label: 'Email Copy',      icon: '📧', desc: 'Full marketing email' },
-  { id: 'blog_outline',   label: 'Blog Outline',    icon: '📝', desc: 'Structured article outline' },
+  { id: 'ad_copy',        label: 'Ad Copy',         Icon: Megaphone,      desc: 'High-converting ad variations',  color: '#FF7A30' },
+  { id: 'content_ideas',  label: 'Content Ideas',   Icon: Lightbulb,      desc: '10 creative post ideas',         color: '#FFB547' },
+  { id: 'caption',        label: 'Captions',        Icon: PencilSimple,   desc: 'Engaging social captions',        color: '#00D4FF' },
+  { id: 'hashtags',       label: 'Hashtags',        Icon: Hash,           desc: '20 targeted hashtags',            color: '#00E5A0' },
+  { id: 'email',          label: 'Email Copy',      Icon: EnvelopeSimple, desc: 'Full marketing email',            color: '#DB1FFF' },
+  { id: 'blog_outline',   label: 'Blog Outline',    Icon: Article,        desc: 'Structured article outline',      color: '#A580FF' },
 ];
 const PLATFORMS = ['Instagram','Facebook','TikTok','LinkedIn','Twitter/X','YouTube','Google Ads'];
 const TONES     = ['Professional','Friendly','Urgent','Inspirational','Educational','Humorous'];
@@ -110,8 +110,8 @@ export default function AIGeneratorPage() {
                   background: type === t.id ? 'color-mix(in srgb, var(--indigo) 12%, transparent)' : 'var(--card)',
                   border: `1px solid ${type === t.id ? 'var(--indigo)' : 'var(--border)'}`,
                 }}>
-                  <div style={{ fontSize: 16, marginBottom: 4 }}>{t.icon}</div>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: type === t.id ? 'var(--indigo)' : 'var(--text)' }}>{t.label}</div>
+                  <div style={{ marginBottom: 6 }}><t.Icon size={18} weight={type === t.id ? 'fill' : 'regular'} color={type === t.id ? t.color : 'var(--text-3)'} /></div>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: type === t.id ? t.color : 'var(--text)' }}>{t.label}</div>
                   <div style={{ fontSize: 10, color: 'var(--text-3)' }}>{t.desc}</div>
                 </button>
               ))}

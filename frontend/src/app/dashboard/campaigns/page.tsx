@@ -2,6 +2,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import apiClient from '@/lib/apiClient';
 import toast from 'react-hot-toast';
+import { Sparkle, ChartBar, X as XIcon, Check } from '@phosphor-icons/react';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts';
@@ -306,6 +307,8 @@ export default function CampaignsPage() {
   const [summary, setSummary]             = useState<any>(null);
   const [metaLoading, setMetaLoading]     = useState(true);
   const [connecting, setConnecting]       = useState(false);
+  const [tokenInput, setTokenInput]       = useState('');
+  const [connectingToken, setConnectingToken] = useState(false);
   const [dateRange, setDateRange]         = useState('last_30_days');
   const [selectedAccount, setSelectedAccount] = useState('all');
   const [activeMetric, setActiveMetric]   = useState<'spend' | 'roas' | 'clicks' | 'impressions'>('spend');
@@ -423,6 +426,22 @@ export default function CampaignsPage() {
     } catch { setConnecting(false); toast.error('Failed to start Meta connection'); }
   }
 
+  async function connectWithToken(e: React.FormEvent) {
+    e.preventDefault();
+    if (!tokenInput.trim()) return;
+    setConnectingToken(true);
+    try {
+      await apiClient.post('/meta-ads/connect-token', { access_token: tokenInput.trim() });
+      toast.success('Meta Ads connected! Syncing data...');
+      setTokenInput('');
+      await loadMetaAccounts();
+      setTab('meta');
+      setTimeout(loadMetaAll, 3000);
+    } catch (err: any) {
+      toast.error(err.response?.data?.error || 'Invalid token');
+    } finally { setConnectingToken(false); }
+  }
+
   async function manualSync() {
     await apiClient.post('/meta-ads/sync', {});
     toast.success('Sync started — data will update in a moment');
@@ -451,7 +470,7 @@ export default function CampaignsPage() {
     ['campaigns',  'Campaigns'],
     ['accounts',   'Ad Accounts'],
     ['competitor', 'Competitor AI'],
-    ['meta',       '📊 Meta Ads Live'],
+    ['meta',       'Meta Ads Live'],
   ] as const;
 
   return (
@@ -506,8 +525,8 @@ export default function CampaignsPage() {
                 <p className="text-sm text-slate-400">{c.clicks ? Number(c.clicks).toLocaleString() : '—'}</p>
                 <span className={`text-xs px-2.5 py-1 rounded-full w-fit font-medium ${STATUS_C[c.status] || STATUS_C.draft}`}>{c.status}</span>
                 <div className="flex items-center gap-2">
-                  <button onClick={() => openInsights(c)} className="text-xs px-2.5 py-1 bg-purple-500/20 text-purple-400 rounded-lg hover:bg-purple-500/30 transition">✨ Insights</button>
-                  <button onClick={() => remove(c.id)} className="opacity-0 group-hover:opacity-100 text-slate-600 hover:text-red-400 transition text-xs">✕</button>
+                  <button onClick={() => openInsights(c)} className="text-xs px-2.5 py-1 bg-purple-500/20 text-purple-400 rounded-lg hover:bg-purple-500/30 transition flex items-center gap-1"><Sparkle size={11} weight="fill" /> Insights</button>
+                  <button onClick={() => remove(c.id)} className="opacity-0 group-hover:opacity-100 text-slate-600 hover:text-red-400 transition text-xs flex items-center justify-center"><XIcon size={12} /></button>
                 </div>
               </div>
             ))}
@@ -563,12 +582,12 @@ export default function CampaignsPage() {
               <select className="w-full px-4 py-2.5 bg-[#0c0d11] border border-white/10 rounded-xl text-white text-sm focus:outline-none" value={compForm.platform} onChange={e => setCompForm({...compForm, platform: e.target.value})}>
                 {PLATFORMS.map(p => <option key={p}>{p}</option>)}
               </select>
-              <button type="submit" disabled={loadingComp} className="w-full py-3 gradient-bg rounded-xl text-sm font-semibold text-white hover:opacity-90 disabled:opacity-50">{loadingComp ? 'Analyzing...' : '✨ Analyze Competitors'}</button>
+              <button type="submit" disabled={loadingComp} className="w-full py-3 gradient-bg rounded-xl text-sm font-semibold text-white hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2">{loadingComp ? 'Analyzing…' : <><Sparkle size={14} weight="fill" /> Analyze Competitors</>}</button>
             </form>
           </div>
           {compResult && (
             <div className="bg-[#0f1117] border border-purple-500/20 rounded-2xl p-6">
-              <div className="flex items-center gap-2 mb-4"><span className="text-purple-400 text-lg">✨</span><h3 className="font-semibold text-white">Gemini AI Analysis</h3></div>
+              <div className="flex items-center gap-2 mb-4"><Sparkle size={16} weight="fill" className="text-purple-400" style={{color:'#A580FF'}} /><h3 className="font-semibold text-white">Gemini AI Analysis</h3></div>
               <div className="text-sm text-slate-300 leading-loose whitespace-pre-wrap" dir="auto">{compResult}</div>
             </div>
           )}
@@ -581,28 +600,39 @@ export default function CampaignsPage() {
           <div className="space-y-3">{[1,2,3,4].map(i => <div key={i} className="h-20 rounded-2xl bg-white/5 animate-pulse" />)}</div>
         ) : metaAccounts.length === 0 ? (
           /* Connect screen */
-          <div className="max-w-xl mx-auto text-center py-12">
-            <div style={{ width: 72, height: 72, borderRadius: 18, background: 'linear-gradient(135deg,#1877F2,#0ea5e9)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px', fontSize: 32, boxShadow: '0 8px 32px rgba(24,119,242,0.3)' }}>📊</div>
-            <h2 className="font-display text-2xl font-black text-white mb-3">Connect Meta Ads</h2>
-            <p className="text-slate-400 text-sm leading-relaxed mb-8">Connect your Meta Ads account to see live ROAS, spend, CTR and share beautiful reports with clients.</p>
-            <div className="grid grid-cols-3 gap-3 mb-8">
-              {[
-                { icon: '📈', t: 'Live Performance', d: 'Real-time ROAS, CTR, CPC' },
-                { icon: '🔄', t: 'Auto Sync',        d: 'Updates every 6 hours'    },
-                { icon: '🔗', t: 'Client Reports',   d: 'Share with one link'      },
-              ].map(f => (
-                <div key={f.t} className="bg-white/5 border border-white/10 rounded-2xl p-4">
-                  <div className="text-2xl mb-2">{f.icon}</div>
-                  <div className="text-xs font-bold text-white mb-1">{f.t}</div>
-                  <div className="text-xs text-slate-500">{f.d}</div>
-                </div>
-              ))}
+          <div className="max-w-lg mx-auto py-10">
+            <div className="text-center mb-8">
+              <div style={{ width: 64, height: 64, borderRadius: 16, background: 'linear-gradient(135deg,#7030EF,#DB1FFF)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', boxShadow: '0 8px 32px rgba(112,48,239,0.4)' }}><ChartBar size={28} color="#fff" weight="fill" /></div>
+              <h2 className="font-display text-2xl font-black text-white mb-2">Connect Meta Ads</h2>
+              <p className="text-slate-400 text-sm">Paste your Meta access token to connect your ad accounts.</p>
             </div>
-            <button onClick={connectMeta} disabled={connecting} style={{ padding: '13px 32px', borderRadius: 12, border: 'none', background: 'linear-gradient(135deg,#1877F2,#0ea5e9)', color: 'white', fontSize: 15, fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 20px rgba(24,119,242,0.35)', display: 'inline-flex', alignItems: 'center', gap: 10 }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-              {connecting ? 'Redirecting to Facebook...' : 'Connect Meta Ads Account'}
-            </button>
-            <p className="text-xs text-slate-600 mt-3">You'll be redirected to Facebook to authorize read access</p>
+
+            {/* Token form */}
+            <form onSubmit={connectWithToken} className="bg-white/5 border border-white/10 rounded-2xl p-6 mb-4">
+              <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Access Token</label>
+              <textarea
+                value={tokenInput}
+                onChange={e => setTokenInput(e.target.value)}
+                placeholder="EAABwzLixnjYBO..."
+                rows={3}
+                style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, color: 'white', padding: '10px 14px', fontSize: 13, fontFamily: 'monospace', resize: 'none', outline: 'none', boxSizing: 'border-box' }}
+              />
+              <button type="submit" disabled={connectingToken || !tokenInput.trim()} style={{ marginTop: 14, width: '100%', padding: '12px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg,#1877F2,#0ea5e9)', color: 'white', fontSize: 14, fontWeight: 700, cursor: connectingToken ? 'wait' : 'pointer', opacity: connectingToken || !tokenInput.trim() ? 0.6 : 1 }}>
+                {connectingToken ? 'Connecting...' : 'Connect Meta Ads'}
+              </button>
+            </form>
+
+            {/* How to get token */}
+            <div className="bg-blue-500/10 border border-blue-500/20 rounded-2xl p-5">
+              <p className="text-xs font-bold text-blue-400 mb-3">How to get your Access Token:</p>
+              <ol className="text-xs text-slate-400 space-y-2 list-decimal list-inside">
+                <li>Go to <span className="text-blue-400 font-mono">developers.facebook.com/tools/explorer</span></li>
+                <li>Select your App from the top dropdown</li>
+                <li>Click <span className="text-white font-semibold">Generate Access Token</span></li>
+                <li>Add permissions: <span className="text-white font-mono">ads_read, ads_management, read_insights</span></li>
+                <li>Copy the token and paste it above</li>
+              </ol>
+            </div>
           </div>
         ) : (
           /* Main Meta Ads Dashboard */
@@ -710,7 +740,7 @@ export default function CampaignsPage() {
                             disabled={analyzing === c.id}
                             style={{ padding: '5px 12px', borderRadius: 8, border: 'none', background: analyzing === c.id ? 'rgba(139,92,246,0.1)' : 'rgba(139,92,246,0.15)', color: '#a78bfa', fontSize: 11, fontWeight: 700, cursor: analyzing === c.id ? 'not-allowed' : 'pointer', whiteSpace: 'nowrap', transition: 'background 0.15s' }}
                           >
-                            {analyzing === c.id ? '...' : '✨ Analyze'}
+                            {analyzing === c.id ? '…' : <span style={{display:'flex',alignItems:'center',gap:4}}><Sparkle size={11} weight="fill"/>Analyze</span>}
                           </button>
                         </td>
                       </tr>
@@ -781,10 +811,10 @@ export default function CampaignsPage() {
           <div className="bg-[#0f1117] border border-white/10 rounded-2xl p-6 w-full max-w-2xl max-h-[80vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h2 className="font-display font-bold text-lg text-white">✨ AI Campaign Insights</h2>
+                <h2 className="font-display font-bold text-lg text-white flex items-center gap-2"><Sparkle size={18} weight="fill" style={{color:'#A580FF'}}/>AI Campaign Insights</h2>
                 <p className="text-slate-400 text-sm">{insightsModal.name} · {insightsModal.platform}</p>
               </div>
-              <button onClick={() => setInsightsModal(null)} className="text-slate-500 hover:text-white text-xl">✕</button>
+              <button onClick={() => setInsightsModal(null)} className="text-slate-500 hover:text-white flex items-center justify-center w-7 h-7 rounded-lg" style={{background:'rgba(255,255,255,0.05)'}}><XIcon size={14}/></button>
             </div>
             <div className="grid grid-cols-3 gap-3 mb-5">
               {[
@@ -800,7 +830,7 @@ export default function CampaignsPage() {
             </div>
             {loadingInsights ? (
               <div className="flex items-center justify-center py-12">
-                <div className="text-center"><div className="text-3xl mb-3 animate-pulse">✨</div><p className="text-slate-400 text-sm">Analyzing...</p></div>
+                <div className="text-center"><div className="flex justify-center mb-3"><Sparkle size={32} weight="fill" style={{color:'#A580FF',animation:'pulse-dot 1.5s ease-in-out infinite'}}/></div><p className="text-slate-400 text-sm">Analyzing…</p></div>
               </div>
             ) : (
               <div className="bg-purple-500/5 border border-purple-500/20 rounded-xl p-4">

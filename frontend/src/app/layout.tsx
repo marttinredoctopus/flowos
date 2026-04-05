@@ -30,7 +30,7 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
-  themeColor: '#7B68EE',
+  themeColor: '#7030EF',
 };
 
 export const metadata: Metadata = {
@@ -54,20 +54,29 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${plusJakartaSans.variable} ${dmSans.variable} ${jetbrainsMono.variable}`}>
+    <html lang="en" suppressHydrationWarning className={`${plusJakartaSans.variable} ${dmSans.variable} ${jetbrainsMono.variable}`}>
       <head>
         <link rel="icon" href="/favicon.ico" />
         {/* Prevent flash of wrong theme */}
         <script dangerouslySetInnerHTML={{ __html: `(function(){try{var t=localStorage.getItem('theme');if(t==='light')document.documentElement.classList.add('light');}catch(e){}})()` }} />
       </head>
-      <body>
+      <body suppressHydrationWarning>
         <ErrorBoundary>
           <AuthInit />
           {children}
           <Toaster
             position="bottom-right"
             toastOptions={{
-              style: { background: 'var(--surface)', color: 'var(--text)', border: '1px solid var(--border)' },
+              style: {
+                background: 'var(--card)',
+                color: 'var(--text)',
+                border: '1px solid rgba(112,48,239,0.25)',
+                borderRadius: '14px',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(112,48,239,0.1)',
+                fontSize: '13px',
+                fontFamily: 'var(--font-body, "DM Sans"), sans-serif',
+                backdropFilter: 'blur(20px)',
+              },
               duration: 4000,
             }}
           />

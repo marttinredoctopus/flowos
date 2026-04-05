@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import { Sparkle, CaretRight, CaretLeft, Copy, Check, Lightning, Target, Lightbulb, ChatCircle, Hash } from '@phosphor-icons/react';
+import { Sparkle, CaretRight, CaretLeft, Copy, Check, Lightning, Target, Lightbulb, ChatCircle, Hash, Tag, Users, CheckCircle } from '@phosphor-icons/react';
 import apiClient from '@/lib/apiClient';
 import toast from 'react-hot-toast';
 
@@ -109,9 +109,9 @@ export default function CampaignBuilderPage() {
   }
 
   const steps = [
-    { label: 'Brand', icon: '🏷️' },
-    { label: 'Details', icon: '🎯' },
-    { label: 'Audience', icon: '👥' },
+    { label: 'Brand',    Icon: Tag    },
+    { label: 'Details',  Icon: Target },
+    { label: 'Audience', Icon: Users  },
   ];
 
   if (result && step === 3) {
@@ -120,7 +120,7 @@ export default function CampaignBuilderPage() {
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="font-display text-2xl font-bold gradient-text">Campaign Ready 🚀</h1>
+            <h1 className="font-display text-2xl font-bold gradient-text flex items-center gap-2"><Sparkle size={22} weight="fill" /> Campaign Ready</h1>
             <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
               Generated for <strong style={{ color: 'var(--text)' }}>{result.meta.brand}</strong> — {result.meta.product}
             </p>
@@ -222,10 +222,13 @@ export default function CampaignBuilderPage() {
         {steps.map((s, i) => (
           <div key={i} className="flex items-center">
             <div className="flex flex-col items-center gap-1">
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg transition-all ${
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
                 i < step ? 'gradient-bg' : i === step ? 'ring-2 ring-violet-500' : ''
               }`} style={{ background: i < step ? undefined : i === step ? 'var(--card)' : 'var(--surface)' }}>
-                {i < step ? '✓' : s.icon}
+                {i < step
+                  ? <CheckCircle size={20} color="#fff" weight="fill" />
+                  : <s.Icon size={18} color={i === step ? '#A580FF' : 'var(--text-3)'} weight={i === step ? 'fill' : 'regular'} />
+                }
               </div>
               <span className="text-xs font-medium" style={{ color: i === step ? 'var(--text)' : 'var(--text-dim)' }}>{s.label}</span>
             </div>

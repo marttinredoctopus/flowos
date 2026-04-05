@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { CheckCircle, XCircle, Kanban, Receipt, PaintBrush, TrendUp, Copy } from '@phosphor-icons/react';
+import { CheckCircle, XCircle, Kanban, Receipt, PaintBrush, TrendUp, Copy, ArrowsClockwise, CurrencyDollar } from '@phosphor-icons/react';
 import apiClient from '@/lib/apiClient';
 import toast from 'react-hot-toast';
 
@@ -96,13 +96,15 @@ export default function ClientPortalPage() {
           {/* Stats */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             {[
-              { icon: '📁', label: 'Active Projects', value: data.stats.activeProjects,   color: 'var(--blue)' },
-              { icon: '✅', label: 'Tasks Done',       value: data.stats.completedTasks,   color: 'var(--emerald)' },
-              { icon: '🔄', label: 'Pending Tasks',    value: data.stats.pendingTasks,     color: 'var(--yellow)' },
-              { icon: '💰', label: 'Total Revenue',    value: `$${Number(data.stats.totalInvoiced || 0).toLocaleString()}`, color: 'var(--violet)' },
+              { Icon: Kanban,          label: 'Active Projects', value: data.stats.activeProjects,   color: '#00D4FF', from: '#00D4FF', to: '#7030EF' },
+              { Icon: CheckCircle,     label: 'Tasks Done',       value: data.stats.completedTasks,   color: '#00E5A0', from: '#00E5A0', to: '#00D4FF' },
+              { Icon: ArrowsClockwise, label: 'Pending Tasks',    value: data.stats.pendingTasks,     color: '#FFB547', from: '#FFB547', to: '#FF7A30' },
+              { Icon: CurrencyDollar,  label: 'Total Revenue',    value: `$${Number(data.stats.totalInvoiced || 0).toLocaleString()}`, color: '#A580FF', from: '#7030EF', to: '#DB1FFF' },
             ].map((s, i) => (
-              <div key={i} className="rounded-2xl p-5" style={{ background: 'var(--card)', border: `1px solid ${s.color}22` }}>
-                <div className="text-2xl mb-1">{s.icon}</div>
+              <div key={i} className="rounded-2xl p-5" style={{ background: 'var(--card)', border: `1px solid ${s.color}22`, position: 'relative', overflow: 'hidden' }}>
+                <div style={{ width: 36, height: 36, borderRadius: 10, background: `linear-gradient(135deg,${s.from},${s.to})`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 10, boxShadow: `0 6px 16px ${s.from}40` }}>
+                  <s.Icon size={18} color="#fff" weight="fill" />
+                </div>
                 <div className="text-2xl font-bold" style={{ color: s.color }}>{s.value}</div>
                 <div className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>{s.label}</div>
               </div>

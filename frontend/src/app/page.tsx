@@ -1,517 +1,621 @@
 'use client';
-import { useState, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { motion, useInView, AnimatePresence } from 'framer-motion';
+import Link from 'next/link';
 import {
-  ArrowRight, Brain, ChartBar, FileText,
-  CaretDown, Star, Sparkle, CheckCircle, X,
-  Kanban, CalendarDots, Receipt, TrendUp, Rocket, Users,
+  CheckSquare, CalendarDots, ChartLine, ChatCircle,
+  Timer, Sparkle, Users, PaintBrush, Lightning,
+  Receipt, Globe, BookOpen, ArrowRight, Check,
+  Star, Rocket, ShieldCheck, Database,
+  CaretDown, Megaphone, Kanban, MagnifyingGlass,
+  TrendUp, Target, Files, Gear, Bell, X,
 } from '@phosphor-icons/react';
-import { LandingFooter } from '@/components/landing/LandingFooter';
-import { PRICING } from '@/lib/pricing';
 
-/* ── FadeUp ──────────────────────────────────────────────────── */
-function FadeUp({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
-  const ref = useRef(null);
-  const inView = useInView(ref, { once: true, margin: '-40px' });
-  return (
-    <motion.div ref={ref} initial={{ opacity: 0, y: 28 }} animate={inView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.55, delay, ease: [0.22, 1, 0.36, 1] }}>
-      {children}
-    </motion.div>
-  );
-}
+/* ── Feature + plan data ──────────────────────────────────── */
+const FEATURES = [
+  { Icon: CheckSquare, label: 'Task Management',   color: '#7030EF', to: '#DB1FFF', desc: 'Kanban, List, Calendar & Timeline' },
+  { Icon: CalendarDots,label: 'Content Calendar',  color: '#00D4FF', to: '#7030EF', desc: 'Plan across all platforms' },
+  { Icon: ChartLine,   label: 'Ad Campaigns',      color: '#00E5A0', to: '#00D4FF', desc: 'Track ROAS, CTR & CPC live' },
+  { Icon: ChatCircle,  label: 'Team Chat',          color: '#FFB547', to: '#FF7A30', desc: 'Project-linked conversations' },
+  { Icon: Timer,       label: 'Time Tracking',      color: '#00D4FF', to: '#7030EF', desc: 'One-click timers & invoices' },
+  { Icon: Sparkle,     label: 'AI Intelligence',    color: '#DB1FFF', to: '#7030EF', desc: 'Competitor analysis & ideas' },
+  { Icon: Users,       label: 'Client Portal',      color: '#00E5A0', to: '#00D4FF', desc: 'Real-time client visibility' },
+  { Icon: PaintBrush,  label: 'Design Hub',         color: '#FF4D6A', to: '#FF7A30', desc: 'Upload, review & approve' },
+];
 
-/* ── Dashboard Mockup ────────────────────────────────────────── */
-function DashboardMockup() {
-  const tasks = [
-    { name: 'Brand redesign proposal', pct: 65, color: '#2563EB' },
-    { name: 'Q3 content calendar',     pct: 90, color: '#8b5cf6' },
-    { name: 'Client onboarding flow',  pct: 100, color: '#10b981' },
-    { name: 'Ad campaign analysis',    pct: 40, color: '#f59e0b' },
-  ];
-  const stats = [
-    { label: 'Projects', value: '24', delta: '+3', color: '#2563EB' },
-    { label: 'MRR',      value: '$48k', delta: '+18%', color: '#10b981' },
-    { label: 'Tasks',    value: '137', delta: '-12', color: '#8b5cf6' },
-    { label: 'Clients',  value: '31', delta: '+5', color: '#06b6d4' },
-  ];
-  return (
-    <div style={{ background: '#0c0d1a', border: '1px solid rgba(37,99,235,0.2)', borderRadius: 16, overflow: 'hidden', boxShadow: '0 0 60px rgba(37,99,235,0.12), 0 40px 80px rgba(0,0,0,0.5)', width: '100%', maxWidth: 540 }}>
-      <div style={{ background: '#07080f', borderBottom: '1px solid rgba(255,255,255,0.05)', padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 6 }}>
-        {['#f43f5e','#f59e0b','#10b981'].map((c,i) => <div key={i} style={{ width: 9, height: 9, borderRadius: '50%', background: c }} />)}
-        <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.25)', marginLeft: 8 }}>TasksDone — Dashboard</span>
-      </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 1, background: 'rgba(255,255,255,0.03)', margin: '10px 10px 0' }}>
-        {stats.map((s,i) => (
-          <div key={i} style={{ background: '#111228', padding: '10px 12px', borderRadius: i===0?'7px 0 0 7px':i===3?'0 7px 7px 0':0 }}>
-            <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.35)', marginBottom: 3 }}>{s.label}</div>
-            <div style={{ fontSize: 15, fontWeight: 700, color: '#f1f2f9' }}>{s.value}</div>
-            <div style={{ fontSize: 9, color: s.color, marginTop: 2 }}>{s.delta}</div>
-          </div>
-        ))}
-      </div>
-      <div style={{ padding: '10px 10px 4px' }}>
-        <div style={{ fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 6 }}>Active Tasks</div>
-        {tasks.map((t,i) => (
-          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', background: '#111228', borderRadius: 7, marginBottom: 5 }}>
-            <div style={{ width: 5, height: 5, borderRadius: '50%', background: t.color, flexShrink: 0 }} />
-            <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.7)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.name}</span>
-            <div style={{ width: 56, height: 3, background: 'rgba(255,255,255,0.07)', borderRadius: 3, overflow: 'hidden', flexShrink: 0 }}>
-              <div style={{ width: `${t.pct}%`, height: '100%', background: t.color, borderRadius: 3 }} />
-            </div>
-            <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.3)', width: 24, textAlign: 'right' }}>{t.pct}%</span>
-          </div>
-        ))}
-      </div>
-      <div style={{ margin: '6px 10px 10px', padding: '10px 12px', background: 'rgba(37,99,235,0.07)', border: '1px solid rgba(37,99,235,0.16)', borderRadius: 9, display: 'flex', gap: 9 }}>
-        <div style={{ width: 22, height: 22, borderRadius: 6, background: 'linear-gradient(135deg,#0EA5E9,#2563EB)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-          <Sparkle size={11} color="#fff" />
-        </div>
-        <div>
-          <div style={{ fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.75)', marginBottom: 2 }}>AI Insight</div>
-          <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)' }}>Acme Corp invoice overdue 7 days — send reminder?</div>
-        </div>
-      </div>
-    </div>
-  );
-}
+const PLANS = [
+  {
+    id: 'free', name: 'Free', monthly: 0, annual: 0,
+    desc: 'For freelancers getting started',
+    storage: '1 GB', file: '10 MB', popular: false,
+    features: ['5 clients','3 team members','3 projects','Basic Kanban','1 GB storage','Community support'],
+  },
+  {
+    id: 'pro', name: 'Pro', monthly: 29, annual: 24,
+    desc: 'For growing agencies',
+    storage: '20 GB', file: '100 MB', popular: true,
+    features: ['Unlimited clients','15 team members','All views','Content calendar','Time tracking','Client portal','100 AI req/mo','20 GB storage','Priority support'],
+  },
+  {
+    id: 'agency', name: 'Agency', monthly: 59, annual: 49,
+    desc: 'For large agencies',
+    storage: '100 GB', file: '500 MB', popular: false,
+    features: ['Everything in Pro','Unlimited members','Unlimited AI','White-label','Public API','100 GB storage','Dedicated manager'],
+  },
+];
 
-/* ── Feature Card ────────────────────────────────────────────── */
-function FeatureCard({ icon: Icon, title, desc, color }: { icon: any; title: string; desc: string; color: string }) {
-  return (
-    <div
-      style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14, padding: '24px 22px', transition: 'border-color 0.2s,transform 0.2s,background 0.2s' }}
-      onMouseEnter={e => { const d = e.currentTarget as HTMLDivElement; d.style.borderColor='rgba(37,99,235,0.25)'; d.style.transform='translateY(-3px)'; d.style.background='rgba(37,99,235,0.03)'; }}
-      onMouseLeave={e => { const d = e.currentTarget as HTMLDivElement; d.style.borderColor='rgba(255,255,255,0.06)'; d.style.transform='translateY(0)'; d.style.background='rgba(255,255,255,0.02)'; }}
-    >
-      <div style={{ width: 40, height: 40, borderRadius: 10, background: `${color}18`, border: `1px solid ${color}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
-        <Icon size={18} color={color} />
-      </div>
-      <h3 style={{ fontSize: 15, fontWeight: 600, color: '#e2e8f0', marginBottom: 8, lineHeight: 1.3 }}>{title}</h3>
-      <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.45)', lineHeight: 1.65, margin: 0 }}>{desc}</p>
-    </div>
-  );
-}
+/* ── Sidebar mock items ───────────────────────────────────── */
+const MOCK_NAV = [
+  { Icon: Kanban,       label: 'Dashboard', active: true  },
+  { Icon: CheckSquare,  label: 'Tasks',     active: false },
+  { Icon: Files,        label: 'Projects',  active: false },
+  { Icon: Users,        label: 'Clients',   active: false },
+  { Icon: CalendarDots, label: 'Content',   active: false },
+  { Icon: Sparkle,      label: 'AI Tools',  active: false },
+];
 
-/* ── FAQ Item ────────────────────────────────────────────────── */
-function FAQItem({ q, a }: { q: string; a: string }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <div style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-      <button onClick={() => setOpen(!open)} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 0', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', gap: 16 }}>
-        <span style={{ fontSize: 15, fontWeight: 500, color: '#e2e8f0', lineHeight: 1.5 }}>{q}</span>
-        <motion.div animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.2 }}><CaretDown size={16} color="rgba(255,255,255,0.4)" /></motion.div>
-      </button>
-      <AnimatePresence>
-        {open && (
-          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.22 }} style={{ overflow: 'hidden' }}>
-            <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)', lineHeight: 1.75, paddingBottom: 20, margin: 0 }}>{a}</p>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-}
-
-/* ── Pricing Card ────────────────────────────────────────────── */
-function PricingCard({ plan, price, annualPrice, features, highlighted, billing, cta }: {
-  plan: string; price: number; annualPrice: number; features: string[];
-  highlighted?: boolean; billing: 'monthly' | 'annual'; cta?: string;
-}) {
-  const router = useRouter();
-  const display = billing === 'annual' ? annualPrice : price;
-  const savings = price > 0 ? Math.round((1 - annualPrice / price) * 100) : 0;
-  return (
-    <div
-      style={{ background: highlighted ? 'rgba(37,99,235,0.06)' : 'rgba(255,255,255,0.02)', border: `1px solid ${highlighted ? 'rgba(37,99,235,0.35)' : 'rgba(255,255,255,0.07)'}`, borderRadius: 16, padding: '32px 28px', position: 'relative', boxShadow: highlighted ? '0 0 50px rgba(37,99,235,0.1)' : 'none', display: 'flex', flexDirection: 'column', transition: 'transform 0.2s' }}
-      onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-4px)'}
-      onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.transform = 'translateY(0)'}
-    >
-      {highlighted && (
-        <div style={{ position: 'absolute', top: -13, left: '50%', transform: 'translateX(-50%)' }}>
-          <span style={{ background: 'linear-gradient(135deg,#0EA5E9,#2563EB)', color: '#fff', fontSize: 10, fontWeight: 700, padding: '4px 14px', borderRadius: 20, letterSpacing: '0.05em' }}>MOST POPULAR</span>
-        </div>
-      )}
-      <p style={{ fontSize: 12, fontWeight: 700, color: highlighted ? '#60A5FA' : 'rgba(255,255,255,0.4)', letterSpacing: '0.07em', textTransform: 'uppercase', margin: '0 0 14px' }}>{plan}</p>
-      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 4, marginBottom: 6 }}>
-        <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', alignSelf: 'flex-start', marginTop: 8 }}>$</span>
-        <span style={{ fontSize: 44, fontWeight: 800, color: '#f1f2f9', letterSpacing: '-0.03em', lineHeight: 1 }}>{display}</span>
-        {price > 0 && <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.35)', paddingBottom: 6 }}>/mo</span>}
-      </div>
-      {billing === 'annual' && savings > 0 && <p style={{ fontSize: 12, color: '#10b981', marginBottom: 4 }}>Save {savings}% annually</p>}
-      {price === 0 && <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', marginBottom: 0 }}>Free forever</p>}
-      <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', margin: '20px 0' }} />
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 28 }}>
-        {features.map((f, i) => (
-          <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-            <CheckCircle size={14} color={highlighted ? '#2563EB' : '#10b981'} style={{ flexShrink: 0, marginTop: 2 }} />
-            <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.6)', lineHeight: 1.5 }}>{f}</span>
-          </div>
-        ))}
-      </div>
-      <button onClick={() => router.push('/register')} style={{ width: '100%', padding: '13px', borderRadius: 10, background: highlighted ? 'linear-gradient(135deg,#0EA5E9,#2563EB)' : 'rgba(255,255,255,0.06)', border: highlighted ? 'none' : '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer', boxShadow: highlighted ? '0 0 24px rgba(37,99,235,0.3)' : 'none', transition: 'opacity 0.2s' }}>
-        {cta || (price === 0 ? 'Start Free' : 'Get Started')}
-      </button>
-    </div>
-  );
-}
-
-/* ═══════════════════════════════════════════════════════════════ */
 export default function LandingPage() {
   const router = useRouter();
-  const [billing, setBilling] = useState<'monthly' | 'annual'>('annual');
+  const [scrollY,        setScrollY]        = useState(0);
+  const [cycle,          setCycle]          = useState<'monthly'|'annual'>('monthly');
+  const [faqOpen,        setFaqOpen]        = useState<number|null>(null);
+  const [activeFeature,  setActiveFeature]  = useState(0);
+  const heroRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const onScroll = () => setScrollY(window.scrollY);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  useEffect(() => {
+    const obs = new IntersectionObserver(
+      entries => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); }),
+      { threshold: 0.12 }
+    );
+    document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+    return () => obs.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const t = setInterval(() => setActiveFeature(f => (f + 1) % FEATURES.length), 3200);
+    return () => clearInterval(t);
+  }, []);
+
+  const scrolled = scrollY > 20;
 
   return (
-    <div style={{ background: '#06070d', minHeight: '100vh', color: '#f1f2f9', fontFamily: 'Inter,-apple-system,sans-serif' }}>
-      {/* Announcement bar */}
-      <div style={{ background: 'linear-gradient(135deg, #0EA5E9, #2563EB)', padding: '10px 20px', textAlign: 'center', fontSize: 13, color: 'white', fontWeight: 500 }}>
-        🚀 TasksDone is now live! Sign up free — no credit card needed.
-        <button onClick={() => router.push('/register')} style={{ marginLeft: 12, padding: '2px 12px', borderRadius: 100, background: 'white', color: '#2563EB', border: 'none', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
-          Get started →
-        </button>
+    <div style={{
+      background: '#08080F',
+      color: '#E8E8F2',
+      fontFamily: 'var(--font-body, "DM Sans"), sans-serif',
+      overflowX: 'hidden',
+    }}>
+
+      {/* ── Announcement bar ──────────────────────────────────── */}
+      <div style={{
+        background: 'linear-gradient(135deg, #7030EF, #DB1FFF)',
+        padding: '9px 20px', textAlign: 'center',
+        fontSize: 13, color: 'rgba(255,255,255,0.95)', fontWeight: 500,
+        position: 'relative', zIndex: 10,
+        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+      }}>
+        <Rocket size={14} color="#fff" weight="fill" style={{ flexShrink: 0 }} />
+        <span>TasksDone is live — The OS for modern marketing agencies.</span>
+        <button onClick={() => router.push('/register')} style={{
+          background: 'rgba(255,255,255,0.2)', border: '1px solid rgba(255,255,255,0.35)',
+          color: 'white', fontSize: 11, fontWeight: 700, padding: '3px 12px',
+          borderRadius: 100, cursor: 'pointer',
+        }}>Start free →</button>
       </div>
-      {/* ── HERO ─────────────────────────────────────────── */}
-      <section style={{ paddingTop: 140, paddingBottom: 100, position: 'relative', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 80% 50% at 50% -10%,rgba(37,99,235,0.11),transparent)', pointerEvents: 'none' }} />
-        <div style={{ maxWidth: 1120, margin: '0 auto', padding: '0 24px', position: 'relative', zIndex: 1 }}>
-          <FadeUp>
-            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 28 }}>
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '6px 14px', borderRadius: 40, background: 'rgba(37,99,235,0.08)', border: '1px solid rgba(37,99,235,0.2)', fontSize: 12, color: '#60A5FA', fontWeight: 600 }}>
-                <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#2563EB', boxShadow: '0 0 8px #6366f1' }} />
-                The operating system for modern agencies
+
+      {/* ── NAVBAR ────────────────────────────────────────────── */}
+      <nav style={{
+        position: 'sticky', top: 0, zIndex: 100, height: 62,
+        display: 'flex', alignItems: 'center', padding: '0 48px',
+        justifyContent: 'space-between',
+        background: scrolled ? 'rgba(8,8,15,0.88)' : 'transparent',
+        backdropFilter: scrolled ? 'blur(24px)' : 'none',
+        WebkitBackdropFilter: scrolled ? 'blur(24px)' : 'none',
+        borderBottom: scrolled ? '1px solid rgba(112,48,239,0.15)' : 'none',
+        transition: 'all 0.3s',
+      }}>
+        {/* Logo */}
+        <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{
+            width: 34, height: 34, borderRadius: 10,
+            background: 'linear-gradient(135deg,#7030EF,#DB1FFF)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            boxShadow: '0 4px 16px rgba(112,48,239,0.45)',
+          }}>
+            <CheckSquare size={18} color="#fff" weight="fill" />
+          </div>
+          <span style={{
+            fontFamily: 'var(--font-display, "Plus Jakarta Sans"), sans-serif',
+            fontWeight: 800, fontSize: 19, color: 'white', letterSpacing: '-0.03em',
+          }}>
+            Tasks<span style={{ background: 'linear-gradient(135deg,#A580FF,#DB1FFF)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Done</span>
+          </span>
+        </Link>
+
+        {/* Links */}
+        <div className="hide-mobile" style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          {[
+            { label: 'Features', href: '/features' },
+            { label: 'Pricing',  href: '/pricing'  },
+            { label: 'Blog',     href: '/blog'     },
+            { label: 'Docs',     href: '/docs'     },
+          ].map(item => (
+            <Link key={item.label} href={item.href}
+              style={{ color: 'rgba(255,255,255,0.5)', textDecoration: 'none', fontSize: 14, fontWeight: 500, padding: '7px 13px', borderRadius: 9, transition: 'all 0.15s' }}
+              onMouseEnter={e => { e.currentTarget.style.color = 'white'; e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
+              onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.5)'; e.currentTarget.style.background = 'transparent'; }}
+            >{item.label}</Link>
+          ))}
+        </div>
+
+        {/* Auth buttons */}
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <Link href="/login"
+            style={{ padding: '8px 18px', borderRadius: 9, border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.75)', fontSize: 14, fontWeight: 500, textDecoration: 'none', transition: 'all 0.15s' }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.25)'; e.currentTarget.style.color = 'white'; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = 'rgba(255,255,255,0.75)'; }}
+          >Log in</Link>
+          <Link href="/register"
+            style={{ padding: '9px 20px', borderRadius: 10, background: 'linear-gradient(135deg,#7030EF,#DB1FFF)', color: 'white', fontSize: 14, fontWeight: 700, textDecoration: 'none', boxShadow: '0 4px 18px rgba(112,48,239,0.4)', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: 6 }}
+            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 8px 28px rgba(112,48,239,0.55)'; }}
+            onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 4px 18px rgba(112,48,239,0.4)'; }}
+          >
+            <Rocket size={14} weight="fill" />
+            Get started free
+          </Link>
+        </div>
+      </nav>
+
+      {/* ── HERO ──────────────────────────────────────────────── */}
+      <section ref={heroRef} style={{ minHeight: '95vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '80px 24px 60px', position: 'relative', overflow: 'hidden' }}>
+        {/* Orbs */}
+        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 75% 50% at 50% -5%, rgba(112,48,239,0.22) 0%, transparent 60%)', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', width: 1, height: '55%', background: 'linear-gradient(180deg, rgba(219,31,255,0.45) 0%, transparent 100%)', left: '50%', top: 0, pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', inset: 0, opacity: 0.018, backgroundImage: 'linear-gradient(rgba(255,255,255,1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,1) 1px, transparent 1px)', backgroundSize: '64px 64px', pointerEvents: 'none' }} />
+
+        {/* Badge */}
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, marginBottom: 28, padding: '7px 16px 7px 8px', borderRadius: 100, background: 'rgba(112,48,239,0.12)', border: '1px solid rgba(112,48,239,0.3)', animation: 'fadeUp 0.6s ease both' }}>
+          <span style={{ background: 'linear-gradient(135deg,#7030EF,#DB1FFF)', color: 'white', fontSize: 10, fontWeight: 700, padding: '3px 9px', borderRadius: 100, letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: 4 }}>
+            <Sparkle size={10} weight="fill" /> NEW
+          </span>
+          <span style={{ fontSize: 13, color: '#C480FF', fontWeight: 500 }}>AI-powered competitor analysis is here →</span>
+        </div>
+
+        {/* Headline */}
+        <h1 style={{ fontFamily: 'var(--font-display, "Plus Jakarta Sans"), sans-serif', fontSize: 'clamp(40px, 7.5vw, 86px)', fontWeight: 900, lineHeight: 1.02, letterSpacing: '-0.045em', maxWidth: 920, marginBottom: 24, animation: 'fadeUp 0.6s 0.1s ease both' }}>
+          Stop juggling tools.<br />
+          <span style={{ background: 'linear-gradient(135deg, #C480FF 0%, #DB1FFF 50%, #FF4D6A 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+            Start getting things done.
+          </span>
+        </h1>
+
+        <p style={{ fontSize: 'clamp(15px, 1.8vw, 19px)', color: 'rgba(255,255,255,0.48)', maxWidth: 540, lineHeight: 1.75, marginBottom: 16, animation: 'fadeUp 0.6s 0.2s ease both' }}>
+          TasksDone is the all-in-one operating system for modern marketing agencies.
+          Replace 6 tools with one platform your whole team will love.
+        </p>
+
+        {/* Replacing pill */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 36, flexWrap: 'wrap', justifyContent: 'center', animation: 'fadeUp 0.6s 0.25s ease both' }}>
+          <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.22)' }}>Replacing:</span>
+          {['Trello','ClickUp','Notion','Slack','Harvest','Monday'].map(t => (
+            <span key={t} style={{ fontSize: 12, color: 'rgba(255,255,255,0.32)', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', padding: '3px 10px', borderRadius: 6, textDecoration: 'line-through', textDecorationColor: 'rgba(255,255,255,0.18)' }}>{t}</span>
+          ))}
+        </div>
+
+        {/* CTAs */}
+        <div style={{ display: 'flex', gap: 12, marginBottom: 16, flexWrap: 'wrap', justifyContent: 'center', animation: 'fadeUp 0.6s 0.3s ease both' }}>
+          <button onClick={() => router.push('/register')} style={{ padding: '15px 36px', borderRadius: 14, border: 'none', background: 'linear-gradient(135deg, #7030EF, #DB1FFF)', color: 'white', fontSize: 16, fontWeight: 700, cursor: 'pointer', boxShadow: '0 10px 36px rgba(112,48,239,0.45)', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: 8, fontFamily: 'inherit' }}
+          onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 18px 50px rgba(112,48,239,0.6)'; }}
+          onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 10px 36px rgba(112,48,239,0.45)'; }}>
+            <Rocket size={16} weight="fill" />
+            Start for free — no card needed
+          </button>
+          <button onClick={() => router.push('/login')} style={{ padding: '15px 30px', borderRadius: 14, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.82)', fontSize: 16, fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: 8, fontFamily: 'inherit' }}
+          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.09)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.18)'; }}
+          onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}>
+            Sign in to workspace <ArrowRight size={15} />
+          </button>
+        </div>
+
+        <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.18)', animation: 'fadeUp 0.6s 0.35s ease both' }}>
+          Free forever · No credit card · Setup in 5 minutes
+        </p>
+
+        {/* Social proof */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 22, animation: 'fadeUp 0.6s 0.4s ease both' }}>
+          <div style={{ display: 'flex' }}>
+            {['#7030EF','#DB1FFF','#00D4FF','#00E5A0','#FF4D6A'].map((c,i) => (
+              <div key={i} style={{ width: 30, height: 30, borderRadius: '50%', background: `linear-gradient(135deg,${c},${c}BB)`, border: '2px solid #08080F', marginLeft: i>0?-9:0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, color: 'white', fontFamily: 'var(--font-display)' }}>
+                {['S','A','M','K','R'][i]}
+              </div>
+            ))}
+          </div>
+          <div>
+            <div style={{ display: 'flex', gap: 2 }}>
+              {[...Array(5)].map((_,i) => <Star key={i} size={13} color="#FFB547" weight="fill" />)}
+            </div>
+            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.38)' }}>Loved by 2,400+ agencies</div>
+          </div>
+        </div>
+
+        {/* APP MOCKUP */}
+        <div style={{ marginTop: 72, width: '100%', maxWidth: 980, position: 'relative', animation: 'fadeUp 0.8s 0.5s ease both' }}>
+          <div style={{ position: 'absolute', inset: -80, borderRadius: 50, background: 'radial-gradient(ellipse, rgba(112,48,239,0.22) 0%, transparent 65%)', filter: 'blur(40px)', zIndex: 0, pointerEvents: 'none' }} />
+          <div style={{ position: 'relative', zIndex: 1, border: '1px solid rgba(255,255,255,0.07)', borderRadius: 22, overflow: 'hidden', boxShadow: '0 40px 120px rgba(0,0,0,0.75), 0 0 0 1px rgba(112,48,239,0.1)' }}>
+            {/* Window chrome */}
+            <div style={{ background: '#0E0E14', padding: '12px 20px', display: 'flex', alignItems: 'center', gap: 10, borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+              <div style={{ display: 'flex', gap: 6 }}>
+                {['#ff5f57','#ffbd2e','#28c840'].map(c => <div key={c} style={{ width: 11, height: 11, borderRadius: '50%', background: c }} />)}
+              </div>
+              <div style={{ flex: 1, background: 'rgba(255,255,255,0.04)', borderRadius: 7, padding: '4px 14px', fontSize: 12, color: 'rgba(255,255,255,0.22)', textAlign: 'center', maxWidth: 280, margin: '0 auto' }}>
+                app.tasksdone.cloud/dashboard
               </div>
             </div>
-          </FadeUp>
-          <FadeUp delay={0.05}>
-            <h1 style={{ fontSize: 'clamp(38px,6vw,72px)', fontWeight: 900, lineHeight: 1.08, textAlign: 'center', letterSpacing: '-0.03em', margin: '0 0 24px' }}>
-              Run your agency<br />
-              <span style={{ background: 'linear-gradient(135deg,#0EA5E9 0%,#2563EB 50%,#7C3AED 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                without the chaos
-              </span>
-            </h1>
-          </FadeUp>
-          <FadeUp delay={0.1}>
-            <p style={{ fontSize: 'clamp(16px,2vw,20px)', color: 'rgba(255,255,255,0.45)', textAlign: 'center', maxWidth: 540, margin: '0 auto 40px', lineHeight: 1.7 }}>
-              Projects, clients, tasks, invoices, content, and AI — all in one place. Replace 6 disconnected tools with one platform built for agencies.
-            </p>
-          </FadeUp>
-          <FadeUp delay={0.15}>
-            <div style={{ display: 'flex', justifyContent: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 14 }}>
-              <button
-                onClick={() => router.push('/register')}
-                style={{ padding: '14px 32px', borderRadius: 10, fontSize: 15, fontWeight: 700, background: 'linear-gradient(135deg,#0EA5E9,#2563EB)', color: '#fff', border: 'none', cursor: 'pointer', boxShadow: '0 0 32px rgba(37,99,235,0.4)', display: 'flex', alignItems: 'center', gap: 8, transition: 'transform 0.15s,box-shadow 0.15s' }}
-                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.transform='translateY(-2px)'; (e.currentTarget as HTMLButtonElement).style.boxShadow='0 0 44px rgba(37,99,235,0.55)'; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.transform='translateY(0)'; (e.currentTarget as HTMLButtonElement).style.boxShadow='0 0 32px rgba(37,99,235,0.4)'; }}
-              >
-                Start Free — No credit card <ArrowRight size={15} />
-              </button>
-              <button
-                onClick={() => router.push('/login')}
-                style={{ padding: '14px 28px', borderRadius: 10, fontSize: 15, fontWeight: 600, background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.7)', border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer', transition: 'all 0.2s' }}
-                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background='rgba(255,255,255,0.08)'; (e.currentTarget as HTMLButtonElement).style.color='#fff'; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background='rgba(255,255,255,0.05)'; (e.currentTarget as HTMLButtonElement).style.color='rgba(255,255,255,0.7)'; }}
-              >
-                Sign In
-              </button>
-            </div>
-            <p style={{ textAlign: 'center', fontSize: 12, color: 'rgba(255,255,255,0.22)' }}>Free 14-day trial · No credit card · Cancel anytime</p>
-          </FadeUp>
-          <FadeUp delay={0.2}>
-            <div style={{ display: 'flex', justifyContent: 'center', marginTop: 64 }}>
-              <div style={{ position: 'relative' }}>
-                <div style={{ position: 'absolute', inset: -40, background: 'radial-gradient(ellipse at center,rgba(37,99,235,0.07),transparent 70%)', pointerEvents: 'none' }} />
-                <DashboardMockup />
+            {/* App UI */}
+            <div style={{ background: '#0B0B0F', display: 'flex', height: 400 }}>
+              {/* Sidebar */}
+              <div style={{ width: 180, background: '#0E0E14', borderRight: '1px solid rgba(255,255,255,0.05)', padding: '14px 10px', flexShrink: 0 }}>
+                {/* Logo in mock */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '0 8px', marginBottom: 16 }}>
+                  <div style={{ width: 24, height: 24, borderRadius: 7, background: 'linear-gradient(135deg,#7030EF,#DB1FFF)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <CheckSquare size={13} color="#fff" weight="fill" />
+                  </div>
+                  <span style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 13, color: 'white' }}>Tasks<span style={{ background: 'linear-gradient(135deg,#A580FF,#DB1FFF)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Done</span></span>
+                </div>
+                {MOCK_NAV.map(item => (
+                  <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 10px', borderRadius: 8, marginBottom: 2, fontSize: 12, background: item.active ? 'rgba(112,48,239,0.18)' : 'transparent', color: item.active ? '#C480FF' : 'rgba(255,255,255,0.35)', fontWeight: item.active ? 600 : 400, transition: 'all 0.15s' }}>
+                    <item.Icon size={14} weight={item.active ? 'fill' : 'regular'} color={item.active ? '#C480FF' : 'rgba(255,255,255,0.35)'} />
+                    {item.label}
+                  </div>
+                ))}
+              </div>
+              {/* Content */}
+              <div style={{ flex: 1, padding: '18px 20px', overflowY: 'hidden' }}>
+                {/* Stats row */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 10, marginBottom: 18 }}>
+                  {[
+                    { l: 'PROJECTS',   v: '12', from: '#7030EF', to: '#DB1FFF' },
+                    { l: 'OPEN TASKS', v: '48', from: '#00E5A0', to: '#00D4FF' },
+                    { l: 'DUE TODAY', v: '5',  from: '#FFB547', to: '#FF7A30' },
+                    { l: 'TEAM',       v: '8',  from: '#00D4FF', to: '#7030EF' },
+                  ].map(s => (
+                    <div key={s.l} style={{ background: `${s.from}12`, border: `1px solid ${s.from}25`, borderRadius: 10, padding: '10px 12px', position: 'relative', overflow: 'hidden' }}>
+                      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg,${s.from},${s.to})`, opacity: 0.7 }} />
+                      <div style={{ fontSize: 8, color: s.from, fontWeight: 700, letterSpacing: '0.08em', marginBottom: 4 }}>{s.l}</div>
+                      <div style={{ fontSize: 24, fontWeight: 900, color: 'white', fontFamily: 'var(--font-display)' }}>{s.v}</div>
+                    </div>
+                  ))}
+                </div>
+                {/* Kanban board */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 8 }}>
+                  {[
+                    { col: 'To Do',       color: '#4B4B6A', tasks: ['SEO Audit','Write Ad Copy','Research'] },
+                    { col: 'In Progress', color: '#7030EF', tasks: ['Ramadan Campaign','Meta Ads'] },
+                    { col: 'In Review',   color: '#FFB547', tasks: ['Q1 Report'] },
+                    { col: 'Done',        color: '#00E5A0', tasks: ['Brand Guide','Logo Design'] },
+                  ].map(col => (
+                    <div key={col.col} style={{ background: `${col.color}08`, border: `1px solid ${col.color}18`, borderRadius: 9, padding: 9 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 7 }}>
+                        <div style={{ width: 6, height: 6, borderRadius: '50%', background: col.color }} />
+                        <span style={{ fontSize: 9, fontWeight: 700, color: col.color, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{col.col}</span>
+                      </div>
+                      {col.tasks.map(t => (
+                        <div key={t} style={{ background: 'rgba(255,255,255,0.04)', borderLeft: `2px solid ${col.color}80`, borderRadius: 5, padding: '5px 7px', marginBottom: 4, fontSize: 10, color: 'rgba(255,255,255,0.6)' }}>{t}</div>
+                      ))}
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
-          </FadeUp>
+          </div>
         </div>
       </section>
 
-      {/* ── LOGO BAR ─────────────────────────────────────── */}
-      <section style={{ borderTop: '1px solid rgba(255,255,255,0.04)', borderBottom: '1px solid rgba(255,255,255,0.04)', padding: '28px 24px' }}>
-        <div style={{ maxWidth: 900, margin: '0 auto' }}>
-          <p style={{ textAlign: 'center', fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.18)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 20 }}>Trusted by teams at</p>
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 40, flexWrap: 'wrap' }}>
-            {['Horizon Media','Apex Creative','Nova Agency','Orbit Studios','Pulse Digital'].map((name,i) => (
-              <span key={i} style={{ fontSize: 14, fontWeight: 700, color: 'rgba(255,255,255,0.13)', letterSpacing: '-0.01em' }}>{name}</span>
+      {/* ── STATS BAR ─────────────────────────────────────────── */}
+      <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', borderBottom: '1px solid rgba(255,255,255,0.05)', padding: '32px 48px', display: 'flex', justifyContent: 'center', gap: 72, flexWrap: 'wrap', background: 'rgba(112,48,239,0.03)' }}>
+        {[
+          { value: '2,400+', label: 'Agencies worldwide', Icon: Globe,       color: '#A580FF' },
+          { value: '98%',    label: 'Satisfaction rate',  Icon: Star,        color: '#00E5A0' },
+          { value: '6×',     label: 'Tools replaced',     Icon: Lightning,   color: '#DB1FFF' },
+          { value: '4.9★',   label: 'Average rating',     Icon: ShieldCheck, color: '#FFB547' },
+        ].map(s => (
+          <div key={s.label} className="reveal" style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+            <div style={{ width: 36, height: 36, borderRadius: 10, background: `${s.color}15`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <s.Icon size={18} color={s.color} weight="fill" />
+            </div>
+            <div style={{ fontFamily: 'var(--font-display, "Plus Jakarta Sans"), sans-serif', fontSize: 36, fontWeight: 900, color: s.color, letterSpacing: '-0.04em', lineHeight: 1 }}>{s.value}</div>
+            <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.38)' }}>{s.label}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* ── FEATURES ──────────────────────────────────────────── */}
+      <section id="features" style={{ padding: '100px 48px', maxWidth: 1100, margin: '0 auto' }}>
+        <div className="reveal" style={{ textAlign: 'center', marginBottom: 64 }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#A580FF', marginBottom: 14, background: 'rgba(112,48,239,0.1)', padding: '5px 14px', borderRadius: 100, border: '1px solid rgba(112,48,239,0.2)' }}>
+            <Sparkle size={11} weight="fill" /> Everything you need
+          </div>
+          <h2 style={{ fontFamily: 'var(--font-display, "Plus Jakarta Sans"), sans-serif', fontSize: 'clamp(28px,4vw,48px)', fontWeight: 900, letterSpacing: '-0.035em', marginBottom: 16 }}>
+            Built for agencies,<br />
+            <span style={{ color: 'rgba(255,255,255,0.28)' }}>not generic teams</span>
+          </h2>
+          <p style={{ fontSize: 17, color: 'rgba(255,255,255,0.4)', maxWidth: 480, margin: '0 auto' }}>
+            Every feature designed for how marketing agencies actually work.
+          </p>
+        </div>
+
+        <div className="reveal" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 1, border: '1px solid rgba(112,48,239,0.12)', borderRadius: 22, overflow: 'hidden' }}>
+          {FEATURES.map((f, i) => (
+            <div
+              key={f.label}
+              onMouseEnter={() => setActiveFeature(i)}
+              style={{
+                padding: '28px 24px',
+                background: activeFeature === i
+                  ? `linear-gradient(135deg, ${f.color}12, ${f.to}08)`
+                  : 'rgba(255,255,255,0.01)',
+                borderRight: (i+1)%4!==0 ? '1px solid rgba(255,255,255,0.04)' : 'none',
+                borderBottom: i<4 ? '1px solid rgba(255,255,255,0.04)' : 'none',
+                transition: 'all 0.25s',
+                cursor: 'default',
+                position: 'relative',
+              }}
+            >
+              {/* Active bottom line */}
+              {activeFeature === i && (
+                <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg, ${f.color}, ${f.to})` }} />
+              )}
+              <div style={{
+                width: 46, height: 46, borderRadius: 13,
+                background: activeFeature===i ? `linear-gradient(135deg, ${f.color}, ${f.to})` : 'rgba(255,255,255,0.05)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                marginBottom: 14, transition: 'all 0.25s',
+                boxShadow: activeFeature===i ? `0 8px 24px ${f.color}40` : 'none',
+              }}>
+                <f.Icon size={21} color={activeFeature===i ? '#fff' : 'rgba(255,255,255,0.45)'} weight={activeFeature===i ? 'fill' : 'regular'} />
+              </div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: activeFeature===i ? 'white' : 'rgba(255,255,255,0.65)', marginBottom: 6, fontFamily: 'var(--font-display)', transition: 'color 0.2s' }}>{f.label}</div>
+              <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.32)', lineHeight: 1.55 }}>{f.desc}</div>
+              {activeFeature===i && (
+                <div style={{ marginTop: 12, display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700, color: f.color }}>
+                  Explore <ArrowRight size={11} weight="bold" />
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── TESTIMONIALS ──────────────────────────────────────── */}
+      <section style={{ padding: '80px 48px', background: 'rgba(112,48,239,0.03)', borderTop: '1px solid rgba(255,255,255,0.04)' }}>
+        <div className="reveal" style={{ textAlign: 'center', marginBottom: 56 }}>
+          <h2 style={{ fontFamily: 'var(--font-display, "Plus Jakarta Sans"), sans-serif', fontSize: 'clamp(24px,3.5vw,42px)', fontWeight: 900, letterSpacing: '-0.025em' }}>Loved by agency teams</h2>
+        </div>
+        <div className="reveal" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16, maxWidth: 1000, margin: '0 auto' }}>
+          {[
+            { quote: '"TasksDone replaced 5 different tools we were paying for. Our team is 3x more productive and clients are happier."', name: 'Sarah M.', role: 'CEO, Apex Creative', from: '#7030EF', to: '#DB1FFF' },
+            { quote: '"The client portal is a game changer. No more "what\'s the update?" emails. Clients log in and see everything."', name: 'Ahmed K.', role: 'Founder, Norte Agency', from: '#00D4FF', to: '#7030EF' },
+            { quote: '"We saved 20 hours a month from the time tracking and invoicing features alone. Worth every penny."', name: 'Maria L.', role: 'Ops Director, Vortex Media', from: '#00E5A0', to: '#00D4FF' },
+          ].map((t,i) => (
+            <div
+              key={i}
+              style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 18, padding: 26, transition: 'all 0.22s', position: 'relative', overflow: 'hidden' }}
+              onMouseEnter={e => { e.currentTarget.style.border = `1px solid ${t.from}35`; e.currentTarget.style.background = `${t.from}06`; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+              onMouseLeave={e => { e.currentTarget.style.border = '1px solid rgba(255,255,255,0.06)'; e.currentTarget.style.background = 'rgba(255,255,255,0.02)'; e.currentTarget.style.transform = 'none'; }}
+            >
+              <div style={{ display: 'flex', gap: 2, marginBottom: 16 }}>
+                {[...Array(5)].map((_,j) => <Star key={j} size={14} color="#FFB547" weight="fill" />)}
+              </div>
+              <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)', lineHeight: 1.75, marginBottom: 20, fontStyle: 'italic' }}>{t.quote}</p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ width: 36, height: 36, borderRadius: '50%', background: `linear-gradient(135deg,${t.from},${t.to})`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 800, color: 'white', fontFamily: 'var(--font-display)', flexShrink: 0 }}>{t.name[0]}</div>
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: 'white' }}>{t.name}</div>
+                  <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.32)' }}>{t.role}</div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── PRICING ───────────────────────────────────────────── */}
+      <section id="pricing" style={{ padding: '100px 48px', maxWidth: 980, margin: '0 auto' }}>
+        <div className="reveal" style={{ textAlign: 'center', marginBottom: 52 }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#A580FF', marginBottom: 14, background: 'rgba(112,48,239,0.1)', padding: '5px 14px', borderRadius: 100, border: '1px solid rgba(112,48,239,0.2)' }}>
+            <Receipt size={11} weight="fill" /> Pricing
+          </div>
+          <h2 style={{ fontFamily: 'var(--font-display, "Plus Jakarta Sans"), sans-serif', fontSize: 'clamp(26px,3.5vw,42px)', fontWeight: 900, letterSpacing: '-0.03em', marginBottom: 14 }}>Simple, honest pricing</h2>
+          <p style={{ color: 'rgba(255,255,255,0.38)', fontSize: 15 }}>No hidden fees. No per-seat surprises. Cancel anytime.</p>
+        </div>
+
+        {/* Billing toggle */}
+        <div className="reveal" style={{ display: 'flex', justifyContent: 'center', marginBottom: 44 }}>
+          <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 14, padding: 4, display: 'inline-flex', gap: 4 }}>
+            {['monthly','annual'].map(opt => (
+              <button key={opt} onClick={() => setCycle(opt as any)} style={{ padding: '9px 24px', borderRadius: 11, border: 'none', cursor: 'pointer', background: cycle===opt ? 'linear-gradient(135deg,#7030EF,#DB1FFF)' : 'transparent', color: 'white', fontSize: 14, fontWeight: cycle===opt ? 700 : 500, transition: 'all 0.2s', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 6, boxShadow: cycle===opt ? '0 4px 14px rgba(112,48,239,0.35)' : 'none' }}>
+                {opt==='monthly' ? 'Monthly' : 'Annual'}
+                {opt==='annual' && <span style={{ fontSize: 11, color: cycle==='annual'?'rgba(255,255,255,0.9)':'#00E5A0', fontWeight: 700 }}>-17%</span>}
+              </button>
             ))}
           </div>
         </div>
-      </section>
 
-      {/* ── PAIN ─────────────────────────────────────────── */}
-      <section style={{ padding: '100px 24px' }}>
-        <div style={{ maxWidth: 860, margin: '0 auto' }}>
-          <FadeUp>
-            <div style={{ textAlign: 'center', marginBottom: 48 }}>
-              <p style={{ fontSize: 11, fontWeight: 700, color: '#2563EB', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 14 }}>The problem</p>
-              <h2 style={{ fontSize: 'clamp(28px,4vw,44px)', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 16, lineHeight: 1.15 }}>Your tools are fighting each other</h2>
-              <p style={{ fontSize: 16, color: 'rgba(255,255,255,0.4)', maxWidth: 480, margin: '0 auto', lineHeight: 1.7 }}>
-                You're paying for Asana, Notion, Slack, HubSpot, and QuickBooks — and still losing track of everything.
-              </p>
-            </div>
-          </FadeUp>
-          <FadeUp delay={0.05}>
-            <div className="pain-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 14 }}>
-              {['Client updates buried in Slack threads','Invoices in one tool, tasks in another','No single view of all project status','AI tools disconnected from your workflow'].map((item,i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '16px 18px', borderRadius: 10, background: 'rgba(244,63,94,0.05)', border: '1px solid rgba(244,63,94,0.12)' }}>
-                  <X size={14} color="#f43f5e" style={{ flexShrink: 0 }} />
-                  <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.55)', lineHeight: 1.5 }}>{item}</span>
+        {/* Plan cards */}
+        <div className="reveal" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16 }}>
+          {PLANS.map(plan => {
+            const price = cycle==='annual' ? plan.annual : plan.monthly;
+            return (
+              <div key={plan.id} style={{
+                borderRadius: 22, padding: 28, position: 'relative',
+                background: plan.popular ? 'linear-gradient(135deg, rgba(112,48,239,0.1), rgba(219,31,255,0.06))' : 'rgba(255,255,255,0.02)',
+                border: plan.popular ? '1px solid rgba(112,48,239,0.4)' : '1px solid rgba(255,255,255,0.07)',
+                boxShadow: plan.popular ? '0 0 60px rgba(112,48,239,0.12), inset 0 1px 0 rgba(255,255,255,0.06)' : 'none',
+                transform: plan.popular ? 'scale(1.03)' : 'none',
+                transition: 'transform 0.2s',
+              }}>
+                {plan.popular && (
+                  <div style={{ position: 'absolute', top: -13, left: '50%', transform: 'translateX(-50%)', background: 'linear-gradient(135deg,#7030EF,#DB1FFF)', color: 'white', fontSize: 10, fontWeight: 700, padding: '4px 16px', borderRadius: 100, whiteSpace: 'nowrap', boxShadow: '0 4px 16px rgba(112,48,239,0.45)', letterSpacing: '0.06em', display: 'flex', alignItems: 'center', gap: 5 }}>
+                    <Star size={10} weight="fill" /> MOST POPULAR
+                  </div>
+                )}
+                <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 4, fontFamily: 'var(--font-display)' }}>{plan.name}</div>
+                <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.38)', marginBottom: 18 }}>{plan.desc}</div>
+                <div style={{ marginBottom: 8, display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                  <span style={{ fontFamily: 'var(--font-display, "Plus Jakarta Sans"), sans-serif', fontSize: 48, fontWeight: 900, letterSpacing: '-0.04em', lineHeight: 1 }}>${price}</span>
+                  <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: 14 }}>{price===0?' forever':'/mo'}</span>
                 </div>
-              ))}
-            </div>
-          </FadeUp>
-        </div>
-      </section>
-
-      {/* ── 6-FEATURE GRID ───────────────────────────────── */}
-      <section style={{ padding: '100px 24px', background: 'rgba(255,255,255,0.015)', borderTop: '1px solid rgba(255,255,255,0.04)', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-        <div style={{ maxWidth: 1120, margin: '0 auto' }}>
-          <FadeUp>
-            <div style={{ textAlign: 'center', marginBottom: 64 }}>
-              <p style={{ fontSize: 11, fontWeight: 700, color: '#2563EB', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 14 }}>Everything in one place</p>
-              <h2 style={{ fontSize: 'clamp(28px,4vw,44px)', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 16, lineHeight: 1.15 }}>One platform for your entire operation</h2>
-              <p style={{ fontSize: 16, color: 'rgba(255,255,255,0.4)', maxWidth: 500, margin: '0 auto', lineHeight: 1.7 }}>
-                TasksDone replaces the tools you're duct-taping together — with one clean, fast platform.
-              </p>
-            </div>
-          </FadeUp>
-          <FadeUp delay={0.05}>
-            <div className="feature-grid-6" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16 }}>
-              <FeatureCard icon={Kanban} color="#2563EB" title="Project Management" desc="Kanban boards, timelines, and task dependencies built for multi-client agencies." />
-              <FeatureCard icon={Users} color="#8b5cf6" title="Client Management" desc="Full client profiles, portals, and communication history. Never lose context." />
-              <FeatureCard icon={CalendarDots} color="#06b6d4" title="Content Calendar" desc="Plan and schedule content for all clients from one drag-and-drop calendar." />
-              <FeatureCard icon={Brain} color="#a855f7" title="AI Intelligence" desc="Generate campaigns, write copy, analyze competitors — all inside your workflow." />
-              <FeatureCard icon={Receipt} color="#10b981" title="Invoicing & Finance" desc="Create invoices, track expenses, and see your agency cash flow in real time." />
-              <FeatureCard icon={ChartBar} color="#f59e0b" title="Analytics & Reports" desc="Real-time dashboards: project progress, team utilization, and revenue trends." />
-            </div>
-          </FadeUp>
-        </div>
-      </section>
-
-      {/* ── SHOWCASE 1: Projects ─────────────────────────── */}
-      <section style={{ padding: '100px 24px' }}>
-        <div className="feature-2col" style={{ maxWidth: 1080, margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 80, alignItems: 'center' }}>
-          <FadeUp>
-            <div>
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '5px 12px', borderRadius: 6, background: 'rgba(37,99,235,0.1)', border: '1px solid rgba(37,99,235,0.2)', marginBottom: 20 }}>
-                <Kanban size={12} color="#818cf8" /><span style={{ fontSize: 11, color: '#60A5FA', fontWeight: 600, letterSpacing: '0.05em' }}>PROJECTS</span>
+                {cycle==='annual' && price>0 && (
+                  <div style={{ fontSize: 12, color: '#00E5A0', fontWeight: 600, marginBottom: 4, display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <TrendUp size={12} weight="bold" />
+                    Billed ${price*12}/yr · Save ${(plan.monthly-plan.annual)*12}
+                  </div>
+                )}
+                {/* Storage pill */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', background: 'rgba(255,255,255,0.04)', borderRadius: 9, marginBottom: 22, marginTop: 14, fontSize: 12, color: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                  <Database size={13} color="#A580FF" weight="fill" />
+                  <strong style={{ color: 'white' }}>{plan.storage}</strong> · {plan.file} per file
+                </div>
+                {/* CTA */}
+                <button onClick={() => router.push('/register')} style={{ width: '100%', padding: '12px', borderRadius: 12, border: 'none', background: plan.popular ? 'linear-gradient(135deg,#7030EF,#DB1FFF)' : 'rgba(255,255,255,0.07)', color: 'white', fontSize: 14, fontWeight: 700, cursor: 'pointer', marginBottom: 22, transition: 'opacity 0.2s', fontFamily: 'inherit', boxShadow: plan.popular ? '0 6px 22px rgba(112,48,239,0.4)' : 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7 }}
+                onMouseEnter={e => { e.currentTarget.style.opacity = '0.85'; }}
+                onMouseLeave={e => { e.currentTarget.style.opacity = '1'; }}>
+                  <Rocket size={14} weight="fill" />
+                  {plan.id==='free' ? 'Start for free' : `Start ${plan.name} trial →`}
+                </button>
+                {/* Feature list */}
+                <div style={{ borderTop: '1px solid rgba(255,255,255,0.07)', paddingTop: 18 }}>
+                  {plan.features.map(f => (
+                    <div key={f} style={{ display: 'flex', gap: 9, marginBottom: 10, fontSize: 13, color: 'rgba(255,255,255,0.6)', alignItems: 'flex-start' }}>
+                      <div style={{ width: 18, height: 18, borderRadius: '50%', background: 'rgba(0,229,160,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1 }}>
+                        <Check size={10} color="#00E5A0" weight="bold" />
+                      </div>
+                      {f}
+                    </div>
+                  ))}
+                </div>
               </div>
-              <h2 style={{ fontSize: 'clamp(24px,3vw,36px)', fontWeight: 800, letterSpacing: '-0.025em', marginBottom: 16, lineHeight: 1.2 }}>Every project, every client — always on track</h2>
-              <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.45)', lineHeight: 1.75, marginBottom: 24 }}>Switch between Kanban, list, and timeline views. Set milestones, track blockers, and send automated progress reports to clients.</p>
-              {['Kanban, List & Timeline views','Client-facing project portals','Automated status reports','Task dependencies & blockers'].map((f,i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 9 }}>
-                  <CheckCircle size={13} color="#2563EB" style={{ flexShrink: 0 }} />
-                  <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.55)' }}>{f}</span>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* ── FAQ ───────────────────────────────────────────────── */}
+      <section id="faq" style={{ padding: '80px 48px', maxWidth: 700, margin: '0 auto' }}>
+        <div className="reveal" style={{ textAlign: 'center', marginBottom: 52 }}>
+          <h2 style={{ fontFamily: 'var(--font-display, "Plus Jakarta Sans"), sans-serif', fontSize: 'clamp(24px,3.5vw,40px)', fontWeight: 900, letterSpacing: '-0.025em' }}>Got questions?</h2>
+        </div>
+        <div className="reveal">
+          {[
+            { q: 'Is TasksDone really free forever?', a: 'Yes! Our Free plan has no time limit. No credit card required. You get 5 clients, 3 projects, and 1GB storage — completely free.' },
+            { q: 'How is this different from ClickUp or Notion?', a: 'TasksDone is built specifically for marketing agencies — not generic teams. Client Portal, Ad Campaign tracking, Content Calendar, and agency billing are built-in.' },
+            { q: 'Can I try Pro before paying?', a: 'Yes. You get a 14-day free trial on Pro and Agency plans. No credit card needed to start.' },
+            { q: 'How does the Client Portal work?', a: 'Each client gets their own secure login. They only see their projects, approve deliverables, and view invoices — nothing else.' },
+            { q: 'How does AI competitor analysis work?', a: 'Enter your brand and up to 5 competitors. Our AI gives you a full SWOT analysis and actionable recommendations in under 30 seconds.' },
+            { q: 'Is my data safe?', a: 'Yes. Enterprise-grade security, SSL encryption, and daily backups. Hosted on secure servers in Frankfurt, Germany.' },
+          ].map((item, i) => (
+            <div key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+              <button onClick={() => setFaqOpen(faqOpen===i?null:i)} style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '19px 0', background: 'none', border: 'none', color: 'white', fontSize: 15, fontWeight: 600, cursor: 'pointer', textAlign: 'left', gap: 16, fontFamily: 'inherit' }}>
+                {item.q}
+                <div style={{
+                  width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
+                  background: faqOpen===i ? 'rgba(112,48,239,0.2)' : 'rgba(255,255,255,0.05)',
+                  border: `1px solid ${faqOpen===i ? 'rgba(112,48,239,0.4)' : 'rgba(255,255,255,0.1)'}`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  transition: 'all 0.2s',
+                  transform: faqOpen===i ? 'rotate(180deg)' : 'none',
+                }}>
+                  <CaretDown size={13} color={faqOpen===i ? '#A580FF' : 'rgba(255,255,255,0.4)'} weight="bold" />
                 </div>
-              ))}
-              <button onClick={() => router.push('/register')} style={{ marginTop: 24, display: 'inline-flex', alignItems: 'center', gap: 8, padding: '11px 22px', borderRadius: 9, fontSize: 13, fontWeight: 600, background: 'rgba(37,99,235,0.1)', border: '1px solid rgba(37,99,235,0.25)', color: '#60A5FA', cursor: 'pointer', transition: 'all 0.2s' }}>
-                Try free <ArrowRight size={13} />
               </button>
+              {faqOpen===i && <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.48)', lineHeight: 1.8, paddingBottom: 20 }}>{item.a}</p>}
             </div>
-          </FadeUp>
-          <FadeUp delay={0.1}>
-            <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 16, padding: 28 }}>
-              {[{name:'Q3 Campaign',client:'Acme Corp',pct:72,color:'#2563EB'},{name:'Website Redesign',client:'Nova Inc',pct:45,color:'#8b5cf6'},{name:'Social Strategy',client:'Orbit Co',pct:90,color:'#10b981'}].map((p,i) => (
-                <div key={i} style={{ padding: '14px 0', borderBottom: i<2?'1px solid rgba(255,255,255,0.05)':'none' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-                    <div><div style={{ fontSize: 13, fontWeight: 600, color: '#e2e8f0', marginBottom: 2 }}>{p.name}</div><div style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)' }}>{p.client}</div></div>
-                    <span style={{ fontSize: 12, fontWeight: 600, color: p.color }}>{p.pct}%</span>
-                  </div>
-                  <div style={{ height: 3, background: 'rgba(255,255,255,0.06)', borderRadius: 3 }}>
-                    <div style={{ width: `${p.pct}%`, height: '100%', background: p.color, borderRadius: 3 }} />
-                  </div>
-                </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── FINAL CTA ─────────────────────────────────────────── */}
+      <section style={{ padding: '120px 48px', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 80% 60% at 50% 50%, rgba(112,48,239,0.14) 0%, transparent 70%)', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 40% 40% at 70% 30%, rgba(219,31,255,0.08) 0%, transparent 70%)', pointerEvents: 'none' }} />
+        <div className="reveal" style={{ position: 'relative', zIndex: 1 }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#A580FF', marginBottom: 20, background: 'rgba(112,48,239,0.1)', padding: '5px 14px', borderRadius: 100, border: '1px solid rgba(112,48,239,0.2)' }}>
+            <Target size={11} weight="fill" /> Get started today
+          </div>
+          <h2 style={{ fontFamily: 'var(--font-display, "Plus Jakarta Sans"), sans-serif', fontSize: 'clamp(30px,5vw,62px)', fontWeight: 900, letterSpacing: '-0.04em', marginBottom: 18, lineHeight: 1.05 }}>
+            Ready to run your<br />
+            <span style={{ background: 'linear-gradient(135deg,#C480FF,#DB1FFF,#FF4D6A)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>agency smarter?</span>
+          </h2>
+          <p style={{ fontSize: 17, color: 'rgba(255,255,255,0.38)', marginBottom: 44 }}>Join 2,400+ agencies already using TasksDone</p>
+          <button onClick={() => router.push('/register')} style={{ padding: '17px 52px', borderRadius: 16, border: 'none', background: 'linear-gradient(135deg, #7030EF, #DB1FFF)', color: 'white', fontSize: 18, fontWeight: 800, cursor: 'pointer', boxShadow: '0 14px 50px rgba(112,48,239,0.5)', letterSpacing: '-0.015em', transition: 'all 0.2s', display: 'inline-flex', alignItems: 'center', gap: 10, fontFamily: 'inherit' }}
+          onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 24px 64px rgba(112,48,239,0.65)'; }}
+          onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 14px 50px rgba(112,48,239,0.5)'; }}>
+            <Rocket size={20} weight="fill" />
+            Start for free today →
+          </button>
+          <p style={{ marginTop: 18, fontSize: 13, color: 'rgba(255,255,255,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14 }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}><ShieldCheck size={12} color="rgba(255,255,255,0.25)" /> Free forever</span>
+            <span>·</span>
+            <span>No credit card</span>
+            <span>·</span>
+            <span>Up and running in 5 minutes</span>
+          </p>
+        </div>
+      </section>
+
+      {/* ── FOOTER ────────────────────────────────────────────── */}
+      <footer style={{ borderTop: '1px solid rgba(255,255,255,0.06)', padding: '52px 48px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 32 }}>
+        <div style={{ maxWidth: 240 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 14 }}>
+            <div style={{ width: 30, height: 30, borderRadius: 9, background: 'linear-gradient(135deg,#7030EF,#DB1FFF)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 14px rgba(112,48,239,0.4)' }}>
+              <CheckSquare size={16} color="#fff" weight="fill" />
+            </div>
+            <span style={{ fontFamily: 'var(--font-display, "Plus Jakarta Sans"), sans-serif', fontWeight: 800, fontSize: 18, color: 'white', letterSpacing: '-0.02em' }}>
+              Tasks<span style={{ background: 'linear-gradient(135deg,#A580FF,#DB1FFF)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Done</span>
+            </span>
+          </div>
+          <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.28)', lineHeight: 1.65 }}>The operating system for modern marketing agencies.</p>
+        </div>
+        <div style={{ display: 'flex', gap: 56, flexWrap: 'wrap' }}>
+          {[
+            { title: 'Product', links: [['Features','/features'],['Pricing','/pricing'],['Changelog','/changelog'],['Roadmap','/roadmap']] },
+            { title: 'Company', links: [['About','/about'],['Blog','/blog'],['Careers','/careers'],['Contact','/contact']] },
+            { title: 'Support', links: [['Docs','/docs'],['Help Center','/help'],['Status','/status']] },
+            { title: 'Legal',   links: [['Privacy','/privacy'],['Terms','/terms'],['Cookies','/cookies']] },
+          ].map(col => (
+            <div key={col.title}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.28)', textTransform: 'uppercase', letterSpacing: '0.09em', marginBottom: 14 }}>{col.title}</div>
+              {col.links.map(([label,href]) => (
+                <Link key={label} href={href}
+                  style={{ display: 'block', fontSize: 13, color: 'rgba(255,255,255,0.42)', textDecoration: 'none', marginBottom: 10, transition: 'color 0.15s' }}
+                  onMouseEnter={e => (e.currentTarget.style.color='white')}
+                  onMouseLeave={e => (e.currentTarget.style.color='rgba(255,255,255,0.42)')}
+                >{label}</Link>
               ))}
             </div>
-          </FadeUp>
+          ))}
         </div>
-      </section>
+      </footer>
 
-      {/* ── SHOWCASE 2: Finance ──────────────────────────── */}
-      <section style={{ padding: '100px 24px', background: 'rgba(255,255,255,0.015)', borderTop: '1px solid rgba(255,255,255,0.04)', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-        <div className="feature-2col" style={{ maxWidth: 1080, margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 80, alignItems: 'center' }}>
-          <FadeUp delay={0.05}>
-            <div style={{ background: 'rgba(16,185,129,0.04)', border: '1px solid rgba(16,185,129,0.12)', borderRadius: 16, padding: 28 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 20 }}>
-                <div><div style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', marginBottom: 4 }}>This month</div><div style={{ fontSize: 32, fontWeight: 800, color: '#10b981', letterSpacing: '-0.03em' }}>$24,800</div></div>
-                <div style={{ width: 36, height: 36, borderRadius: 9, background: 'rgba(16,185,129,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><TrendUp size={16} color="#10b981" /></div>
-              </div>
-              {[{label:'Acme Corp — Retainer',amount:'$4,500',status:'Paid',sc:'#10b981'},{label:'Nova Inc — Project',amount:'$8,200',status:'Sent',sc:'#f59e0b'},{label:'Orbit Studios — Design',amount:'$2,100',status:'Draft',sc:'#2563EB'}].map((inv,i) => (
-                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '11px 0', borderBottom: i<2?'1px solid rgba(255,255,255,0.05)':'none' }}>
-                  <div><div style={{ fontSize: 12, color: '#e2e8f0', marginBottom: 2 }}>{inv.label}</div><span style={{ fontSize: 10, color: inv.sc, padding: '2px 7px', borderRadius: 4, background: `${inv.sc}15`, fontWeight: 600 }}>{inv.status}</span></div>
-                  <span style={{ fontSize: 13, fontWeight: 700, color: '#e2e8f0' }}>{inv.amount}</span>
-                </div>
-              ))}
-            </div>
-          </FadeUp>
-          <FadeUp delay={0.1}>
-            <div>
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '5px 12px', borderRadius: 6, background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)', marginBottom: 20 }}>
-                <Receipt size={12} color="#10b981" /><span style={{ fontSize: 11, color: '#10b981', fontWeight: 600, letterSpacing: '0.05em' }}>FINANCE</span>
-              </div>
-              <h2 style={{ fontSize: 'clamp(24px,3vw,36px)', fontWeight: 800, letterSpacing: '-0.025em', marginBottom: 16, lineHeight: 1.2 }}>Get paid faster, track every dollar</h2>
-              <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.45)', lineHeight: 1.75, marginBottom: 24 }}>Create professional invoices in seconds, auto-send reminders, and see your agency's cash flow at a glance.</p>
-              {['One-click invoice creation','Automated payment reminders','Expense tracking & reports','Multi-currency support'].map((f,i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 9 }}>
-                  <CheckCircle size={13} color="#10b981" style={{ flexShrink: 0 }} />
-                  <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.55)' }}>{f}</span>
-                </div>
-              ))}
-            </div>
-          </FadeUp>
-        </div>
-      </section>
-
-      {/* ── AI SECTION ───────────────────────────────────── */}
-      <section style={{ padding: '100px 24px' }}>
-        <div style={{ maxWidth: 1080, margin: '0 auto' }}>
-          <FadeUp>
-            <div style={{ textAlign: 'center', marginBottom: 56 }}>
-              <p style={{ fontSize: 11, fontWeight: 700, color: '#a855f7', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 14 }}>AI Intelligence</p>
-              <h2 style={{ fontSize: 'clamp(28px,4vw,44px)', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 16, lineHeight: 1.15 }}>Your agency's AI co-pilot</h2>
-              <p style={{ fontSize: 16, color: 'rgba(255,255,255,0.4)', maxWidth: 480, margin: '0 auto', lineHeight: 1.7 }}>AI that knows your clients, projects, and workflows — so you can move 3× faster.</p>
-            </div>
-          </FadeUp>
-          <FadeUp delay={0.05}>
-            <div className="feature-grid-3" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16 }}>
-              <FeatureCard icon={Sparkle} color="#a855f7" title="Campaign Builder" desc="Generate full campaign plans with tasks, timelines, and deliverables from one sentence." />
-              <FeatureCard icon={FileText} color="#2563EB" title="Content Generator" desc="Write social posts, email sequences, and ad copy tailored to each client's voice." />
-              <FeatureCard icon={TrendUp} color="#06b6d4" title="Competitor Analysis" desc="Research competitors, surface gaps, and find opportunities clients can act on today." />
-            </div>
-          </FadeUp>
-        </div>
-      </section>
-
-      {/* ── TESTIMONIALS ─────────────────────────────────── */}
-      <section style={{ padding: '100px 24px', background: 'rgba(255,255,255,0.015)', borderTop: '1px solid rgba(255,255,255,0.04)', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-        <div style={{ maxWidth: 1080, margin: '0 auto' }}>
-          <FadeUp>
-            <div style={{ textAlign: 'center', marginBottom: 52 }}>
-              <div style={{ display: 'flex', justifyContent: 'center', gap: 3, marginBottom: 16 }}>{[1,2,3,4,5].map(i => <Star key={i} size={15} color="#f59e0b" fill="#f59e0b" />)}</div>
-              <h2 style={{ fontSize: 'clamp(24px,3vw,36px)', fontWeight: 800, letterSpacing: '-0.025em' }}>Agencies love TasksDone</h2>
-            </div>
-          </FadeUp>
-          <FadeUp delay={0.05}>
-            <div className="feature-grid-3" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 20 }}>
-              {[
-                {name:'Sarah K.',role:'Agency Director @ Horizon',quote:'We replaced Asana, Notion, and QuickBooks. Saved $800/mo and our team actually uses it.'},
-                {name:'Marco R.',role:'Creative Director @ Apex',quote:'The AI campaign builder saves my team 6+ hours every week. It\'s like having an extra strategist.'},
-                {name:'Priya M.',role:'Founder @ Nova Agency',quote:'The client portal made us look 10× more professional. Clients stopped asking for status updates.'},
-              ].map((t,i) => (
-                <div key={i} style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14, padding: '24px 22px' }}>
-                  <div style={{ display: 'flex', gap: 2, marginBottom: 14 }}>{[1,2,3,4,5].map(j => <Star key={j} size={11} color="#f59e0b" fill="#f59e0b" />)}</div>
-                  <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.6)', lineHeight: 1.7, marginBottom: 16 }}>"{t.quote}"</p>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: '#e2e8f0' }}>{t.name}</div>
-                  <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)' }}>{t.role}</div>
-                </div>
-              ))}
-            </div>
-          </FadeUp>
-        </div>
-      </section>
-
-      {/* ── PRICING ──────────────────────────────────────── */}
-      <section style={{ padding: '100px 24px' }}>
-        <div style={{ maxWidth: 1080, margin: '0 auto' }}>
-          <FadeUp>
-            <div style={{ textAlign: 'center', marginBottom: 48 }}>
-              <p style={{ fontSize: 11, fontWeight: 700, color: '#2563EB', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 14 }}>Pricing</p>
-              <h2 style={{ fontSize: 'clamp(28px,4vw,44px)', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 20, lineHeight: 1.15 }}>Simple, transparent pricing</h2>
-              <div style={{ display: 'inline-flex', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, padding: 4 }}>
-                {(['monthly','annual'] as const).map(b => (
-                  <button key={b} onClick={() => setBilling(b)} style={{ padding: '8px 20px', borderRadius: 7, fontSize: 13, fontWeight: 600, cursor: 'pointer', border: 'none', background: billing===b?'rgba(37,99,235,0.2)':'transparent', color: billing===b?'#60A5FA':'rgba(255,255,255,0.4)', transition: 'all 0.2s' }}>
-                    {b==='monthly'?'Monthly':'Annual'}
-                  </button>
-                ))}
-              </div>
-              {billing==='annual' && <p style={{ fontSize: 12, color: '#10b981', marginTop: 10 }}>Save up to 20% with annual billing</p>}
-            </div>
-          </FadeUp>
-          <FadeUp delay={0.05}>
-            <div className="pricing-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 20 }}>
-              <PricingCard
-                plan={PRICING.free.name}
-                price={PRICING.free.price.monthly}
-                annualPrice={PRICING.free.price.annual}
-                billing={billing}
-                cta="Start Free"
-                features={[...PRICING.free.features]}
-              />
-              <PricingCard
-                plan={PRICING.pro.name}
-                price={PRICING.pro.price.monthly}
-                annualPrice={PRICING.pro.price.annual}
-                billing={billing}
-                highlighted
-                cta="Start Pro Trial"
-                features={[...PRICING.pro.features]}
-              />
-              <PricingCard
-                plan={PRICING.agency.name}
-                price={PRICING.agency.price.monthly}
-                annualPrice={PRICING.agency.price.annual}
-                billing={billing}
-                cta="Talk to Sales"
-                features={[...PRICING.agency.features]}
-              />
-            </div>
-          </FadeUp>
-        </div>
-      </section>
-
-      {/* ── FAQ ───────────────────────────────────────────── */}
-      <section style={{ padding: '80px 24px', background: 'rgba(255,255,255,0.015)', borderTop: '1px solid rgba(255,255,255,0.04)', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-        <div style={{ maxWidth: 680, margin: '0 auto' }}>
-          <FadeUp>
-            <h2 style={{ fontSize: 'clamp(24px,3vw,36px)', fontWeight: 800, letterSpacing: '-0.025em', textAlign: 'center', marginBottom: 48 }}>Common questions</h2>
-          </FadeUp>
-          <FadeUp delay={0.05}>
-            {[
-              {q:'Can I import data from my existing tools?',a:'Yes. TasksDone supports imports from Asana, Trello, Notion, and CSV. Your data migrates in minutes, not days.'},
-              {q:'Does my team need training to use it?',a:'Most teams are productive on day one. We include onboarding walkthroughs and live support for all plans.'},
-              {q:'Is my data secure?',a:'All data is encrypted at rest and in transit (AES-256, TLS 1.3). SOC 2 Type II compliant with 99.9% uptime SLA.'},
-              {q:'Can I white-label it for clients?',a:'Yes — white-label branding is available on Enterprise. Add your logo, custom domain, and brand colors.'},
-              {q:'What happens when my trial ends?',a:'You\'ll be notified 3 days before and moved to the free Starter plan. No surprise charges, ever.'},
-            ].map((item,i) => <FAQItem key={i} q={item.q} a={item.a} />)}
-          </FadeUp>
-        </div>
-      </section>
-
-      {/* ── FINAL CTA ────────────────────────────────────── */}
-      <section style={{ padding: '120px 24px' }}>
-        <div style={{ maxWidth: 640, margin: '0 auto', textAlign: 'center' }}>
-          <FadeUp>
-            <div style={{ width: 60, height: 60, borderRadius: 14, background: 'linear-gradient(135deg,#0EA5E9,#2563EB)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 28px', boxShadow: '0 0 40px rgba(37,99,235,0.35)' }}>
-              <Rocket size={24} color="#fff" />
-            </div>
-            <h2 style={{ fontSize: 'clamp(28px,4vw,48px)', fontWeight: 900, letterSpacing: '-0.03em', marginBottom: 18, lineHeight: 1.1 }}>Ready to run a better agency?</h2>
-            <p style={{ fontSize: 17, color: 'rgba(255,255,255,0.4)', marginBottom: 40, lineHeight: 1.7 }}>Join hundreds of agencies who moved from chaos to clarity. Start free today — no credit card needed.</p>
-            <button
-              onClick={() => router.push('/register')}
-              style={{ display: 'inline-flex', alignItems: 'center', gap: 10, padding: '16px 40px', borderRadius: 12, fontSize: 16, fontWeight: 700, background: 'linear-gradient(135deg,#0EA5E9,#2563EB)', color: '#fff', border: 'none', cursor: 'pointer', boxShadow: '0 0 40px rgba(37,99,235,0.4)', transition: 'transform 0.15s,box-shadow 0.15s' }}
-              onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.transform='translateY(-2px)'; (e.currentTarget as HTMLButtonElement).style.boxShadow='0 0 56px rgba(37,99,235,0.55)'; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.transform='translateY(0)'; (e.currentTarget as HTMLButtonElement).style.boxShadow='0 0 40px rgba(37,99,235,0.4)'; }}
-            >
-              Start Free <ArrowRight size={16} />
-            </button>
-            <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.2)', marginTop: 16 }}>Free forever on Starter · 14-day Pro trial · No credit card</p>
-          </FadeUp>
-        </div>
-      </section>
-
-      <LandingFooter />
+      <div style={{ borderTop: '1px solid rgba(255,255,255,0.04)', padding: '16px 48px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.18)' }}>© 2025 TasksDone · Built for marketing agencies worldwide</span>
+        <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.12)', display: 'flex', alignItems: 'center', gap: 5 }}>Made with <span style={{ color: '#FF4D6A' }}>♥</span></span>
+      </div>
 
       <style>{`
-        * { box-sizing: border-box; }
-        @media (max-width: 900px) {
-          .feature-grid-6, .feature-grid-3, .pricing-grid { grid-template-columns: repeat(2,1fr) !important; }
-          .feature-2col { grid-template-columns: 1fr !important; gap: 40px !important; }
-          .pain-grid { grid-template-columns: 1fr !important; }
-        }
-        @media (max-width: 560px) {
-          .feature-grid-6, .feature-grid-3, .pricing-grid { grid-template-columns: 1fr !important; }
+        @keyframes fadeUp { from { opacity:0; transform:translateY(26px); } to { opacity:1; transform:translateY(0); } }
+        .reveal { opacity:0; transform:translateY(30px); transition: opacity 0.7s cubic-bezier(.16,1,.3,1), transform 0.7s cubic-bezier(.16,1,.3,1); }
+        .reveal.visible { opacity:1; transform:translateY(0); }
+        @media (max-width:768px) {
+          nav > div:nth-child(2) { display:none !important; }
+          section { padding-left:20px !important; padding-right:20px !important; }
+          footer { padding: 36px 20px !important; }
         }
       `}</style>
     </div>

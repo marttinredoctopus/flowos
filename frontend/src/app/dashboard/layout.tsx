@@ -50,7 +50,7 @@ const ALL_NAV_SECTIONS = [
   {
     label: 'Marketing',
     items: [
-      { label: 'Content Planner', href: '/dashboard/content',          Icon: CalendarDots, color: '#00D4FF',  roles: ['admin','manager','member','team'] },
+      { label: 'Content Hub', href: '/dashboard/content',          Icon: CalendarDots, color: '#00D4FF',  roles: ['admin','manager','member','team'] },
       { label: 'Strategy Hub',    href: '/dashboard/content/sections', Icon: Lightbulb,    color: '#DB1FFF', roles: ['admin','manager','member','team'] },
       { label: 'Idea Bank',       href: '/dashboard/ideas',            Icon: Lightbulb,    color: '#FFB547',  roles: ['admin','manager','member','team'] },
       { label: 'Ad Campaigns',    href: '/dashboard/campaigns',        Icon: Megaphone,    color: '#FF7A30',  roles: ['admin','manager','member','team'] },
@@ -633,7 +633,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             style={{
               width: '100%', height: 36, display: 'flex',
               alignItems: 'center', justifyContent: 'center',
-              color: 'var(--text-3)', borderTop: '1px solid var(--sidebar-border)',
+              color: 'var(--text-3)',
               background: 'none', border: 'none',
               borderTop: '1px solid var(--sidebar-border)',
               cursor: 'pointer', transition: 'color 0.15s',
